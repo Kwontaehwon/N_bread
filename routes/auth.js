@@ -23,7 +23,7 @@ router.post('/join', isNotLoggedIn, async (req, res, next) => {
   const { email, nick, password } = req.body;
   try {
     const exUser = await User.findOne({ where: { email } });
-    const exNick = await User.findOne({ where: { nick : nick }});
+    const exNick = await User.findOne({ where: { nick }});
     if (exUser) {
       return res.status(501).json({
         code: 501,
@@ -79,7 +79,27 @@ router.get('/kakao', passport.authenticate('kakao'));
 router.get('/kakao/callback', passport.authenticate('kakao', {
   failureRedirect: '/',
 }), (req, res) => {
-  res.redirect('/');
+  //res.redirect('/');
+  return res.status(200).json({
+    code: 200,
+    message: '카카오 로그인에 성공하였습니다.',
+  });
 });
+
+router.get('/naver', passport.authenticate('naver'));
+
+router.get('/naver/callback', passport.authenticate('naver', {
+  failureRedirect: '/auth/error',
+  successRedirect: '/',
+})), (req, res) => {
+  res.redirect('/');
+}
+
+router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+  return res.status(404).json({
+    code: 404,
+    message: '정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)',
+  });
+})
 
 module.exports = router;

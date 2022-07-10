@@ -77,6 +77,26 @@ router.put('/:userId', async (req, res, next) => {
 })
 
 
+router.delete('/:userId', async (req, res, next) => {
+    const user = await User.findOne({where : { Id : req.params.userId}});
+    if(!user){
+        return res.status(404).json({
+            code : 404,
+            isSuccess : false,
+            message : "해당되는 유저가 없습니다.",
+        });
+    }
+    await user.destroy();
+    return res.status(200).json({
+        code : 200,
+        isSuccess : true,
+        message : "유저 탈퇴 완료",
+    });
+});
+
+
+
+
 router.get('/:userId/deals/:dealId', async (req, res, next) => {
     try{
         const user = await User.findOne({where : { Id : req.params.userId}});

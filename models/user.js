@@ -6,7 +6,6 @@ module.exports = class User extends Sequelize.Model {
       email: {
         type: Sequelize.STRING(40),
         allowNull: true,
-        unique: true,
       },
       nick: {
         type: Sequelize.STRING(15),
@@ -22,7 +21,7 @@ module.exports = class User extends Sequelize.Model {
         defaultValue: 'local',
       },
       snsId: {
-        type: Sequelize.STRING(30),
+        type: Sequelize.STRING(70),
         allowNull: true,
       },
     }, {
@@ -32,7 +31,7 @@ module.exports = class User extends Sequelize.Model {
       modelName: 'User',
       tableName: 'users',
       paranoid: true,
-      charset: 'utf8',
+      charset: 'utf8', //mb4 적용해야지 이모티콘 사용 가능
       collate: 'utf8_general_ci',
     });
   }
