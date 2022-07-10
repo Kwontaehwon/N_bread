@@ -1,0 +1,27 @@
+const Sequelize = require('sequelize');
+
+module.exports = class Group extends Sequelize.Model {
+  static init(sequelize) {
+    return super.init({
+       amount : {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+
+    }, {
+      sequelize,
+      timestamps: true,
+      underscored: false,
+      modelName: 'Group',
+      tableName: 'groups',
+      paranoid: false,
+      charset: 'utf8', //mb4 적용해야지 이모티콘 사용 가능
+      collate: 'utf8_general_ci',
+    });
+  }
+
+  static associate(db) {
+    db.Group.belongsTo(db.User,{ foreignKey : 'userId', sourceKey : 'id' } );
+    db.Group.belongsTo(db.Deal, { foreignKey : 'dealId', sourceKey : 'id' });
+  }
+};
