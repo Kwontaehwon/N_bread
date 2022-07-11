@@ -13,9 +13,10 @@
 
 <body>
     <p id="show_location"></p>
-    <button onclick="locate();">getLocation</button>
+    <!-- <button onclick="locate();">getLocation</button> -->
     <script>
         var geocoder = new kakao.maps.services.Geocoder();
+        locate();
         const locate = async () => {
             const add = await getloc();
             send(add);
