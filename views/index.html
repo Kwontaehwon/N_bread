@@ -16,12 +16,13 @@
     <!-- <button onclick="locate();">getLocation</button> -->
     <script>
         var geocoder = new kakao.maps.services.Geocoder();
-        locate();
+        
         const locate = async () => {
             const add = await getloc();
             send(add);
 
         }
+        locate();
         function searchDetailAddrFromCoords(lng, lat, callback) {
             // 좌표로 법정동 상세 주소 정보를 요청합니다
             geocoder.coord2Address(lng, lat, callback);
