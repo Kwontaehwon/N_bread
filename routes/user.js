@@ -9,30 +9,31 @@ const { User, Group, Deal } = require('../models');
 
 const router = express.Router();
 
+function jsonResponse(res, code, message, isSuccess, result){
+    res.status(code).json({
+      code : code,
+      message : message,
+      isSuccess : isSuccess,
+      result : result
+    })
+  }
+  
 
 router.get('/:userId', async (req, res, next) => {
     try{
         const user = await User.findOne({where : { Id : req.params.userId}});
         if(!user){
-            return res.status(404).json({
-                code : 404,
-                message : "해당되는 유저가 없습니다.",
-                isSuccess : false,
-            });
+            return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null)
         }
-        console.log(user.provider);
-        return res.status(200).json({
-            code : 200,
-            isSuccess : true,
-            result : {
-                createdAt : user.createdAt,
-                nick : user.nick,
-                provider : user.provider,
-            }
-        })
+        const result = {
+            createdAt : user.createdAt,
+            nick : user.nick,
+            provider : user.provider,
+        }
+        return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result)
     } catch (error){
         console.log(error);
-        return next(error);
+        return jsonResponse(res, 500, "서버 에러", false, result)
     }
 });
 
@@ -42,57 +43,43 @@ router.put('/:userId', async (req, res, next) => {
         const {nick} = req.body;
         const user = await User.findOne({where : { Id : req.params.userId}});
         if(!user){
-            return res.status(404).json({
-                code : 404,
-                isSuccess : false,
-                message : "해당되는 유저가 없습니다.",
-            });
+            return jsonResponse(res, 404, "해당되는 유저가 없습니다.", false, null);
         }
         const isDuplicated = await User.findOne({ where : {nick : nick}});
         if(isDuplicated){
-            return res.status(409).json({
-                code : 409,
-                isSuccess : false,
-                message : "중복된 유저입니다.",
-            });
+            return jsonResponse(res, 409, "중복된 닉네임으로는 변경할 수 없습니다.", false, null);
         }
         else{
             await user.update({
                 nick : nick
             });
-            return res.status(200).json({
-                code : 200,
-                isSuccess : false,
-                message : "닉네임 변경 완료",
-                result : {
-                    userId : user.id,
-                    nick : user.nick,
-                }
-            });
+            const result = {
+                userId : user.id,
+                nick : user.nick,
+            };
+            return jsonResponse(res, 200, "닉네임 변경 완료", true, result);
         }
         
     } catch(error){ 
         console.log(error);
-        return next(error);
+        return jsonResponse(res, 500, "서버 에러", false, result)
     }
 })
 
 
 router.delete('/:userId', async (req, res, next) => {
-    const user = await User.findOne({where : { Id : req.params.userId}});
-    if(!user){
-        return res.status(404).json({
-            code : 404,
-            isSuccess : false,
-            message : "해당되는 유저가 없습니다.",
-        });
+    try{
+        const user = await User.findOne({where : { Id : req.params.userId}});
+        if(!user){
+            return jsonResponse(res, 404, "해당되는 유저를 찾을 수 없습니다.", false, null)
+        }
+        await user.destroy();
+        return jsonResponse(res, 500, "회원 탈퇴가 완료되었습니다.", true, null)
+    }  catch(error){ 
+        console.log(error);
+        return jsonResponse(res, 500, "서버 에러", false, null)
     }
-    await user.destroy();
-    return res.status(200).json({
-        code : 200,
-        isSuccess : true,
-        message : "유저 탈퇴 완료",
-    });
+    
 });
 
 
@@ -100,14 +87,10 @@ router.get('/:userId/deals/:dealId', async (req, res, next) => {
     try{
         const user = await User.findOne({where : { Id : req.params.userId}});
         if(!user){
-            return res.json({
-                code : 404,
-                isSuccess : false,
-            });
+            return jsonResponse(res, 404, "userId에 해당되는 유저를 찾을 수 없습니다.", false, null)
         }
         let status, description;
         const group = await Group.findOne({where : { userId : req.params.userId, dealId : req.params.dealId}});
-        console.log(group);
         if(!group){
             description = "참여하지 않음";
             status = 0;
@@ -125,46 +108,16 @@ router.get('/:userId/deals/:dealId', async (req, res, next) => {
                 status = 1;
             }
         }
-        return res.json({
-            code : 200,
-            isSuccess : true,
-            result : {
-                participation : status,
-                description : description,
-                userId : req.params.userId,
-                dealId : req.params.dealId,
-            }
-        })
-    } catch (error){
-        console.log(error);
-        return next(error);
-    }
-});
-
-
-router.get('/loc/:userId', async (req, res, next) => {
-    try{
-        const user = await User.findOne({where : { Id : req.params.userId}});
-        if(!user){
-            return res.status(404).json({
-                code : 404,
-                message : "해당되는 유저가 없습니다.",
-                isSuccess : false,
-            });
+        const result = {
+            participation : status,
+            description : description,
+            userId : req.params.userId,
+            dealId : req.params.dealId,
         }
-        console.log(user.provider);
-        return res.status(200).json({
-            code : 200,
-            isSuccess : true,
-            result : {
-                createdAt : user.createdAt,
-                nick : user.nick,
-                provider : user.provider,
-            }
-        })
+        return jsonResponse(res, 200, "거래에 대한 상태를 반환합니다.", true, result);
     } catch (error){
         console.log(error);
-        return next(error);
+        return jsonResponse(res, 500, "서버 에러", false, null)
     }
 });
 
