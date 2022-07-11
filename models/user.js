@@ -25,6 +25,10 @@ module.exports = class User extends Sequelize.Model {
         type: Sequelize.STRING(30),
         allowNull: true,
       },
+      curLocation:{
+        type:Sequelize.STRING(10),
+        allowNull:true,
+      },
     }, {
       sequelize,
       timestamps: true,

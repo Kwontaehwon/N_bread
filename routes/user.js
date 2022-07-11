@@ -8,7 +8,7 @@ const { User, Group, Deal } = require('../models');
 
 const router = express.Router();
 
-
+router.use(express.json());
 router.get('/:userId', async (req, res, next) => {
     try{
         const user = await User.findOne({where : { Id : req.params.userId}});
@@ -148,5 +148,23 @@ router.get('/loc/:userId', async (req, res, next) => {
         return next(error);
     }
 });
+
+
+router.post('/users/location', (req, res) => {
+    res.sendFile(__dirname + '/views/index.html')
+    //var tmp=res.session.get("key1");
+    //console.log(tmp);
+})
+
+router.put('/users/location', (req, res) => {
+    console.log(req.body.test_value);
+    res.status(200).json({
+            code: 200,
+            isSuccess: true,
+            result: {
+                value: req.body.test_value
+            }
+        });
+})
 
 module.exports = router;
