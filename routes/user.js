@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const url = require('url');
 
+
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User, Group, Deal } = require('../models');
 
@@ -93,8 +94,6 @@ router.delete('/:userId', async (req, res, next) => {
         message : "유저 탈퇴 완료",
     });
 });
-
-
 
 
 router.get('/:userId/deals/:dealId', async (req, res, next) => {

@@ -1,0 +1,45 @@
+tags:
+- name: auth
+  description: 로그인(auth)
+- name: users
+  description: 유저
+
+paths:
+  /kakao:
+    get:
+      tags:
+        - auth
+      summary: 카카오 소셜 로그인 
+      operationId: updatePet
+      requestBody:
+        description: Pet object that needs to be added to the store
+        content:
+      responses:
+        '400':
+          description: Invalid ID supplied
+          content: {}
+        '404':
+          description: Pet not found
+          content: {}
+        '405':
+          description: Validation exception
+          content: {}
+
+  /{userId}:
+    get:
+      tags:
+        - users
+      summary : 유저 상세 정보
+      description : 유저의 상세 정보 리턴
+      operationId: userId
+      parameters:
+        - name: userId
+          in: path
+          description: Userid
+          required: true
+          type : integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            "ok"

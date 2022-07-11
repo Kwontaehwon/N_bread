@@ -4,19 +4,9 @@ const bcrypt = require('bcrypt');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User } = require('../models');
 
+
 const router = express.Router();
 
-router.post('/', isNotLoggedIn, async (req, res, next)=> {
-    const {email, nick, password} = req.body;
-    try{
-        console.log("TEST : " + email);
-        return res.redirect('/');
-    }
-    catch (error){
-        console.log(error);
-        return next(error);
-    }
-})
 
 
 router.post('/join', isNotLoggedIn, async (req, res, next) => {
@@ -42,7 +32,10 @@ router.post('/join', isNotLoggedIn, async (req, res, next) => {
       nick,
       password: hash,
     });
-    return res.redirect('/');
+    return res.status(200).json({
+      code: 200,
+      message: '로컬 회원가입에 성공하였습니다.',
+    });
   } catch (error) {
     console.error(error);
     return next(error);
@@ -63,7 +56,10 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         console.error(loginError);
         return next(loginError);
       }
-      return res.redirect('/');
+      return res.status(200).json({
+        code: 200,
+        message: '로컬 로그인에 성공하였습니다.',
+      });
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
@@ -71,7 +67,10 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
 router.get('/logout', isLoggedIn, (req, res) => {
   req.logout();
   req.session.destroy();
-  res.redirect('/');
+  return res.status(200).json({
+    code: 200,
+    message: '로그아웃에 성공하였습니다.',
+  });
 });
 
 router.get('/kakao', passport.authenticate('kakao'));
@@ -79,7 +78,6 @@ router.get('/kakao', passport.authenticate('kakao'));
 router.get('/kakao/callback', passport.authenticate('kakao', {
   failureRedirect: '/',
 }), (req, res) => {
-  //res.redirect('/');
   return res.status(200).json({
     code: 200,
     message: '카카오 로그인에 성공하였습니다.',
