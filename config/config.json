@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "10251003",
+    "password": "",
     "database": "nBread",
     "host": "127.0.0.1",
     "dialect": "mysql"
