@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const url = require('url');
+const passport = require('passport');
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User, Group, Deal } = require('../models');

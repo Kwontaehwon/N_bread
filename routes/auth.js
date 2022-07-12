@@ -63,12 +63,13 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         console.error(loginError);
         return next(loginError);
       }
+      console.log(user.dataValues);
       return res.redirect('/');
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
 
-router.get('/logout', isLoggedIn, (req, res) => {
+router.get('/logout',isNotLoggedIn, (req, res) => {
   req.logout();
   req.session.destroy();
   res.redirect('/');

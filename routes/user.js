@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const url = require('url');
+const path=require('path');
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User, Group, Deal } = require('../models');
@@ -9,13 +10,37 @@ const { User, Group, Deal } = require('../models');
 const router = express.Router();
 
 router.use(express.json());
+
+router.get('/location',isLoggedIn, (req, res) => {
+    console.log(__dirname)
+    res.sendFile(path.resolve(__dirname+'/../views/index.html'))
+    //var tmp=res.session.get("key1");
+    //console.log(tmp);
+})
+
+router.put('/location', (req, res) => {
+    console.log(req.body.test_value);
+    console.log(req.session.user)
+    //const user = await User.findOne({ where: { Id: req.params.userId } });
+    res.status(200).json({
+        //현재 위치를 db에 저장해야함
+        code: 200,
+        isSuccess: true,
+        result: {
+            value: req.body.test_value
+        }
+    });
+})
+
+
+
 router.get('/:userId', async (req, res, next) => {
     try{
         const user = await User.findOne({where : { Id : req.params.userId}});
         if(!user){
             return res.status(404).json({
                 code : 404,
-                message : "해당되는 유저가 없습니다.",
+                message : "해당되는 유저가 없습니다1.",
                 isSuccess : false,
             });
         }
@@ -44,7 +69,7 @@ router.put('/:userId', async (req, res, next) => {
             return res.status(404).json({
                 code : 404,
                 isSuccess : false,
-                message : "해당되는 유저가 없습니다.",
+                message : "해당되는 유저가 없습니다2.",
             });
         }
         const isDuplicated = await User.findOne({ where : {nick : nick}});
@@ -150,21 +175,6 @@ router.get('/loc/:userId', async (req, res, next) => {
 });
 
 
-router.post('/users/location', (req, res) => {
-    res.sendFile(__dirname + '/views/index.html')
-    //var tmp=res.session.get("key1");
-    //console.log(tmp);
-})
 
-router.put('/users/location', (req, res) => {
-    console.log(req.body.test_value);
-    res.status(200).json({
-            code: 200,
-            isSuccess: true,
-            result: {
-                value: req.body.test_value
-            }
-        });
-})
 
 module.exports = router;
