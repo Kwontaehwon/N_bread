@@ -35,7 +35,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
       nick,
       password: hash,
     });
-    return jsonResponse(res, 200, "로컬 회원가입에 성공하였습니다.", false, user)
+    return jsonResponse(res, 200, "로컬 회원가입에 성공하였습니다.", true, user)
   } catch (error) {
     console.error(error);
     
@@ -56,15 +56,13 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         console.error(loginError);
         return next(loginError);
       }
-      return res.status(200).json({
-        code: 200,
-        message: '로컬 로그인에 성공하였습니다.',
-      });
+
+      return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
 
-router.get('/logout', isLoggedIn, (req, res) => {
+router.get('/logout',isNotLoggedIn, (req, res) => {
   req.logout();
   req.session.destroy();
   return jsonResponse(res, 200, '로그아웃에 성공하였습니다.', true, null);

@@ -2,12 +2,15 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const url = require('url');
+const path=require('path');
 
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User, Group, Deal } = require('../models');
+const { json } = require('body-parser');
 
 const router = express.Router();
+
 
 function jsonResponse(res, code, message, isSuccess, result){
     res.status(code).json({
@@ -18,6 +21,25 @@ function jsonResponse(res, code, message, isSuccess, result){
     })
   }
   
+router.use(express.json());
+
+router.get('/location',isLoggedIn, (req, res) => {
+    console.log(__dirname)
+    res.sendFile(path.resolve(__dirname+'/../views/index.html'))
+    //var tmp=res.session.get("key1");
+    //console.log(tmp);
+})
+
+router.put('/location', (req, res) => {
+    console.log(req.body.test_value);
+    console.log(req.session.user)
+    //const user = await User.findOne({ where: { Id: req.params.userId } });
+
+    const result={value: req.body.test_value}
+    jsonResponse(res,200,"현재 위치 조회에 성공하였습니다.",true,result)
+})
+
+
 
 router.get('/:userId', async (req, res, next) => {
     try{
@@ -120,5 +142,8 @@ router.get('/:userId/deals/:dealId', async (req, res, next) => {
         return jsonResponse(res, 500, "서버 에러", false, null)
     }
 });
+
+
+
 
 module.exports = router;
