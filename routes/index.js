@@ -10,6 +10,7 @@ router.get('/', async (req, res, next) => {
     const user = await User.findOne({
       where: { id: req.user && req.user.id || null },
     });
+    req.session.loginData=user;
     res.render('login', {
       user,
     });
