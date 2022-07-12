@@ -8,6 +8,7 @@ const path=require('path');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User, Group, Deal } = require('../models');
 const { json } = require('body-parser');
+const { any } = require('bluebird');
 
 const router = express.Router();
 
@@ -23,20 +24,29 @@ function jsonResponse(res, code, message, isSuccess, result){
   
 router.use(express.json());
 
-router.get('/location',isLoggedIn, (req, res) => {
-    console.log(__dirname)
+router.post('/location',isLoggedIn, async (req, res) => {
+    //console.log(__dirname)
     res.sendFile(path.resolve(__dirname+'/../views/index.html'))
     //var tmp=res.session.get("key1");
     //console.log(tmp);
 })
 
-router.put('/location', (req, res) => {
-    console.log(req.body.test_value);
-    console.log(req.session.user)
-    //const user = await User.findOne({ where: { Id: req.params.userId } });
-
-    const result={value: req.body.test_value}
+router.put('/location',isLoggedIn, async (req, res) => {
+    const locate=req.body.location.split(' ');
+    //console.log(locate);
+    const resLocate = locate[0] + ' ' + locate[1] + ' ' + locate[2];
+    //console.log(resLocate);
+    //console.log(req.user) 
+    const loggedInUser = await User.findOne({ where: { Id: req.user.id } });
+    await loggedInUser.update({ curLocation: resLocate});
+    const result = { value: resLocate};
+    //console.log(result)
     jsonResponse(res,200,"현재 위치 조회에 성공하였습니다.",true,result)
+})
+router.get('/location',isLoggedIn,async(req,res)=>{
+    const loggedInUser = await User.findOne({ where: { Id: req.user.id } });
+    const result={userId : loggedInUser.id,location:loggedInUser.curLocation};
+    jsonResponse(res,200,"현재 위치를 db에서 가져오는데 성공하였습니다",true,result)
 })
 
 
