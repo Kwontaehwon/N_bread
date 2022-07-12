@@ -6,6 +6,7 @@ const morgan = require('morgan');
 const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
+const { swaggerUi, specs } = require('./swagger');
 
 dotenv.config();
 const indexRouter = require('./routes');
@@ -53,6 +54,7 @@ app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/deals', dealRouter);
 app.use('/users', userRouter);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use((req, res, next) => {
   const error =  new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
