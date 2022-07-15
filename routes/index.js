@@ -40,6 +40,7 @@ router.post('/domain', isLoggedIn, async (req, res, next) => {
     next(err);
   }
 });
+
 router.put('/myip', async (req, res) => {
   axios.get('https://api.ip.pe.kr/').then((Response) => {
     console.log(Response.data);

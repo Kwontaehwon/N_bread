@@ -28,6 +28,11 @@ module.exports = class Deal extends Sequelize.Model {
         allowNull: false,
         defaultValue : false,
       },
+      isRecruitDone : {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue : false,
+      },
       totalMember : { // member가 아니라 amount가 적절한 말. + 추가적으로 currentMemeber를 따로 저장할것인가?
         type: Sequelize.INTEGER,
         allowNull: false,
