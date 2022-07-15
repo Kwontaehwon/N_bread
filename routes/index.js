@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { User, Domain } = require('../models');
@@ -41,14 +39,6 @@ router.post('/domain', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.put('/myip', async (req, res) => {
-  axios.get('https://api.ip.pe.kr/').then((Response) => {
-    console.log(Response.data);
-  }).catch((Error) => {
-    console.log(Error);
-  })
-  
-  res.send({hihi:"hihi"}).json;
-});
+
 
 module.exports = router;
