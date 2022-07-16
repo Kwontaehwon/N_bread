@@ -23,7 +23,7 @@ module.exports = class Reply extends Sequelize.Model {
         }); 
     }
 
-    static associate(db) {
+    static associate(db) { 
         db.Reply.belongsTo(db.Deal, { foreignKey: 'dealId', targetKey: 'id' });
         db.Reply.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'id' });
         db.Reply.belongsTo(db.Comment, { foreignKey: 'parentId', targetKey: 'id' });

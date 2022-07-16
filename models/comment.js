@@ -26,7 +26,7 @@ module.exports = class Comment extends Sequelize.Model {
     static associate(db) {
         db.Comment.belongsTo(db.Deal,{ foreignKey: 'dealId', targetKey: 'id' });  
         db.Comment.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'id' }); //comment테이블에 dealId, userId각각 추가
-        db.Comment.hasMany(db.Reply, { foreignKey: 'parentKey', sourceKey: 'id' });
+        db.Comment.hasMany(db.Reply, { foreignKey: 'parentId', sourceKey: 'id' });
         //db.Comment.belongsTo(db.Comment,{as : 'Reply',foreignKey : 'parentId'});
         //db.Comment.hasMany(db.Comment, { as: 'Reply', sourceKey: 'id', useJunctionTable: false});
     }

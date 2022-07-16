@@ -6,7 +6,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
-const { User, Group, Deal,Comment,Reply } = require('../models');
+const { User, Group, Deal,Comment,Reply, sequelize } = require('../models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
@@ -159,6 +159,21 @@ router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
             jsonResponse(res, 404, "only writer can edit reply", false, {})
         }
     }
+})  
+router.get('/:dealId',async(req,res)=>{
+    const comments=await Comment.findAll({
+        attributes:[
+            'contents',
+            [sequelize.literal]
+        ],
+        where:{dealId:req.params.dealId},
+        include:[{
+            model: Reply
+        } 
+        ]
+    })
+    jsonResponse(res,200,"get comments",true,comments);
+
 })
 
 
