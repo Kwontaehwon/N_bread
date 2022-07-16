@@ -72,7 +72,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(app.get('port'),'0.0.0.0', () => {
-  logger.info("INFO TEST");
-  logger.error("ERROR TEST");
+  logger.info("서버 시작");
   console.log(app.get('port'), '번 포트에서 대기중');
 });
