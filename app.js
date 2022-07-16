@@ -13,11 +13,13 @@ const indexRouter = require('./routes');
 const dealRouter = require('./routes/deals');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
-// const v1 = require('./routes/v1');
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
 
+const logger = require('./config/winston');
+
 const app = express();
+
 passportConfig();
 app.set('port', process.env.PORT || 5005);
 app.set('view engine', 'html');
@@ -70,5 +72,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(app.get('port'),'0.0.0.0', () => {
+  logger.info("INFO TEST");
+  logger.error("ERROR TEST");
   console.log(app.get('port'), '번 포트에서 대기중');
 });
