@@ -13,6 +13,7 @@ const indexRouter = require('./routes');
 const dealRouter = require('./routes/deals');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
+const commentRouter = require('./routes/comment');
 // const v1 = require('./routes/v1');
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
@@ -27,7 +28,7 @@ nunjucks.configure('views', {
 });
 sequelize.sync({ force: false })
   .then(() => {
-    console.log('데이터베이스 연결 성공');
+    console.log('데이터베이스 연결 성공'); 
   })
   .catch((err) => {
     console.error(err);
@@ -54,6 +55,7 @@ app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/deals', dealRouter);
 app.use('/users', userRouter);
+app.use('/comments',commentRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use((req, res, next) => {
