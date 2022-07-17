@@ -53,8 +53,9 @@ router.post('/location', isLoggedIn, async(req,res)=>{
         console.log(Response.data)
         console.log(data.geoLocation.r2);
         user.update({ curLocation1: data.geoLocation.r1, curLocation2: data.geoLocation.r2, curLocation3: data.geoLocation.r3})
-        res.send(Response.data)
-    }).catch((err)=>{
+        jsonResponse(res, 200, "현재 위치 저장이 완료되었습니다.", true, {
+            'location': data.geoLocation.r1 + " " + data.geoLocation.r2 + " " + data.geoLocation.r3});
+    }).catch((err) => {
         console.log("err : "+err)
     })
  
