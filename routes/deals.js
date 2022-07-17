@@ -75,7 +75,7 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
       userId : user.id,
     })
     group.update({ dealId : deal.id }); // 업데이트
-    logger.info(`userId : ${req.user.id}에 매칭되는 유저가 없습니다.`);    
+    logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);

@@ -4,7 +4,12 @@
     "password": "990809kth",
     "database": "nBread",
     "host": "127.0.0.1",
-    "dialect": "mysql"
+    "dialect": "mysql",
+    "timezone": "Asia/Seoul",
+    "dialectOptions": { 
+      "charset" : "utf8",
+      "dateStrings" : true,
+      "typeCast": true }
   },
   "test": {
     "username": "root",
