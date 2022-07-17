@@ -15,8 +15,8 @@ module.exports = class Group extends Sequelize.Model {
       modelName: 'Group',
       tableName: 'groups',
       paranoid: false,
-      charset: 'utf8', //mb4 적용해야지 이모티콘 사용 가능
-      collate: 'utf8_general_ci',
+      charset: 'utf8mb4', //mb4 적용해야지 이모티콘 사용 가능
+      collate: 'utf8mb4_general_ci',
     });
   }
 

@@ -29,7 +29,7 @@ function jsonResponse(res, code, message, isSuccess, result){
 router.use(express.json());
 
 
-router.post('/location',isLoggedIn,async(req,res)=>{
+router.post('/location', isLoggedIn, async(req,res)=>{
     const user = await User.findOne({ where: { id: req.user.id } });
     const prom=new Promise((resolve,reject)=>{
         axios.get('https://api.ip.pe.kr/').then((Response)=>{
@@ -88,7 +88,7 @@ router.post('/location',isLoggedIn,async(req,res)=>{
     //makeSignature();
 
 })
-router.get('/location',isLoggedIn,async(req,res)=>{
+router.get('/location', isLoggedIn, async(req,res)=>{
     const loggedInUser = await User.findOne({ where: { Id: req.user.id } });
     const result={userId : loggedInUser.id,location:loggedInUser.curLocation3};
     jsonResponse(res,200,"현재 위치를 db에서 가져오는데 성공하였습니다",true,result)
@@ -156,50 +156,60 @@ router.delete('/:userId', async (req, res, next) => {
         console.log(error);
         return jsonResponse(res, 500, "서버 에러", false, null)
     }
-    
 });
 
-    
 
-
-
-router.get('/:userId/deals/:dealId', async (req, res, next) => {
-    try{
-        const user = await User.findOne({where : { Id : req.params.userId}});
-        if(!user){
-            return jsonResponse(res, 404, "userId에 해당되는 유저를 찾을 수 없습니다.", false, null)
+// 거래 찾기 /:userId/?isDealDone={}&isSuggester={}
+router.get('/:userId/deals', async (req, res, next) => {
+    try {
+      const user = User.findOne({where : {id : req.params.userId}});
+      if(!user){
+        return jsonResponse(res, 404, "해당되는 유저가 없습니다.", false, null);
+      }
+      let deals; // 정의만 하려면 자료형이 let?
+      if(req.query.isSuggester == 1){ // 제안자
+        deals = await Deal.findAll({
+          where: { userId: req.params.userId },
+          include : {
+           model : Group,
+           attribute: ['userId']
+          }
+         });
+      } else{ // isSuggester가 1일때 처럼 groups를 가져오는 방법
+        const user = await User.findOne({
+          where : {Id : req.params.userId}
+        });
+        const groups = await user.getGroups();
+        deals = []
+        for(let i = 0 ; i < groups.length ; i++){ 
+          const deal = await Deal.findOne({ where : {Id : groups[i].dealId} });
+          if(deal.userId != req.params.userId) deals.push(deal); // 참여자로써 참여한 것만
         }
-        let status, description;
-        const group = await Group.findOne({where : { userId : req.params.userId, dealId : req.params.dealId}});
-        if(!group){
-            description = "참여하지 않음";
-            status = 0;
+      }
+      for (let i = 0; i < deals.length; i++) { // 진행된 거래
+        const cur = new Date(deals[i].dealDate);
+        if (req.query.isDealDone == 1 && cur > Date.now()) { // 수정필요 -> 어짜피 나중에 deal 테이블에 isDealDone 수정하면 바로 가져올 수 있음.
+          deals.splice(i, 1);
+          i--;
         }
-        else{
-            const deal = await group.getDeal();
-        // console.log("deal.userId : " + typeof deal.userId);
-        // console.log("req.params.userId : " + typeof req.params.userId);            
-            if(deal.userId == req.params.userId){ //deal.userId는 number 형이고 req.params.userId는 string형 이므로 == 를 사용해야함.
-                description = "제안자";
-                status = 2;
-            }
-            else{
-                description = "참여자" ;
-                status = 1;
-            }
+        else if (req.query.isDealDone == 0 && cur <= Date.now()) {
+          deals.splice(i, 1);
+          i--;
         }
-        const result = {
-            participation : status,
-            description : description,
-            userId : req.params.userId,
-            dealId : req.params.dealId,
-        }
-        return jsonResponse(res, 200, "거래에 대한 상태를 반환합니다.", true, result);
-    } catch (error){
-        console.log(error);
-        return jsonResponse(res, 500, "서버 에러", false, null)
+      }
+  
+      if (deals.length == 0) {
+        return jsonResponse(res, 404, "검색 결과가 없습니다.", false, null)
+      }
+      return jsonResponse(res, 200, user.id + "user의 거래 내역", true, {userId : user.id , deals : deals});    
+    } catch (error) {
+      console.error(error);
+      return jsonResponse(res, 500, "서버 에러", false, null)
     }
-});
+  });
+
+
+
 
 
 
