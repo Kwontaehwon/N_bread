@@ -4,13 +4,13 @@ module.exports = class Comment extends Sequelize.Model {
     static init(sequelize) {
         return super.init({
             content: { //snsType 
-                type: Sequelize.STRING(100), 
+                type: Sequelize.STRING(1000), 
                 allowNull: false,
             },
             isDeleted: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
-            }
+            } 
         }, {
             sequelize,
             timestamps: true, 

@@ -162,10 +162,6 @@ router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
 })  
 router.get('/:dealId',async(req,res)=>{
     const comments=await Comment.findAll({
-        attributes:[
-            'contents',
-            [sequelize.literal]
-        ],
         where:{dealId:req.params.dealId},
         include:[{
             model: Reply
