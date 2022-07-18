@@ -25,10 +25,13 @@ function jsonResponse(res, code, message, isSuccess, result){
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
 router.get('/all', async (req, res, next) => {
+  const today = new Date(Date.now());
+  const recruitDeadline = new Date();
+  recruitDeadline.setDate(today.getDate() - 3);
   const recruitingDeals = await Deal.findAll( {
     where : { [Op.and] : [
       { isDealDone : false },
-      { isRecruitDone : false}
+      { dealDate : {[Op.lt] : recruitDeadline}}
     ]
     },
     order : [['createdAt', 'DESC']],
@@ -36,13 +39,16 @@ router.get('/all', async (req, res, next) => {
   const waitingDeals = await Deal.findAll( {
     where : { [Op.and] : [
       { isDealDone : false },
-      { isRecruitDone : true}
+      { dealDate : {[Op.gt] : recruitDeadline}}
     ]
     },
     order : [['createdAt', 'DESC']],
   });
-  const doneDeals = await Deal.findAll( {
-    where : { isDealDone : true },
+  const doneDeals = await Deal.findAll( { 
+    where : { [Op.and] : [
+      { isDealDone : true },
+    ]
+  },
     order : [['createdAt', 'DESC']],
   });
   const result = {recruiting : recruitingDeals, waiting : waitingDeals, done : doneDeals};
