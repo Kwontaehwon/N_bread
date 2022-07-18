@@ -212,7 +212,7 @@ router.post('/:dealId/join/:userId', isLoggedIn, async (req, res, next) => {
     return jsonResponse(res, 200, `거래 참여가 완료되었습니다.`, true, {deal : deal, group : group});
   }catch (error) {
     logger.error(error);
-    return jsonResponse(res, 500, `서버 에러`, false, null)
+    return jsonResponse(res, 500, `서버 에러`, false, null) 
   }
 });
 

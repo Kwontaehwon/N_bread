@@ -91,7 +91,7 @@ router.delete('/:commentId', isLoggedIn, async (req, res) => {
 router.delete('/reply/:replyId', isLoggedIn, async (req, res) => {
     const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId), isDeleted: { [Op.eq]: null } } });
     if (reply === null) {
-        jsonResponse(res, 404, "already deleted reply", false);
+        jsonResponse(res, 404, "already deleted reply", false);0
         res.end();
     }
     else {
@@ -161,14 +161,29 @@ router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
     }
 })  
 router.get('/:dealId',async(req,res)=>{
+
+    const suggest=await Deal.findOne({where:{id:req.params.dealId},attributes:['id','userId']});
+    const group=await Group.findAll({where:{dealId:req.params.dealId},attributes:['dealId','userId']});
+
+
     const comments=await Comment.findAll({
         where:{dealId:req.params.dealId},
-        include:[{
-            model: Reply
-        } 
-        ]
+        include: [{
+            model: User,
+            attributes: ['id','nick'],
+        },
+        {
+            model: Reply,
+            include: [{
+                model: User,
+                attributes: ['nick'],
+            }]
+        }],
+    
+
     })
-    jsonResponse(res,200,"get comments",true,comments);
+    const result={"suggest":suggest,"group":group,"comments":comments};
+    jsonResponse(res,200,"get comments",true,result);
 
 })
 
