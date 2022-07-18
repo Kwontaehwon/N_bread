@@ -161,41 +161,9 @@ router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
     }
 })  
 router.get('/:dealId',async(req,res)=>{
- 
-
-    // let status, description;
-    // const group = await Group.findOne({ where: { userId: req.params.userId, dealId: req.params.dealId } });
-    // if (!group) {
-    //     description = "참여하지 않음";
-    //     status = 0;
-    // }
-    // else {
-    //     const deal = await group.getDeal();
-    //     // console.log("deal.userId : " + typeof deal.userId);
-    //     // console.log("req.params.userId : " + typeof req.params.userId);            
-    //     if (deal.userId == req.params.userId) { //deal.userId는 number 형이고 req.params.userId는 string형 이므로 == 를 사용해야함.
-    //         description = "제안자";
-    //         status = 2;
-    //     }
-    //     else {
-    //         description = "참여자";
-    //         status = 1;
-    //     }
-    // }
-    // const result = {
-    //     participation: status,
-    //     description: description,
-    //     userId: req.params.userId,
-    //     dealId: req.params.dealId,
-    // }
-
-
-
-
-
-
 
     const suggest=await Deal.findOne({where:{id:req.params.dealId},attributes:['id','userId']});
+    const group=await Group.findAll({where:{dealId:req.params.dealId},attributes:['dealId','userId']});
 
 
     const comments=await Comment.findAll({
@@ -203,33 +171,18 @@ router.get('/:dealId',async(req,res)=>{
         include: [{
             model: User,
             attributes: ['id','nick'],
-            include:[{
-                model:Group,
-                attributes:['userId','dealId'],
-                //where:{'dealId':req.params.dealId}
-            }, 
-            ]
         },
         {
             model: Reply,
             include: [{
                 model: User,
                 attributes: ['nick'],
-                include: [{
-                    model: Group,
-                    attributes: ['userId', 'dealId'],
-                    //where: { 'dealId': req.params.dealId }
-                }, 
-                ]
-            },
-
-        ]
-
+            }]
         }],
     
 
     })
-    const result={"suggest":suggest,"comments":comments}
+    const result={"suggest":suggest,"group":group,"comments":comments};
     jsonResponse(res,200,"get comments",true,result);
 
 })
