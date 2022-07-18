@@ -7,7 +7,7 @@
     "dialect": "mysql",
     "timezone": "+09:00"
   },
-  "test": {
+  "test": {   
     "username": "root",
     "password": null,
     "database": "database_test",
