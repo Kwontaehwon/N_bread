@@ -65,7 +65,7 @@ router.post('/reply/:dealId', isLoggedIn, async (req, res) => {
 
 router.delete('/:commentId', isLoggedIn, async (req, res) => {
     
-    const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), isDeleted: { [Op.eq]: null } } });
+    const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
     if(comment===null){
         jsonResponse(res, 404, "already deleted comment", false);
         res.end();
@@ -73,9 +73,7 @@ router.delete('/:commentId', isLoggedIn, async (req, res) => {
     else{
         if (comment.userId === req.user.id) {
             try {
-                await comment.update({
-                    isDeleted: 1
-                })
+                await comment.destroy();
                 jsonResponse(res, 200, "delete complete!", false);
             } catch (err) {
                 jsonResponse(res, 404, "something wrong", false);
@@ -89,7 +87,7 @@ router.delete('/:commentId', isLoggedIn, async (req, res) => {
 })
 
 router.delete('/reply/:replyId', isLoggedIn, async (req, res) => {
-    const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId), isDeleted: { [Op.eq]: null } } });
+    const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId), deletedAt: { [Op.eq]: null } } });
     if (reply === null) {
         jsonResponse(res, 404, "already deleted reply", false);0
         res.end();
@@ -97,9 +95,7 @@ router.delete('/reply/:replyId', isLoggedIn, async (req, res) => {
     else {
         if (reply.userId === req.user.id) {
             try {
-                await reply.update({
-                    isDeleted: 1
-                })
+                await reply.destroy();
                 jsonResponse(res, 200, "delete complete!", true);
             } catch (err) {
                 jsonResponse(res, 404, "something wrong", false);
@@ -114,7 +110,7 @@ router.delete('/reply/:replyId', isLoggedIn, async (req, res) => {
 
 router.put('/:commentId', isLoggedIn, async (req, res) => {
 
-    const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), isDeleted: { [Op.eq]: null } } });
+    const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
     if (comment === null) {
         jsonResponse(res, 404, "comment not exist", false);
         res.end();
@@ -138,7 +134,7 @@ router.put('/:commentId', isLoggedIn, async (req, res) => {
 })
 
 router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
-    const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId), isDeleted: { [Op.eq]: null } } });
+    const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId)} });
     if (reply === null) {
         jsonResponse(res, 404, "deleted reply", false);
         res.end();
@@ -168,12 +164,14 @@ router.get('/:dealId',async(req,res)=>{
 
     const comments=await Comment.findAll({
         where:{dealId:req.params.dealId},
+        paranoid: false,
         include: [{
             model: User,
             attributes: ['id','nick'],
         },
         {
             model: Reply,
+            paranoid: false,
             include: [{
                 model: User,
                 attributes: ['nick'],

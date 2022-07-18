@@ -7,10 +7,6 @@ module.exports = class Reply extends Sequelize.Model {
                 type: Sequelize.STRING(100),
                 allowNull: false,
             },
-            isDeleted: {
-                type: Sequelize.INTEGER,
-                allowNull: true,
-            }
         }, {
             sequelize,
             timestamps: true,

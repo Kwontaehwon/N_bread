@@ -7,10 +7,6 @@ module.exports = class Comment extends Sequelize.Model {
                 type: Sequelize.STRING(1000), 
                 allowNull: false,
             },
-            isDeleted: {
-                type: Sequelize.INTEGER,
-                allowNull: true,
-            } 
         }, {
             sequelize,
             timestamps: true, 

@@ -7,9 +7,10 @@ const passport = require('passport');
 
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
-const { User, Group, Deal } = require('../models');
+const { User, Group, Deal,Comment,Reply } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../config/winston');
+const { findAll } = require('../models/user');
 
 const router = express.Router();
 
@@ -154,7 +155,13 @@ router.delete('/:dealId', isLoggedIn, async (req, res, next) => {
     if(groups.length > 1){
       return jsonResponse(res, 400, '참여자가 있으므로 거래를 삭제할 수 없습니다.', false, null);
     }
-    deal.destroy();
+    deal.destroy({truncate: true});
+    const comment=Comment.findAll({where:{dealId:req.params.dealId}});
+    console.log(comment);
+    //comment.update({isDeleted:1});
+    const reply = Reply.findAll({ where: { dealId: req.params.dealId}});
+    console.log(reply);
+    //reply.update({isDeleted:1});
     return jsonResponse(res, 200, '정상적으로 거래를 삭제하였습니다.', true, null);
   }
   catch (error){
