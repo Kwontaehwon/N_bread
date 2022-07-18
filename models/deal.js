@@ -28,11 +28,6 @@ module.exports = class Deal extends Sequelize.Model {
         allowNull: false,
         defaultValue : false,
       },
-      isRecruitDone : {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue : false,
-      },
       totalMember : { // member가 아니라 amount가 적절한 말. + 추가적으로 currentMemeber를 따로 저장할것인가?
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -48,7 +43,7 @@ module.exports = class Deal extends Sequelize.Model {
       underscored: false,
       modelName: 'Deal',
       tableName: 'deals',
-      paranoid: false,
+      paranoid: true,
       charset: 'utf8mb4', //mb4 적용해야지 이모티콘 사용 가능
       collate: 'utf8mb4_general_ci',
     });
