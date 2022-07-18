@@ -5,13 +5,8 @@
     "database": "nBread",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "timezone": "+09:00",
-    "dialectOptions": {
-      "useUTC" : false,
-      "charset" : "utf8mb4",
-      "dateStrings" : true,
-      "typeCast": true }
-  },
+    "timezone": "+09:00"
+},
   "test": {
     "username": "root",
     "password": null,
