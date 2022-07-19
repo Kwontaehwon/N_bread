@@ -12,7 +12,7 @@ module.exports = () => {
       passReqToCallback: true,
     }, async (req, accessToken, refreshToken, idToken, profile, cb) => {
       try {
-        console.log(idToken);
+        console.log("apple test");
         console.log(jwt.decode(idToken));
         cb(null,idToken);
       } catch (error) {
