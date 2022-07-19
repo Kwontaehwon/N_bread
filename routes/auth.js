@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
+const logger = require('../config/winston');
 
 
 const router = express.Router();
@@ -89,21 +90,17 @@ router.get('/naver/callback', passport.authenticate('naver', {
 }
 
 router.get('/apple', passport.authenticate('apple'));
-router.post('/apple/callback',function(req, res, next) {
-  passport.authenticate('apple', function(err, user, info) {
-       if (err) {
-           if (err == "AuthorizationError") {
-            return jsonResponse(res, 401, "Apple login Authorization Error", false, req.user);
-           } else if (err == "TokenError") {
-            return jsonResponse(res, 400, "Apple login Token Error", false, req.user);
-           }
-       } else {
-            console.log(user);
-           res.json(user);
-       }
-   }), (req, res) => {
-    return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
-   };
+router.post('/oauth', async (req, res, next) => {
+  try {
+  passport.authenticate('apple', async (err, profile) => {
+	const userInfo = jwt.decode(profile);
+  logger.info(userInfo);
+	return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
+})
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({ msg: 'fail' });
+  }
 });
 
 

@@ -12,10 +12,10 @@ module.exports = () => {
       passReqToCallback: true,
     }, async (req, accessToken, refreshToken, idToken, profile, cb) => {
       try {
-        console.log("apple test");
-        console.log(jwt.decode(idToken));
-        cb(null,idToken);
-      } catch (error) {
+        // console.log("apple test");
+        // console.log(jwt.decode(idToken));
+        process.nextTick(() => cb(null, decodedIdToken));
+        } catch (error) {
         console.error(error);
         done(error);
       }
