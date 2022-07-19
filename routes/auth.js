@@ -90,7 +90,7 @@ router.get('/naver/callback', passport.authenticate('naver', {
 
 router.get('/apple', passport.authenticate('apple'));
 
-router.post('/oauth', async (req, res, next) => {
+router.post('/auth/apple/callback', async (req, res, next) => {
   try {
   passport.authenticate('apple', async (err, profile) => {
 	const userInfo = jwt.decode(profile);
