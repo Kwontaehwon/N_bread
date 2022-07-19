@@ -4,14 +4,18 @@ module.exports = class Deal extends Sequelize.Model {
   static init(sequelize) {
     return super.init({
       title : {
-        type: Sequelize.STRING(100),
+        type: Sequelize.STRING(),
         allowNull: false,
       },
       content : {
-        type: Sequelize.STRING(100),
+        type: Sequelize.STRING(),
         allowNull: false,
       },
-      price : {
+      totalPrice : {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      personalPrice : {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
@@ -20,7 +24,7 @@ module.exports = class Deal extends Sequelize.Model {
         allowNull: false,
       },
       dealPlace : { // dealSpot? 장소 테이블을 하나더 만들어야하나.
-        type: Sequelize.STRING(100),
+        type: Sequelize.STRING(),
         allowNull: false,
       },
       isDealDone : {
