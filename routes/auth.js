@@ -89,12 +89,22 @@ router.get('/naver/callback', passport.authenticate('naver', {
 }
 
 router.get('/apple', passport.authenticate('apple'));
-router.get('/apple/callback', passport.authenticate('apple', {
-  failureRedirect: '/auth/error',
-  successRedirect: '/',
-})), (req, res) => {
-  return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
-}
+router.post('/apple/callback',function(req, res, next) {
+  passport.authenticate('apple', function(err, user, info) {
+       if (err) {
+           if (err == "AuthorizationError") {
+            return jsonResponse(res, 401, "Apple login Authorization Error", false, req.user);
+           } else if (err == "TokenError") {
+            return jsonResponse(res, 400, "Apple login Token Error", false, req.user);
+           }
+       } else {
+            console.log(user);
+           res.json(user);
+       }
+   }), (req, res) => {
+    return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
+   };
+});
 
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨

@@ -7,7 +7,7 @@ module.exports = () => {
       clientID: process.env.APPLE_CLIENT_ID,
       teamID: process.env.APPLE_TEAM_ID,
       keyID: process.env.APPLE_KEY_ID,
-      callbackURL: '/auth/apple/callback',
+      callbackURL: 'https://chocobread.shop/auth/apple/callback',
       privateKeyString:process.env.APPLE_PRIVATE_KEY,
       passReqToCallback: true,
     }, async (req, accessToken, refreshToken, idToken, profile, cb) => {
