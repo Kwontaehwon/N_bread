@@ -7,8 +7,8 @@ const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
 const https = require('https');
-const http = require('http');
 const fs = require('fs');
+const bodyParser = require('body-parser');
 const { swaggerUi, specs } = require('./swagger');
 
 dotenv.config();
@@ -56,6 +56,8 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
