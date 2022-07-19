@@ -6,6 +6,9 @@ const morgan = require('morgan');
 const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
 const { swaggerUi, specs } = require('./swagger');
 
 dotenv.config();
@@ -23,7 +26,7 @@ const logger = require('./config/winston');
 const app = express();
 
 passportConfig();
-app.set('port', process.env.PORT || 5005);
+app.set('port', process.env.PORT || 8080);
 app.set('view engine', 'html');
 nunjucks.configure('views', {
   express: app,
@@ -74,7 +77,25 @@ app.use((err, req, res, next) => {
   res.render('error');
 });
 
+/*
 app.listen(app.get('port'),'0.0.0.0', () => {
   logger.info("서버 시작");
   console.log(app.get('port'), '번 포트에서 대기중');
+});
+*/
+
+const options = {
+    ca: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/cert.pem'),
+ };
+
+/*
+http.createServer(app).listen(app.get('port'), '0.0.0.0', ()=> {
+  logger.info("http server");
+});
+*/
+
+https.createServer(options, app).listen(8080, () => {
+  logger.info("HTTPS 서버 시작");
 });
