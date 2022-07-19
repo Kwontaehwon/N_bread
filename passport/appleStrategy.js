@@ -14,6 +14,7 @@ module.exports = () => {
       try {
         console.log(idToken);
         console.log(jwt.decode(idToken));
+        cb(null,idToken);
       } catch (error) {
         console.error(error);
         done(error);

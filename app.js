@@ -77,13 +77,12 @@ app.use((err, req, res, next) => {
   res.render('error');
 });
 
-const options = {
-  ca: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem'),
-  key: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/cert.pem'),
-};
-
 if(process.env.NODE_ENV == 'production'){
+  const options = {
+    ca: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/cert.pem'),
+  };  
   https.createServer(options, app).listen(app.get('port'), () => {
     logger.info(`HTTPS:${app.get('port')} 서버 시작`);
   });
