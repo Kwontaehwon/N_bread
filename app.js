@@ -77,25 +77,20 @@ app.use((err, req, res, next) => {
   res.render('error');
 });
 
-/*
-app.listen(app.get('port'),'0.0.0.0', () => {
-  logger.info("서버 시작");
-  console.log(app.get('port'), '번 포트에서 대기중');
-});
-*/
-
 const options = {
-    ca: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/cert.pem'),
- };
+  ca: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/cert.pem'),
+};
 
-/*
-http.createServer(app).listen(app.get('port'), '0.0.0.0', ()=> {
-  logger.info("http server");
-});
-*/
+if(process.env.NODE_ENV == 'production'){
+  https.createServer(options, app).listen(app.get('port'), () => {
+    logger.info(`HTTPS:${app.get('port')} 서버 시작`);
+  });
+}
+else{
+  app.listen(app.get('port'),'0.0.0.0', () => {
+    logger.info(`development HTTP:${app.get('port')} 서버 시작`);
+  });
+}
 
-https.createServer(options, app).listen(8080, () => {
-  logger.info("HTTPS 서버 시작");
-});

@@ -3,6 +3,7 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User } = require('../models');
+const jwt = require('jsonwebtoken');
 
 
 const router = express.Router();
@@ -86,6 +87,15 @@ router.get('/naver/callback', passport.authenticate('naver', {
 })), (req, res) => {
   return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
 }
+
+router.get('/apple', passport.authenticate('apple'));
+router.get('/apple/callback', passport.authenticate('apple', {
+  failureRedirect: '/auth/error',
+  successRedirect: '/',
+})), (req, res) => {
+  return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
+}
+
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
   return jsonResponse(res, 404, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
