@@ -37,9 +37,9 @@ router.post('/:dealId', isLoggedIn, async (req, res) => {
             dealId : req.params.dealId
         })
         console.log(req.params.dealId);
-        jsonResponse(res,200,"success!",true);
+        jsonResponse(res,200,"댓글 작성에 성공하였습니다.",true);
     } catch(err){
-        jsonResponse(res, 404, "something wrong", false);
+        jsonResponse(res, 404, "댓글 삭제에 실패하였습니다.", false);
         console.log(err);
     }
 
@@ -55,9 +55,9 @@ router.post('/reply/:dealId', isLoggedIn, async (req, res) => {
             parentId:req.body.parentId,
         })
         console.log(req.params.dealId); 
-        jsonResponse(res, 200, "create reply!", true);
+        jsonResponse(res, 200, "답글 작성에 성공하였습니다.", true);
     } catch (err) {
-        jsonResponse(res, 404, "something wrong", false);
+        jsonResponse(res, 404, "댓글 작성에 실패하였습니다.", false);
         console.log(err);
     }
 
@@ -67,21 +67,21 @@ router.delete('/:commentId', isLoggedIn, async (req, res) => {
     
     const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
     if(comment===null){
-        jsonResponse(res, 404, "already deleted comment", false);
+        jsonResponse(res, 404, "이미 삭제된 댓글입니다.", false);
         res.end();
     }
     else{
         if (comment.userId === req.user.id) {
             try {
                 await comment.destroy();
-                jsonResponse(res, 200, "delete complete!", false);
+                jsonResponse(res, 200, "삭제가 완료되었습니다.", false);
             } catch (err) {
-                jsonResponse(res, 404, "something wrong", false);
+                jsonResponse(res, 404, err, false);
                 console.log(err);
             }
         }
         else {
-            jsonResponse(res, 404, "only writer can delete comments", false, {})
+            jsonResponse(res, 404, "댓글의 작성자만 댓글을 삭제할 수 있습니다.", false, {})
         }
     }
 })
@@ -89,21 +89,21 @@ router.delete('/:commentId', isLoggedIn, async (req, res) => {
 router.delete('/reply/:replyId', isLoggedIn, async (req, res) => {
     const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId), deletedAt: { [Op.eq]: null } } });
     if (reply === null) {
-        jsonResponse(res, 404, "already deleted reply", false);0
+        jsonResponse(res, 404, "이미 삭제된 답글입니다.", false);0
         res.end();
     }
     else {
         if (reply.userId === req.user.id) {
             try {
                 await reply.destroy();
-                jsonResponse(res, 200, "delete complete!", true);
+                jsonResponse(res, 200, "삭제에 성공하였습니다.", true);
             } catch (err) {
-                jsonResponse(res, 404, "something wrong", false);
+                jsonResponse(res, 404, err, false);
                 console.log(err);
             }
         }
         else {
-            jsonResponse(res, 404, "only writer can delete reply", false, {})
+            jsonResponse(res, 403, "답글의 생성자만 답글을 삭제할 수 있습니다.", false, {})
         }
     }
 })
@@ -112,7 +112,7 @@ router.put('/:commentId', isLoggedIn, async (req, res) => {
 
     const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
     if (comment === null) {
-        jsonResponse(res, 404, "comment not exist", false);
+        jsonResponse(res, 403, "댓글이 존재하지 않습니다.", false);
         res.end();
     }
     else {
@@ -121,14 +121,14 @@ router.put('/:commentId', isLoggedIn, async (req, res) => {
                 await comment.update({
                     content:req.body.content
                 })
-                jsonResponse(res, 200, "edit complete!", {});
+                jsonResponse(res, 200, "댓글 수정에 성공하였습니다.", {});
             } catch (err) {
-                jsonResponse(res, 404, "something wrong", {});
+                jsonResponse(res, 404, "", {});
                 console.log(err);
             }
         }
         else {
-            jsonResponse(res, 404, "only writer can edit comments", false, {})
+            jsonResponse(res, 403, "댓글 작성자만 댓글을 수정할 수 있습니다.", false, {})
         }
     }
 })
@@ -136,7 +136,7 @@ router.put('/:commentId', isLoggedIn, async (req, res) => {
 router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
     const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId)} });
     if (reply === null) {
-        jsonResponse(res, 404, "deleted reply", false);
+        jsonResponse(res, 404, "답글이 존재하지 않습니다.", false);
         res.end();
     }
     else {
@@ -145,14 +145,14 @@ router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
                 await reply.update({
                     content: req.body.content
                 })
-                jsonResponse(res, 200, "edit complete!", {});
+                jsonResponse(res, 200, "답글 수정이 완료되었습니다.", {});
             } catch (err) {
-                jsonResponse(res, 404, "something wrong", {});
+                //jsonResponse(res, 404, "something wrong", {});
                 console.log(err);
             }
         }
         else {
-            jsonResponse(res, 404, "only writer can edit reply", false, {})
+            jsonResponse(res, 403, "작성자만 답글을 수정할 수 있습니다.", false, {})
         }
     }
 })  
@@ -177,8 +177,6 @@ router.get('/:dealId',async(req,res)=>{
                 attributes: ['nick'],
             }]
         }],
-    
-
     })
     const result={"suggest":suggest,"group":group,"comments":comments};
     jsonResponse(res,200,"get comments",true,result);
