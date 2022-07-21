@@ -172,10 +172,10 @@ router.get('/:dealId',async(req,res)=>{
         {
             model: Reply,
             paranoid: false,
-            include: [{
+            include: {
                 model: User,
                 attributes: ['nick'],
-            }]
+            }
         }],
     })
     const result={"suggest":suggest,"group":group,"comments":comments};

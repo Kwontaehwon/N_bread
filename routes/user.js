@@ -106,6 +106,8 @@ router.get('/:userId', async (req, res, next) => {
             createdAt : user.createdAt,
             nick : user.nick,
             provider : user.provider,
+            addr : user.curLocation3,
+
         }
         return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result)
     } catch (error){
@@ -207,11 +209,5 @@ router.get('/:userId/deals', async (req, res, next) => {
       return jsonResponse(res, 500, "서버 에러", false, null)
     }
   });
-
-
-
-
-
-
 
 module.exports = router;

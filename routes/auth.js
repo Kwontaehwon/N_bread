@@ -89,19 +89,19 @@ router.get('/naver/callback', passport.authenticate('naver', {
   return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
 }
 
-router.get('/apple', passport.authenticate('apple'));
-router.post('/apple/callback', async (req, res, next) => {
-  try {
-  passport.authenticate('apple', async (err, profile) => {
-	const userInfo = jwt.decode(profile);
-  logger.info(userInfo);
-	return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
-})
-  } catch (err) {
-    console.log(err);
-    return res.status(400).json({ msg: 'fail' });
-  }
-});
+// router.get('/apple', passport.authenticate('apple'));
+// router.post('/apple/callback', async (req, res, next) => {
+//   try {
+//   passport.authenticate('apple', async (err, profile) => {
+// 	const userInfo = jwt.decode(profile);
+//   logger.info(userInfo);
+// 	return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
+// })
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(400).json({ msg: 'fail' });
+//   }
+// });
 
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨

@@ -22,6 +22,7 @@
     "express-session": "^1.17.1",
     "externalip": "^1.0.2",
     "jsonwebtoken": "^8.5.1",
+    "loader": "^2.1.1",
     "morgan": "^1.10.0",
     "mysql2": "^2.1.0",
     "net": "^1.0.2",

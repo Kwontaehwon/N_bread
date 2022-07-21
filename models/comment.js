@@ -4,7 +4,7 @@ module.exports = class Comment extends Sequelize.Model {
     static init(sequelize) {
         return super.init({
             content: { //snsType 
-                type: Sequelize.STRING(1000), 
+                type: Sequelize.STRING(), 
                 allowNull: false,
             },
         }, {

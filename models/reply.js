@@ -4,7 +4,7 @@ module.exports = class Reply extends Sequelize.Model {
     static init(sequelize) {
         return super.init({
             content: { //snsType 
-                type: Sequelize.STRING(100),
+                type: Sequelize.STRING(),
                 allowNull: false,
             },
         }, {
