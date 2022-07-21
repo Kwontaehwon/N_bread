@@ -60,7 +60,7 @@ router.get('/all', async (req, res, next) => {
 
 // 거래 생성하기
 router.post('/create', isLoggedIn, async (req, res, next) => {
-  const { title, content, price, totalMember, dealDate, dealPlace, 
+  const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
   currentMember} = req.body; // currentMember 수정 필요.
   try {
     const user = await User.findOne({where: { Id: req.user.id }});
@@ -75,7 +75,8 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
     const deal = await Deal.create({
       title : title,
       content : content,
-      price : price,
+      totalPrice : totalPrice,
+      personalPrice : personalPrice,
       totalMember : totalMember,
       dealDate : new Date(dealDate), // 날짜 변환
       dealPlace : dealPlace,
@@ -119,7 +120,7 @@ router.get('/:dealId', async (req, res, next) => {
 
 // 거래 수정하기
 router.put('/:dealId', isLoggedIn, async(req, res, next) => {
-  const { title, content, price, totalMember, dealDate, dealPlace, 
+  const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
     currentMember} = req.body;
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
@@ -139,7 +140,8 @@ router.put('/:dealId', isLoggedIn, async(req, res, next) => {
     await deal.update({
         title : title,
         content : content,
-        price : price,
+        totalPrice : totalPrice,
+        personalPrice : personalPrice,
         totalMember : totalMember,
         dealDate : new Date(dealDate), // 날짜 변환
         dealPlace : dealPlace,
