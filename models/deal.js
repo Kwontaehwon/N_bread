@@ -56,6 +56,6 @@ module.exports = class Deal extends Sequelize.Model {
   static associate(db) {
     db.Deal.belongsTo(db.User, {foreignKey : 'userId', targetKey : 'id' });
     db.Deal.hasMany(db.Group, {foreignKey : 'dealId', sourceKey : 'id' }); // Deal 테이블에 dealId 속성이 있는데 어떻게 업데이트 하지?
-    db.Deal.hasMany(db.Comment,{foreignKey:'dealId',sourceKey:'id'});
+    db.Deal.hasMany(db.Comment, { foreignKey: { name: 'dealId', sourceKey: 'id' }, onDelete: 'CASCADE'});
   }
 };
