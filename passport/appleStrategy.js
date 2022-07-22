@@ -17,19 +17,42 @@ module.exports = () => {
           callbackURL: "https://chocobread.shop/auth/apple/callback",
           scope: ['name', 'email']
         },
-        (accessToken, refreshToken, profile, done) => {
-            const {
+        async (accessToken, refreshToken, profile, done) => {
+          try{
+              const {
                 id,
                 email
             } = profile;
-
+            
             // Create or update the local user here.
             // Note: name and email are only submitted on the first login!
-
-            done(null, {
-                id,
-                email,
+            const exUser = await User.findOne({
+              where: { snsId: id, provider: 'apple' }, 
             });
+            const exEmail = await User.findOne({
+              where: { email: email },
+            })
+
+            if (exUser) {
+              done(null, exUser);
+            }
+            else if(exEmail) {
+              console.log("다른 소셜로 이미 가입된 아이디입니다.");
+              done(null, false, {message : '이미 가입된 이메일 입니다.'});
+            }
+            else {
+              const newUser = await User.create({
+                email: email,
+                snsId: id,
+                provider: 'apple',
+              });
+              done(null, newUser);
+            }
+          }
+          catch{
+            console.error(error);
+            done(error);
+          }
         }
     )
 );
