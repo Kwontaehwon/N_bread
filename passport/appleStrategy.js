@@ -20,7 +20,6 @@ module.exports = () => {
         (accessToken, refreshToken, profile, done) => {
             const {
                 id,
-                name: { firstName, lastName },
                 email
             } = profile;
 
@@ -30,7 +29,6 @@ module.exports = () => {
             done(null, {
                 id,
                 email,
-                name: { firstName, lastName }
             });
         }
     )
