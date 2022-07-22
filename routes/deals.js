@@ -5,6 +5,9 @@ const url = require('url');
 const axios = require('axios');
 const passport = require('passport');
 const schedule = require('node-schedule');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const AWS = require('aws-sdk');
 
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
@@ -303,5 +306,29 @@ router.post('/:dealId/endDeal', isLoggedIn, async(req, res, next) => {
     return jsonResponse(res, 500, "서버 에러", false, null)
   }
 })
+
+AWS.config.update({
+  region : 'ap-northeast-2',
+  accessKeyId : process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey : process.env.S3_SECRET_ACCESS_KEY
+});
+
+const s3 = new AWS.S3();
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket : 'nbreadimg',
+    key : (req, file, cb) => {
+      cb(null, `original/${Date.now()}_${file.originalname}`)
+    }
+  }),
+  limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
+})
+
+router.post('/img', isLoggedIn, upload.single('img'),  (req,res)=>{
+  logger.info(req.file);
+  return jsonResponse(res, 200, `${req.file.location} 반환`, true, `${req.file.location}` );
+} )
 
 module.exports = router;
