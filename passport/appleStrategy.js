@@ -44,6 +44,7 @@ module.exports = () => {
               const newUser = await User.create({
                 email: email,
                 snsId: id,
+                nick : "tempNickName-Apple",
                 provider: 'apple',
               });
               done(null, newUser);
