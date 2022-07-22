@@ -320,7 +320,7 @@ const upload = multer({
     s3: s3,
     bucket : 'nbreadimg',
     key : (req, file, cb) => {
-      cb(null, `${Date.now()}_${file.originalname}`)
+      cb(null, `original/${Date.now()}_${file.originalname}`)
     }
   }),
   limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
