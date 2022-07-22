@@ -35,5 +35,6 @@ User.associate(db);
 Group.associate(db);
 Comment.associate(db);
 Reply.associate(db);
+DealImage.associate(db);
 
 module.exports = db;
