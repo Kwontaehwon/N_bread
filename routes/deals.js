@@ -8,7 +8,7 @@ const schedule = require('node-schedule');
 
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
-const { User, Group, Deal,Comment,Reply, sequelize } = require('../models');
+const { User, Group, Deal,Comment,Reply, sequelize,DealImage } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../config/winston');
 
@@ -107,7 +107,7 @@ router.get('/all/:region', async (req, res, next) => {
 
 // 거래 생성하기
 router.post('/create', isLoggedIn, async (req, res, next) => {
-  const { title, content, totalPrice, personalPrice, totalMember, dealDate, place,image,link,region} = req.body; // currentMember 수정 필요.
+  const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, image, link, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
   try {
     const user = await User.findOne({where: { Id: req.user.id }});
     if(!user){
@@ -132,6 +132,26 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
       userId : user.id,
       region:region
     })
+    console.log("image link is added");
+    console.log("deal id is "+deal.id);
+    if(imageLink1!==""){
+      const dealImage1 = await DealImage.create({
+        dealImage: imageLink1,
+        dealId: deal.id,
+      })
+    }
+    if (imageLink2 !== "") {
+      const dealImage2 = await DealImage.create({
+        dealImage: imageLink2,
+        dealId: deal.id,
+      })
+    }
+    if (imageLink3 !== "") {
+      const dealImage3 = await DealImage.create({
+        dealImage: imageLink3,
+        dealId: deal.id,
+      })
+    }
     await group.update({ dealId : deal.id }); // 업데이트
     logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
     const dealEnd = new Date(deal.dealDate);
