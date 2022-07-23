@@ -86,8 +86,10 @@ router.get('/naver', passport.authenticate('naver'));
 
 router.get('/naver/callback', passport.authenticate('naver', {
   failureRedirect: '/auth/error',
-  successRedirect: '/',
+  successRedirect: '/auth/success'
 })), (req, res) => {
+  // console.log(req.query.code);
+  // console.log(req.query.state);
   logger.info(`User Id ${req.user.id} 님이 네이버 로그인에 성공하였습니다.`);
   return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
 }
@@ -98,11 +100,15 @@ router.post(
   express.urlencoded({ extended: false }),
   passport.authenticate('apple'),
   (req, res) => {
-      logger.info(`User Id ${req.user.id} 님이 카카오 로그인에 성공하였습니다.`);
+      logger.info(`User Id ${req.user.id} 님이 애플 로그인에 성공하였습니다.`);
       return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
   }
 );
 
+router.get('/success', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+  logger.info(`User ID : ${req.user.id} 네이버 로그인 성공.`);
+  return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
+})
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
   logger.error("auth/error 로그인 문제");
