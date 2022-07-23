@@ -102,12 +102,7 @@ router.get('/:userId', async (req, res, next) => {
         if(!user){
             return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null)
         }
-        const result = {
-            createdAt : user.createdAt,
-            nick : user.nick,
-            provider : user.provider,
-        }
-        return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result)
+        return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, user);
     } catch (error){
         console.log(error);
         return jsonResponse(res, 500, "서버 에러", false, result)
