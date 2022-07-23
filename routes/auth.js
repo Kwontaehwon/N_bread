@@ -46,14 +46,15 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
 });
 
 router.post('/login', isNotLoggedIn, (req, res, next) => {
-  passport.authenticate('local', (authError, user, info) => {
+  passport.authenticate('local', {session : false}, (authError, user, info) => {
     console.log("USER : " + user);
     if (authError) {
       console.error(authError);
       return next(authError);
     }
     if (!user) {
-      return res.redirect(`/?loginError=${info.message}`);
+      logger.error(`로컬 로그인 실패 : ${info.message}`);
+      return jsonResponse(res, 400, `로컬 로그인 실패 ${info.message}`, info)
     }
     return req.login(user, (loginError) => {
       if (loginError) {
@@ -65,13 +66,13 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         nick : user.nick,
         provider : user.provider
       }
-      const token = jwt.sign(
+      const accessToken = jwt.sign(
         payload, process.env.JWT_SECRET, {
         algorithm : 'HS256',
-        expiresIn : '1m',
         issuer: 'chocoBread'
       });
-      return res.json(token);
+      res.cookie('accessToken', accessToken);
+      return res.json("로그인 성공!");
       //return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
@@ -84,23 +85,32 @@ router.get('/logout',isLoggedIn, (req, res) => {
 
 });
 
-router.get('/kakao', passport.authenticate('kakao'));
+router.get('/kakao', passport.authenticate('kakao',  {session : false}));
 
 router.get('/kakao/callback', passport.authenticate('kakao', {
   failureRedirect: '/auth/error',
+  successRedirect: '/auth/success'
 }), (req, res) => {
-  logger.info(`User Id ${req.user.id} 님이 카카오 로그인에 성공하였습니다.`);
-  return jsonResponse(res, 200, "카카오 로그인에 성공하였습니다.", true, req.user);
+  
 });
 
-router.get('/naver', passport.authenticate('naver'));
+router.get('/naver', passport.authenticate('naver', {session : false}));
 
 router.get('/naver/callback', passport.authenticate('naver', {
   failureRedirect: '/auth/error',
   successRedirect: '/auth/success'
 })), (req, res) => {
-  // console.log(req.query.code);
-  // console.log(req.query.state);
+  const payload = {
+    id : req.user.id,
+    nick : req.user.nick,
+    provider : req.user.provider
+  }
+  const accessToken = jwt.sign(
+    payload, process.env.JWT_SECRET, {
+    algorithm : 'HS256',
+    issuer: 'chocoBread'
+  });
+  res.cookie('accessToken', accessToken);
   logger.info(`User Id ${req.user.id} 님이 네이버 로그인에 성공하였습니다.`);
   return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
 }
@@ -111,14 +121,38 @@ router.post(
   express.urlencoded({ extended: false }),
   passport.authenticate('apple'),
   (req, res) => {
-      logger.info(`User Id ${req.user.id} 님이 애플 로그인에 성공하였습니다.`);
-      return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
+    const payload = {
+      id : req.user.id,
+      nick : req.user.nick,
+      provider : req.user.provider
+    }
+    const accessToken = jwt.sign(
+      payload, process.env.JWT_SECRET, {
+      algorithm : 'HS256',
+      issuer: 'chocoBread'
+    });
+    res.cookie('accessToken', accessToken);
+    logger.info(`User Id ${req.user.id} 님이 ${req.user.provider} 로그인에 성공하였습니다.`);
+    logger.info(`jwt Token을 발행합니다.`);
+    return jsonResponse(res, 200, `${req.user.provider} 로그인에 성공하였습니다.`, true, req.user);
   }
 );
 
 router.get('/success', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
-  logger.info(`User ID : ${req.user.id} 네이버 로그인 성공.`);
-  return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
+  const payload = {
+    id : req.user.id,
+    nick : req.user.nick,
+    provider : req.user.provider
+  }
+  const accessToken = jwt.sign(
+    payload, process.env.JWT_SECRET, {
+    algorithm : 'HS256',
+    issuer: 'chocoBread'
+  });
+  res.cookie('accessToken', accessToken);
+  logger.info(`User Id ${req.user.id} 님이 ${req.user.provider} 로그인에 성공하였습니다.`);
+  logger.info(`jwt Token을 발행합니다.`);
+  return jsonResponse(res, 200, `${req.user.provider} 로그인에 성공하였습니다.`, true, req.user);
 })
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
