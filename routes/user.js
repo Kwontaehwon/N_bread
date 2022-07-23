@@ -159,7 +159,7 @@ router.delete('/:userId', async (req, res, next) => {
 });
 
 
-// 거래 찾기 /:userId/?isDealDone={}&isSuggester={}
+// 거래 찾기 /:userId/deals?isDealDone={}&isSuggester={}
 router.get('/:userId/deals', async (req, res, next) => {
     try {
       const user = User.findOne({where : {id : req.params.userId}});
