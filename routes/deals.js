@@ -66,10 +66,12 @@ router.post('/create', verifyToken, async (req, res, next) => {
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
   currentMember} = req.body; // currentMember 수정 필요.
   try {
-    const user = await User.findOne({where: { Id: req.user.id }});
+    // console.log(req.decoded);
+    // console.log(req.decoded.id);
+    const user = await User.findOne({where: { Id: req.decoded.id }});
     if(!user){
-      logger.info(`userId : ${req.user.id}에 매칭되는 유저가 없습니다.`);
-      return jsonResponse(res, 404, `userId : ${req.user.id}에 매칭되는 유저가 없습니다.`, false, null);
+      logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
+      return jsonResponse(res, 404, `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`, false, null);
     }
     const group = await Group.create({
       amount: 1,

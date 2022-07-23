@@ -66,13 +66,13 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         nick : user.nick,
         provider : user.provider
       }
-      const token = jwt.sign(
+      const accessToken = jwt.sign(
         payload, process.env.JWT_SECRET, {
         algorithm : 'HS256',
-        expiresIn : '1m',
         issuer: 'chocoBread'
       });
-      return res.json(token);
+      res.cookie('accessToken', accessToken);
+      return res.json("로그인 성공!");
       //return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
@@ -85,7 +85,7 @@ router.get('/logout',isLoggedIn, (req, res) => {
 
 });
 
-router.get('/kakao', passport.authenticate('kakao'));
+router.get('/kakao', passport.authenticate('kakao',  {session : false}));
 
 router.get('/kakao/callback', passport.authenticate('kakao', {
   failureRedirect: '/auth/error',
