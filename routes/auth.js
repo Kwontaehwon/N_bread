@@ -46,14 +46,15 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
 });
 
 router.post('/login', isNotLoggedIn, (req, res, next) => {
-  passport.authenticate('local', (authError, user, info) => {
+  passport.authenticate('local', {session : false}, (authError, user, info) => {
     console.log("USER : " + user);
     if (authError) {
       console.error(authError);
       return next(authError);
     }
     if (!user) {
-      return res.redirect(`/?loginError=${info.message}`);
+      logger.error(`로컬 로그인 실패 : ${info.message}`);
+      return jsonResponse(res, 400, `로컬 로그인 실패 ${info.message}`, info)
     }
     return req.login(user, (loginError) => {
       if (loginError) {

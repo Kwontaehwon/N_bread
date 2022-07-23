@@ -10,7 +10,7 @@ const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 
 
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
+const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { User, Group, Deal,Comment,Reply } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../config/winston');
@@ -62,7 +62,7 @@ router.get('/all', async (req, res, next) => {
 
 
 // 거래 생성하기
-router.post('/create', isLoggedIn, async (req, res, next) => {
+router.post('/create', verifyToken, async (req, res, next) => {
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
   currentMember} = req.body; // currentMember 수정 필요.
   try {

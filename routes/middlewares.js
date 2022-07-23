@@ -1,4 +1,5 @@
-const { json } = require("stream/consumers");
+const logger = require('../config/winston');
+const jwt = require('jsonwebtoken');
 
 function jsonResponse(res, code, message, isSuccess) {
   res.status(code).json({
@@ -24,3 +25,17 @@ exports.isNotLoggedIn = (req, res, next) => {
     jsonResponse(res,401,'로그인 한 상태입니다.',false)
   }
 };
+
+exports.verifyToken = (req, res, next) => {
+  try{
+    console.log(req.headers.authorization);
+    req.decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+    return next();
+  } catch (error){
+    logger.error(error);
+    if(error.name === `TokenExpiredError`) {
+      return jsonResponse(res, 419, `토큰이 만료됬습니다.`, false , null); 
+    }
+    return jsonResponse(res, 401, `유효하지 않은 토큰입니다.`, false, null);
+  }
+}
