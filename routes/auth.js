@@ -60,8 +60,19 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         console.error(loginError);
         return next(loginError);
       }
-
-      return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
+      const payload = {
+        id : user.id,
+        nick : user.nick,
+        provider : user.provider
+      }
+      const token = jwt.sign(
+        payload, process.env.JWT_SECRET, {
+        algorithm : 'HS256',
+        expiresIn : '1m',
+        issuer: 'chocoBread'
+      });
+      return res.json(token);
+      //return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
