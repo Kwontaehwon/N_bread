@@ -76,8 +76,9 @@ router.get('/logout',isLoggedIn, (req, res) => {
 router.get('/kakao', passport.authenticate('kakao'));
 
 router.get('/kakao/callback', passport.authenticate('kakao', {
-  failureRedirect: '/',
+  failureRedirect: '/auth/error',
 }), (req, res) => {
+  logger.info(`User Id ${req.user.id} 님이 카카오 로그인에 성공하였습니다.`);
   return jsonResponse(res, 200, "카카오 로그인에 성공하였습니다.", true, req.user);
 });
 
@@ -87,6 +88,7 @@ router.get('/naver/callback', passport.authenticate('naver', {
   failureRedirect: '/auth/error',
   successRedirect: '/',
 })), (req, res) => {
+  logger.info(`User Id ${req.user.id} 님이 네이버 로그인에 성공하였습니다.`);
   return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
 }
 
@@ -96,6 +98,7 @@ router.post(
   express.urlencoded({ extended: false }),
   passport.authenticate('apple'),
   (req, res) => {
+      logger.info(`User Id ${req.user.id} 님이 카카오 로그인에 성공하였습니다.`);
       return jsonResponse(res, 200, "애플 로그인에 성공하였습니다.", true, req.user);
   }
 );
