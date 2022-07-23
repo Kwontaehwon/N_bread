@@ -83,7 +83,15 @@ router.get('/all/:region', async (req, res, next) => {
   // }
   //console.log(eachDeal);
 
-  const allDeal = await Deal.findAll({ where: { isDealDone: { [Op.eq]: 0 }, region: { [Op.eq]: req.params.region }}});
+  const allDeal = await Deal.findAll({ 
+    where: { isDealDone: { [Op.eq]: 0 }, region: { [Op.eq]: req.params.region }},
+    include:[{
+    model: DealImage,
+    attributes: ['dealImage']
+    },
+    {model:User,attributes:['nick','curLocation3']},
+  ]
+  });
   console.log(allDeal.length);
   for(i=0;i<allDeal.length;i++){
     var toSetStatus=allDeal[i];
