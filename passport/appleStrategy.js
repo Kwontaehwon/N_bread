@@ -15,15 +15,15 @@ module.exports = () => {
           keyID: process.env.APPLE_KEY_ID,
           key : fs.readFileSync(path.join(__dirname, 'AuthKey_689F483NJ3.p8')),
           callbackURL: "https://chocobread.shop/auth/apple/callback",
-          scope: ['name', 'email']
+          scope: ['name', 'email'],
+          passReqToCallback : true
         },
-        async (accessToken, refreshToken, profile, done) => {
+        async (req, accessToken, refreshToken, profile, done) => {
           try{
               const {
                 id,
                 email
             } = profile;
-            
             // Create or update the local user here.
             // Note: name and email are only submitted on the first login!
             const exUser = await User.findOne({
@@ -34,6 +34,7 @@ module.exports = () => {
             })
 
             if (exUser) {
+              exUser.update({appleRefreshToken : refreshToken});
               done(null, exUser);
             }
             else if(exEmail) {
@@ -46,6 +47,7 @@ module.exports = () => {
                 snsId: id,
                 nick : "tempNickName-Apple",
                 provider: 'apple',
+                appleRefreshToken : refreshToken
               });
               done(null, newUser);
             }

@@ -35,6 +35,8 @@ exports.verifyToken = (req, res, next) => {
     logger.error(error);
     if(error.name === `TokenExpiredError`) {
       logger.info('토큰이 만료되었습니다.');
+      // const expiredToken = jwt.verify(req.headers.authorization, process.env.JWT_SECRET, {ignoreExpiration : true});
+      // console.log(expiredToken);
       return jsonResponse(res, 419, `토큰이 만료됬습니다.`, false , null); 
     }
     logger.info('유효하지 않은 토큰 입니다.');
