@@ -87,7 +87,7 @@ router.get('/all/:region', async (req, res, next) => {
     where: { isDealDone: { [Op.eq]: 0 }, region: { [Op.eq]: req.params.region }},
     include:[{
     model: DealImage,
-    attributes: ['dealImage']
+    attributes: ['dealImage','id']
     },
     {model:User,attributes:['nick','curLocation3']},
   ]
@@ -95,6 +95,7 @@ router.get('/all/:region', async (req, res, next) => {
   console.log(allDeal.length);
   for(i=0;i<allDeal.length;i++){
     var toSetStatus=allDeal[i];
+    allDeal[i].dealDate=allDeal[i].dealDate
     if(toSetStatus['dealDate']<Date.now()){
       toSetStatus['status']="거래완료";
     }
@@ -104,9 +105,9 @@ router.get('/all/:region', async (req, res, next) => {
     //console.log(typeof(toSetStatus));
     //toSetStatus.add({'Status':'tmp'});
   }
-  console.log(allDeal);
+  //console.log(allDeal);
   //reg=req.params.region;
-  var testres={"capsule":allDeal}
+  var testres={"capsule":allDeal} 
   // var yeoksamDeal = allDeal.findAll({ where: { region:{[Op.eq]:"yeoksam"}}})
   // var testres={"yeoksam":yeoksamDeal};
   return jsonResponse(res, 200, "전체 글 리스트", true, testres);
