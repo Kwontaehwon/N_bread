@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const logger = require('../config/winston');
 const axios = require('axios');
+const qs = require('qs');
 const { serveWithOptions } = require('swagger-ui-express');
 
 
@@ -204,7 +205,9 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
     'Content-Type': 'application/x-www-form-urlencoded',
   }
   
-  axios.post('https://appleid.apple.com/auth/revoke', data, {headers: headers})
+  const qsData = qs.stringify(data);
+  console.log(qsData);
+  axios.post('https://appleid.apple.com/auth/revoke', qsData, {headers: headers})
   .then((response) => jsonResponse(res, 200, "탈퇴완료", true, null))
   .catch((error) => {
     logger.error(error);
