@@ -208,11 +208,14 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const qsData = qs.stringify(data);
   console.log(qsData);
   axios.post('https://appleid.apple.com/auth/revoke', qsData, {headers: headers})
-  .then((response) => jsonResponse(res, 200, "탈퇴완료", true, null))
+  .then((response) => {
+    await user.destroy();
+    return jsonResponse(res, 200, "애플 탈퇴완료", true, null)
+  })
   .catch((error) => {
     logger.error(error);
     console.log(error);
-    jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
+    return jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
   })
 })
 
