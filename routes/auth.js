@@ -167,24 +167,32 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
 })
 
 router.get('/apple/signout', async (req, res, next) => {
+  const nowSec = await Math.round(new Date().getTime() / 1000);
+  const expirySec = 120000;
+  const expSec = await nowSec + expirySec;
   const payload = {
     aud : "https://appleid.apple.com",
     iss : "5659G44R65",
-    sub : "shop.chocobread"
+    iat: nowSec,
+    exp: expSec,
+    sub : "shop.chocobread.service"
   }
-  const header = {
-    alg : "RS256",
-    kid : "689F483NJ3",
-  }
+  const signOptions = jwt.SignOptions = {
+    algorithm: "ES256",
+    header: {
+        alg: "ES256",
+        kid: "689F483NJ3",
+        typ: "JWT"
+    }
+};
   const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8'
   const privKey = fs.readFileSync(path);
-  console.log(privKey);
-  const appleClientSecret = jwt.sign(
-    payload, privKey, {
-    expiresIn : "24h", header : header,
-  });
-  console.log(appleClientSecret);
+  const appleClientSecret = jwt.sign(payload, privKey, signOptions);
+  
+
   return res.json(appleClientSecret);
 })
+
+//https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
 
 module.exports = router;
