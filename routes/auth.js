@@ -127,6 +127,7 @@ router.post(
   express.urlencoded({ extended: false }),
   passport.authenticate('apple'),
   (req, res) => {
+    console.log(req.refresh);
     const payload = {
       id : req.user.id,
       nick : req.user.nick,
@@ -188,7 +189,7 @@ router.get('/apple/signout', async (req, res, next) => {
   const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8'
   const privKey = fs.readFileSync(path);
   const appleClientSecret = jwt.sign(payload, privKey, signOptions);
-  
+
 
   return res.json(appleClientSecret);
 })
