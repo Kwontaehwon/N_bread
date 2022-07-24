@@ -5,6 +5,7 @@ const path = require('path');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 const logger = require('../config/winston');
 
 
@@ -17,6 +18,10 @@ function jsonResponse(res, code, message, isSuccess, result){
     isSuccess : isSuccess,
     result : result
   })
+}
+
+function createClientSecret(){
+
 }
 
 
@@ -69,7 +74,8 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
       const accessToken = jwt.sign(
         payload, process.env.JWT_SECRET, {
         algorithm : 'HS256',
-        issuer: 'chocoBread'
+        issuer: 'chocoBread',
+        expiresIn : "1s"
       });
       res.cookie('accessToken', accessToken);
       return res.json("로그인 성공!");
@@ -158,6 +164,27 @@ router.get('/success', (req, res, next) => { // 다른 소셜간 이메일 중�
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
   logger.error("auth/error 로그인 문제");
   return jsonResponse(res, 404, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
+})
+
+router.get('/apple/signout', async (req, res, next) => {
+  const payload = {
+    aud : "https://appleid.apple.com",
+    iss : "5659G44R65",
+    sub : "shop.chocobread"
+  }
+  const header = {
+    alg : "RS256",
+    kid : "689F483NJ3",
+  }
+  const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8'
+  const privKey = fs.readFileSync(path);
+  console.log(privKey);
+  const appleClientSecret = jwt.sign(
+    payload, privKey, {
+    expiresIn : "24h", header : header,
+  });
+  console.log(appleClientSecret);
+  return res.json(appleClientSecret);
 })
 
 module.exports = router;
