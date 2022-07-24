@@ -29,8 +29,8 @@ function jsonResponse(res, code, message, isSuccess, result){
 router.use(express.json());
 
 
-router.post('/location', isLoggedIn, async(req,res)=>{
-    const user = await User.findOne({ where: { id: req.user.id } });
+router.post('/location/:userId', async(req,res)=>{
+    const user = await User.findOne({ where: { id: req.params.userId } });
     const prom=new Promise((resolve,reject)=>{
         axios.get('https://api.ip.pe.kr/').then((Response)=>{
             resolve(makeSignature(Response.data));
