@@ -2,12 +2,13 @@ const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
+const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const logger = require('../config/winston');
 const axios = require('axios');
+const { serveWithOptions } = require('swagger-ui-express');
 
 
 const router = express.Router();
@@ -76,7 +77,6 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         payload, process.env.JWT_SECRET, {
         algorithm : 'HS256',
         issuer: 'chocoBread',
-        expiresIn : "1s"
       });
       res.cookie('accessToken', accessToken);
       return res.json("로그인 성공!");
@@ -169,33 +169,49 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
   return jsonResponse(res, 404, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
 })
 
-router.get('/apple/signout', async (req, res, next) => {
-  req.appleSignout = true;
-  res.redirect("https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback");
-  const url = "https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback";
-  axios.get(url).then((response) => console.log(response.data));
-  console.log(req.refresh);
-//   const nowSec = await Math.round(new Date().getTime() / 1000);
-//   const expirySec = 120000;
-//   const expSec = await nowSec + expirySec;
-//   const payload = {
-//     aud : "https://appleid.apple.com",
-//     iss : "5659G44R65",
-//     iat: nowSec,
-//     exp: expSec,
-//     sub : "shop.chocobread.service"
-//   }
-//   const signOptions = jwt.SignOptions = {
-//     algorithm: "ES256",
-//     header: {
-//         alg: "ES256",
-//         kid: "689F483NJ3",
-//         typ: "JWT"
-//     }
-// };
-//   const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8'
-//   const privKey = fs.readFileSync(path);
-//   const appleClientSecret = jwt.sign(payload, privKey, signOptions);
+router.get('/apple/signout', verifyToken, async (req, res, next) => {
+  const nowSec = await Math.round(new Date().getTime() / 1000);
+  const expirySec = 120000;
+  const expSec = await nowSec + expirySec;
+  const payload = {
+    aud : "https://appleid.apple.com",
+    iss : "5659G44R65",
+    iat: nowSec,
+    exp: expSec,
+    sub : "shop.chocobread.service"
+  }
+  const signOptions = jwt.SignOptions = {
+    algorithm: "ES256",
+    header: {
+        alg: "ES256",
+        kid: "689F483NJ3",
+        typ: "JWT"
+    }
+};
+  const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8'
+  const privKey = fs.readFileSync(path);
+  const appleClientSecret = jwt.sign(payload, privKey, signOptions);
+
+  const user = User.findOne({where : req.decoded.id });
+
+  axios.post('https://appleid.apple.com/auth/revoke', {
+    params: {
+      client_id : "shop.chocobread.service",
+      client_secret : appleClientSecret,
+      token : user.appleRefreshToken,
+      token_type_hint : "refresh_token"
+    },
+    headers:{
+      'content-type': 'application/x-www-form-urlencoded'
+    }
+  })
+  .then((response) => jsonResponse(res, 200, "탈퇴완료", true, null))
+  .catch((error) => {
+    logger.error(error);
+    console.log(error);
+    jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
+})
+
 
 
 //   return res.json(appleClientSecret);

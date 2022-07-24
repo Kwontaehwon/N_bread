@@ -24,7 +24,6 @@ module.exports = () => {
                 id,
                 email
             } = profile;
-            req.refresh = refreshToken;
             // Create or update the local user here.
             // Note: name and email are only submitted on the first login!
             const exUser = await User.findOne({
@@ -35,6 +34,7 @@ module.exports = () => {
             })
 
             if (exUser) {
+              exUser.update({appleRefreshToken : refreshToken});
               done(null, exUser);
             }
             else if(exEmail) {
@@ -47,6 +47,7 @@ module.exports = () => {
                 snsId: id,
                 nick : "tempNickName-Apple",
                 provider: 'apple',
+                appleRefreshToken : refreshToken
               });
               done(null, newUser);
             }
