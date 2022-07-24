@@ -101,6 +101,8 @@ router.get('/all/:region', async (req, res, next) => {
     }
     else if(toSetStatus['currentMember']===toSetStatus['totalMember']){
       toSetStatus['status']="모집완료";
+    } else if(toSetStatus['dealDoneDate']<=Date.now()){
+      toSetStatus['status']=='모집마감' //모집 실패
     }
     //console.log(typeof(toSetStatus));
     //toSetStatus.add({'Status':'tmp'});
@@ -136,6 +138,7 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
       personalPrice : personalPrice,
       totalMember : totalMember,
       dealDate : new Date(dealDate), // 날짜 변환
+      dealDoneDate:new Date(dealDate)-3,
       dealPlace : place,
       currentMember : 1, // 내가 얼마나 가져갈지 선택지를 줘야할듯
       userId : user.id,

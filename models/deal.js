@@ -31,6 +31,10 @@ module.exports = class Deal extends Sequelize.Model {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      dealDoneDate:{
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
       dealDate: {
         type: Sequelize.DATE,
         allowNull: false,
