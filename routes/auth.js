@@ -192,29 +192,25 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const privKey = fs.readFileSync(path);
   const appleClientSecret = jwt.sign(payload, privKey, signOptions);
 
-  const user = User.findOne({where : req.decoded.id });
+  const user = await User.findOne({where : req.decoded.id });
+  const data = {
+    client_id : "shop.chocobread.service",
+    client_secret : appleClientSecret,
+    token : user.appleRefreshToken,
+    token_type_hint : "refresh_token"
+  }
 
-  axios.post('https://appleid.apple.com/auth/revoke', {
-    params: {
-      client_id : "shop.chocobread.service",
-      client_secret : appleClientSecret,
-      token : user.appleRefreshToken,
-      token_type_hint : "refresh_token"
-    },
-    headers:{
-      'content-type': 'application/x-www-form-urlencoded'
-    }
-  })
+  const headers = {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  }
+  
+  axios.post('https://appleid.apple.com/auth/revoke', data, {headers: headers})
   .then((response) => jsonResponse(res, 200, "탈퇴완료", true, null))
   .catch((error) => {
     logger.error(error);
     console.log(error);
     jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
-})
-
-
-
-//   return res.json(appleClientSecret);
+  })
 })
 
 //https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
