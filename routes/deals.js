@@ -138,12 +138,14 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
       personalPrice : personalPrice,
       totalMember : totalMember,
       dealDate : new Date(dealDate), // 날짜 변환
-      dealDoneDate:new Date(dealDate)-3,
+      dealDoneDate:new Date(dealDate)-(3*1000*3600*24),
       dealPlace : place,
       currentMember : 1, // 내가 얼마나 가져갈지 선택지를 줘야할듯
       userId : user.id,
       region:region
     })
+  
+  
     console.log("image link is added");
     console.log("deal id is "+deal.id);
     if(imageLink1!==""){
@@ -165,14 +167,14 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
       })
     }
     await group.update({ dealId : deal.id }); // 업데이트
-    logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
-    const dealEnd = new Date(deal.dealDate);
-    const dealDeadLine = new Date();
-    dealDeadLine.setDate(dealEnd.getDate() - 3);
-    schedule.scheduleJob(dealDeadLine, async() => {
-      await deal.update({isDealDone : true});
-    })
-    logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
+    // logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
+    // const dealEnd = new Date(deal.dealDate);
+    // const dealDeadLine = new Date();
+    // dealDeadLine.setDate(dealEnd.getDate() - 3);
+    // schedule.scheduleJob(dealDeadLine, async() => {
+    //   await deal.update({isDealDone : true});
+    // })
+    // logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);

@@ -8,11 +8,13 @@ const axios = require('axios');
 require('dotenv').config();
 
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
-const { User, Group, Deal } = require('../models');
+const { User, Group, Deal,DealImage } = require('../models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
+const { Op } = require('sequelize');
+const sequelize=require('../models');
 
 const router = express.Router();
 
@@ -27,6 +29,83 @@ function jsonResponse(res, code, message, isSuccess, result){
   }
   
 router.use(express.json());
+
+//마이페이지 거래 내역:수정중
+router.get('/deals/:userId', async (req, res, next) => {
+  const user = await User.findOne({ where: { id: req.params.userId } }); 
+
+  const [tmpres,metadata] = await sequelize.sequelize.query(
+    'select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?',
+    {
+      replacements: [user.id, user.id],
+      type: Op.SELECT
+    }
+  );
+
+  var suggesterId = [];
+  var memberId = [];
+
+  const suggesterDeal=await Deal.findAll({
+    where:{userId:user.id},
+  })
+  for(i=0;i<suggesterDeal.length;i++){
+    suggesterId.push(suggesterDeal[i]['id']);
+  }
+  console.log('suggesterId : ',suggesterId);
+
+  for(i=0;i<tmpres.length;i++){
+    memberId.push(tmpres[i]['id']);
+  }
+  console.log(memberId);
+  const deal = await Deal.findAll({
+    where: { id: memberId },
+    include: [{
+      model: DealImage,
+      attributes: ['dealImage', 'id']
+    },
+    { model: User, attributes: ['nick', 'curLocation3'] },
+    ]
+  })
+
+  //mystatus처리
+  for(i=0;i<deal.length;i++){
+    if(suggesterId.includes(deal[i]['id'])){ 
+      deal[i]['mystatus']="제안"
+    }
+    else{
+      deal[i]['mystatus']="참여"
+    }
+  }
+  
+
+  // const allDeal = await Deal.findAll({
+  //   where: { isDealDone: { [Op.eq]: 0 }, region: { [Op.eq]: req.params.region } },
+  //   include: [{
+  //     model: DealImage,
+  //     attributes: ['dealImage', 'id']
+  //   },
+  //   { model: User, attributes: ['nick', 'curLocation3'] },
+  //   ] 
+  // });
+  // for (i = 0; i < allDeal.length; i++) {
+  //   var toSetStatus = allDeal[i];
+  //   allDeal[i].dealDate = allDeal[i].dealDate
+  //   if (toSetStatus['dealDate'] < Date.now()) {
+  //     toSetStatus['status'] = "거래완료";
+  //   }
+  //   else if (toSetStatus['currentMember'] === toSetStatus['totalMember']) {
+  //     toSetStatus['status'] = "모집완료";
+  //   } else if (toSetStatus['dealDoneDate'] <= Date.now()) {
+  //     toSetStatus['status'] == '모집마감' //모집 실패
+  //   }
+
+  // }
+
+  // var testres = { "capsule": allDeal }
+
+  return jsonResponse(res, 200, "전체 글 리스트", true, deal);
+
+})
 
 
 router.post('/location/:userId', async(req,res)=>{
@@ -159,6 +238,10 @@ router.delete('/:userId', async (req, res, next) => {
         return jsonResponse(res, 500, "서버 에러", false, null)
     }
 });
+
+
+
+
 
 
 // 거래 찾기 /:userId/?isDealDone={}&isSuggester={}
