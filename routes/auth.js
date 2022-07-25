@@ -1,3 +1,5 @@
+const fetch = require('node-fetch');
+
 const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
@@ -9,9 +11,9 @@ const fs = require('fs');
 const logger = require('../config/winston');
 const axios = require('axios');
 const qs = require('qs');
+
 const { serveWithOptions } = require('swagger-ui-express');
 const { urlencoded } = require('body-parser');
-
 
 const router = express.Router();
 
@@ -177,15 +179,12 @@ router.get('/kakao/signout', verifyToken, async (req, res, next) => {
       target_id_type : "user_id",
       target_id : user.snsId
     }
+    const qsBody = qs.stringify(body);
     const headers = {
       'Authorization': process.env.KAKAO_ADMIN_KEY,
-      "Content-Type": "application/x-www-form-urlencoded"
+      'Content-Type': 'application/x-www-form-urlencoded'
     }
-    const params = new URLSearchParams();
-    params.append('target_id_type', "user_id");
-    params.append('target_id ', user.snsId);
-    // axios.post(`https://kapi.kakao.com/v1/user/unlink?target_id_type=user_id&target_id${body.target_id}`, {params :params, headers : headers})
-    axios.post(`https://kapi.kakao.com/v1/user/unlink`, qs.stringify(body), headers)
+    axios.post( `https://kapi.kakao.com/v1/user/unlink?target_id_type=user_id&target_id=${user.snsId}`, qsBody, {headers : headers})
     .then((response) => {
       console.log(response);
       user.destroy()
@@ -203,6 +202,7 @@ router.get('/kakao/signout', verifyToken, async (req, res, next) => {
     return jsonResponse(res, 500, "서버 에러", false, null);
   }
 })
+
 
 router.get('/naver/signout', async (req, res, next) => {
   try{
