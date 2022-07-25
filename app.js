@@ -26,7 +26,7 @@ const logger = require('./config/winston');
 const app = express();
 
 passportConfig();
-app.set('port', process.env.PORT || 8080);
+app.set('port', process.env.PORT || 5005);
 app.set('view engine', 'html');
 nunjucks.configure('views', {
   express: app,
@@ -75,8 +75,8 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
-  res.status(err.status || 500);
-  res.render('error');
+  logger.error(err);
+  res.status(err.status || 500).json({message : err.message, error : res.locals.error});
 });
 
 if(process.env.NODE_ENV == 'production'){

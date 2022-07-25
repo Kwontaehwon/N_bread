@@ -5,10 +5,13 @@ const url = require('url');
 const axios = require('axios');
 const passport = require('passport');
 const schedule = require('node-schedule');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const AWS = require('aws-sdk');
 
 
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
-const { User, Group, Deal,Comment,Reply, sequelize,DealImage } = require('../models');
+const { User, Group, Deal,Comment,Reply, DealImage } = require('../models');
+const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { Op } = require('sequelize');
 const logger = require('../config/winston');
 
@@ -120,10 +123,12 @@ router.get('/all/:region', async (req, res, next) => {
 router.post('/create', isLoggedIn, async (req, res, next) => {
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, image, link, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
   try {
-    const user = await User.findOne({where: { Id: req.user.id }});
+    // console.log(req.decoded);
+    // console.log(req.decoded.id);
+    const user = await User.findOne({where: { Id: req.decoded.id }});
     if(!user){
-      logger.info(`userId : ${req.user.id}에 매칭되는 유저가 없습니다.`);
-      return jsonResponse(res, 404, `userId : ${req.user.id}에 매칭되는 유저가 없습니다.`, false, null);
+      logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
+      return jsonResponse(res, 404, `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`, false, null);
     }
     const group = await Group.create({
       amount: 1,
@@ -386,5 +391,29 @@ router.post('/:dealId/endDeal', isLoggedIn, async(req, res, next) => {
     return jsonResponse(res, 500, "서버 에러", false, null)
   }
 })
+
+AWS.config.update({
+  region : 'ap-northeast-2',
+  accessKeyId : process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey : process.env.S3_SECRET_ACCESS_KEY
+});
+
+const s3 = new AWS.S3();
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket : 'nbreadimg',
+    key : (req, file, cb) => {
+      cb(null, `original/${Date.now()}_${file.originalname}`)
+    }
+  }),
+  limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
+})
+
+router.post('/img', isLoggedIn, upload.single('img'),  (req,res)=>{
+  logger.info(req.file);
+  return jsonResponse(res, 200, `${req.file.location} 반환`, true, `${req.file.location}` );
+} )
 
 module.exports = router;
