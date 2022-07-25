@@ -31,63 +31,8 @@ function jsonResponse(res, code, message, isSuccess, result){
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
 router.get('/all/:region', async (req, res, next) => {
-  // const today = new Date(Date.now());
-  // const recruitDeadline = new Date();
-  // recruitDeadline.setDate(today.getDate() - 3);
-  // const recruitingDeals = await Deal.findAll( {
-  //   where : { [Op.and] : [
-  //     { isDealDone : false },
-  //     { dealDate : {[Op.lt] : recruitDeadline}}
-  //   ]
-  //   },
-  //   order : [['createdAt', 'DESC']],
-  // });
-  // const waitingDeals = await Deal.findAll( {
-  //   where : { [Op.and] : [
-  //     { isDealDone : false },
-  //     { dealDate : {[Op.gt] : recruitDeadline}}
-  //   ]
-  //   },
-  //   order : [['createdAt', 'DESC']],
-  // });
-  // const doneDeals = await Deal.findAll( { 
-  //   where : { [Op.and] : [
-  //     { isDealDone : true },
-  //   ]
-  // },
-  //   order : [['createdAt', 'DESC']],
-  // });
-  // const result = {recruiting : recruitingDeals, waiting : waitingDeals, done : doneDeals};
-  
-  //console.log(region.keys());
-
-
-
-
-
-
-  // const [region, metadata] = await sequelize.query("select region from deals group by region");
-  // var result;
-  
-
-  // for(i=0;i<region.length;i++){
-  //   var curloc=region[i].region;
-
-  //   var [eachDeal, meta] = await sequelize.query("select * from deals where region=?",{
-  //     replacements:[curloc]
-  //   });
-  //   //console.log(eachDeal);
-    
-  //   var regionDeal={curloc:eachDeal};
-  //   console.log(regionDeal);
-  //   result+=regionDeal;
-
-  //   //console.log(curloc);
-  // }
-  //console.log(eachDeal);
-
   const allDeal = await Deal.findAll({ 
-    where: { isDealDone: { [Op.eq]: 0 }, region: { [Op.eq]: req.params.region }},
+    where: { region: { [Op.eq]: req.params.region }},
     include:[{
     model: DealImage,
     attributes: ['dealImage','id']
@@ -98,15 +43,16 @@ router.get('/all/:region', async (req, res, next) => {
   console.log(allDeal.length);
   for(i=0;i<allDeal.length;i++){
     var toSetStatus=allDeal[i];
-    allDeal[i].dealDate=allDeal[i].dealDate
-    if(toSetStatus['dealDate']<Date.now()){
+    allDeal[i].dealDate=allDeal[i].dealDate;
+    if ((toSetStatus['dealDate'] - (3 * 1000 * 3600 * 24))<Date.now()){
+      if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="모집완료"
+      else toSetStatus['status']="모집실패"
+    } else if(toSetStatus['dealDate']<Date.now()){
       toSetStatus['status']="거래완료";
     }
     else if(toSetStatus['currentMember']===toSetStatus['totalMember']){
       toSetStatus['status']="모집완료";
-    } else if(toSetStatus['dealDoneDate']<=Date.now()){
-      toSetStatus['status']=='모집마감' //모집 실패
-    }
+    } else toSetStatus['status']="모집중"
     //console.log(typeof(toSetStatus));
     //toSetStatus.add({'Status':'tmp'});
   }
@@ -120,7 +66,7 @@ router.get('/all/:region', async (req, res, next) => {
 
 
 // 거래 생성하기
-router.post('/create', isLoggedIn, async (req, res, next) => {
+router.post('/create', verifyToken, async (req, res, next) => {
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, image, link, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
   try {
     // console.log(req.decoded);
@@ -143,7 +89,6 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
       personalPrice : personalPrice,
       totalMember : totalMember,
       dealDate : new Date(dealDate), // 날짜 변환
-      dealDoneDate:new Date(dealDate)-(3*1000*3600*24),
       dealPlace : place,
       currentMember : 1, // 내가 얼마나 가져갈지 선택지를 줘야할듯
       userId : user.id,
@@ -180,6 +125,7 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
     //   await deal.update({isDealDone : true});
     // })
     // logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
+    console.log("DFDFD");
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);
@@ -371,26 +317,26 @@ router.post('/:dealId/endRecruit', isLoggedIn, async(req, res, next) => {
   }
 });
 
-router.post('/:dealId/endDeal', isLoggedIn, async(req, res, next) => {
-  try{
-    const deal = await Deal.findOne({ where : {id : req.params.dealId}});
-    if(!deal){
-      return jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
-    }
-    if(deal.userId != req.user.id){
-      return jsonResponse(res, 403, '글의 작성자만 거래를 마감할 수 있습니다.', false, null)
-    }
-    // 거래 시간이 지난 후에만 거래를 마감 할 수 있게?
-    deal.update({isDealDone : true, isRecruitDone : true}); // 일단 recruitDone 확인하지 않고 둘다 true로 만들어줌.
-    const groups = await Group.findAll({where : {dealId : deal.id}});
-    const result = {deal : deal, groups : groups};
-    return jsonResponse(res, 200, "거래가 정상적으로 마감되었습니다.", true, result);
-  }
-  catch (error){
-    logger.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null)
-  }
-})
+// router.post('/:dealId/endDeal', isLoggedIn, async(req, res, next) => {
+//   try{
+//     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
+//     if(!deal){
+//       return jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
+//     }
+//     if(deal.userId != req.user.id){
+//       return jsonResponse(res, 403, '글의 작성자만 거래를 마감할 수 있습니다.', false, null)
+//     }
+//     // 거래 시간이 지난 후에만 거래를 마감 할 수 있게?
+//     deal.update({isDealDone : true, isRecruitDone : true}); // 일단 recruitDone 확인하지 않고 둘다 true로 만들어줌.
+//     const groups = await Group.findAll({where : {dealId : deal.id}});
+//     const result = {deal : deal, groups : groups};
+//     return jsonResponse(res, 200, "거래가 정상적으로 마감되었습니다.", true, result);
+//   }
+//   catch (error){
+//     logger.error(error);
+//     return jsonResponse(res, 500, "서버 에러", false, null)
+//   }
+// })
 
 AWS.config.update({
   region : 'ap-northeast-2',
