@@ -7,6 +7,10 @@ module.exports = class Deal extends Sequelize.Model {
         type: Sequelize.STRING(),
         allowNull: false,
       },
+      mystatus:{
+        type: Sequelize.STRING(),
+        allowNull: true,
+      },
       title : {
         type: Sequelize.STRING(),
         allowNull: false,
