@@ -201,6 +201,54 @@ router.delete('/kakao/signout', verifyToken, async (req, res, next) => {
   }
 })
 
+router.delete('/naver/signout', verifyToken, async (req, res, next) => {
+  try{
+    const body = {
+      response_type : `code`,
+      client_id : process.env.NAVER_CLIENT_ID,
+      redirect_uri : "",
+      state : "",
+      auth_type : ""
+    }
+
+    axios.get( `https://kapi.kakao.com/v1/user/unlink/` + urlencoded(body), {headers : headers})
+    .then((response) => {
+      user.destroy()
+      .then(() => {
+        return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
+      })
+    })
+    .catch((error) => {
+      logger.error(error);
+      console.log(error);
+      return jsonResponse(res, 400, `Kakao signout error :   ${error}`, false, null);
+    })
+
+    const user = await User.findOne({where : req.decoded.id });
+    
+    const qsBody = qs.stringify(body);
+    const headers = {
+      'Authorization': process.env.KAKAO_ADMIN_KEY,
+      'Content-Type': 'application/json'
+    }
+    axios.post( `https://kapi.kakao.com/v1/user/unlink/` + urlencoded(body), {headers : headers})
+    .then((response) => {
+      user.destroy()
+      .then(() => {
+        return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
+      })
+    })
+    .catch((error) => {
+      logger.error(error);
+      console.log(error);
+      return jsonResponse(res, 400, `Kakao signout error :   ${error}`, false, null);
+    })
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null);
+  }
+})
+
 router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const nowSec = await Math.round(new Date().getTime() / 1000);
   const expirySec = 120000;
@@ -228,7 +276,7 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const data = {
     client_id : "shop.chocobread.service",
     client_secret : appleClientSecret,
-    token : user.appleRefreshToken,
+    token : user.refreshToken,
     token_type_hint : "refresh_token"
   }
 
