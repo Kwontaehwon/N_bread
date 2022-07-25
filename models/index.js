@@ -6,6 +6,7 @@ const Deal = require('./deal');
 const Group = require('./group');
 const Comment = require('./comment');
 const Reply = require('./reply');
+const DealImage = require('./dealImage');
 
 
 
@@ -20,17 +21,20 @@ db.User = User;
 db.Group = Group;
 db.Comment=Comment;
 db.Reply = Reply;
+db.DealImage=DealImage;
 
 Deal.init(sequelize);
 User.init(sequelize);
 Group.init(sequelize);
 Comment.init(sequelize);
 Reply.init(sequelize);
+DealImage.init(sequelize);
 
 Deal.associate(db);
 User.associate(db);
 Group.associate(db);
 Comment.associate(db);
 Reply.associate(db);
+DealImage.associate(db);
 
 module.exports = db;

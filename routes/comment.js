@@ -167,18 +167,51 @@ router.get('/:dealId',async(req,res)=>{
         paranoid: false,
         include: [{
             model: User,
-            attributes: ['id','nick'],
+            attributes: ['nick','userStatus'],
         },
         {
             model: Reply,
             paranoid: false,
-            include: [{
+            include: {
                 model: User,
-                attributes: ['nick'],
-            }]
+                attributes: ['nick','userStatus'],
+            }
         }],
     })
-    const result={"suggest":suggest,"group":group,"comments":comments};
+    //userStatus처리
+    const suggester=suggest['userId']; 
+    var groupMember=[];
+    for(i=0;i<group.length;i++){
+        groupMember.push(group[i]['userId']);
+        console.log(group[i]['userId']);
+    }
+    //console.log(comments[0]['dataValues']);
+    //comment userStatus처리
+    for(i=0;i<comments.length;i++){
+        // comments UserStatus
+        if(comments[i]['userId']===suggester){
+            comments[i]['User']["userStatus"]="제안자";
+        }else if(groupMember.includes(comments[i]['userId'])){
+            comments[i]['User']['userStatus']="참여자"
+        }else{
+            comments[i]['User']['userStatus'] = ""
+        }
+
+        //reply UserStauts
+        for(j=0;j<comments[i]['Replies'].length;j++){
+            var curReply=comments[i]['Replies'][j];
+            if (curReply['userId']==suggester){
+                curReply['User']['userStatus']="제안자"
+            } else if(groupMember.includes(curReply['userId'])){
+                curReply['User']['userStatus']="참여자"
+            }
+            else{
+                curReply['User']['userStatus'] = ""
+            }
+        }
+
+    } 
+    const result={"suggest":suggest,"group":group,"comments":comments}; 
     jsonResponse(res,200,"get comments",true,result);
 
 })

@@ -10,8 +10,8 @@ const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 
 
+const { User, Group, Deal,Comment,Reply, DealImage } = require('../models');
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
-const { User, Group, Deal,Comment,Reply } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../config/winston');
 
@@ -27,44 +27,101 @@ function jsonResponse(res, code, message, isSuccess, result){
   })
 }
 
+
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
-router.get('/all', async (req, res, next) => {
-  const today = new Date(Date.now());
-  const recruitDeadline = new Date();
-  recruitDeadline.setDate(today.getDate() - 3);
-  const recruitingDeals = await Deal.findAll( {
-    where : { [Op.and] : [
-      { isDealDone : false },
-      { dealDate : {[Op.lt] : recruitDeadline}}
-    ]
+router.get('/all/:region', async (req, res, next) => {
+  // const today = new Date(Date.now());
+  // const recruitDeadline = new Date();
+  // recruitDeadline.setDate(today.getDate() - 3);
+  // const recruitingDeals = await Deal.findAll( {
+  //   where : { [Op.and] : [
+  //     { isDealDone : false },
+  //     { dealDate : {[Op.lt] : recruitDeadline}}
+  //   ]
+  //   },
+  //   order : [['createdAt', 'DESC']],
+  // });
+  // const waitingDeals = await Deal.findAll( {
+  //   where : { [Op.and] : [
+  //     { isDealDone : false },
+  //     { dealDate : {[Op.gt] : recruitDeadline}}
+  //   ]
+  //   },
+  //   order : [['createdAt', 'DESC']],
+  // });
+  // const doneDeals = await Deal.findAll( { 
+  //   where : { [Op.and] : [
+  //     { isDealDone : true },
+  //   ]
+  // },
+  //   order : [['createdAt', 'DESC']],
+  // });
+  // const result = {recruiting : recruitingDeals, waiting : waitingDeals, done : doneDeals};
+  
+  //console.log(region.keys());
+
+
+
+
+
+
+  // const [region, metadata] = await sequelize.query("select region from deals group by region");
+  // var result;
+  
+
+  // for(i=0;i<region.length;i++){
+  //   var curloc=region[i].region;
+
+  //   var [eachDeal, meta] = await sequelize.query("select * from deals where region=?",{
+  //     replacements:[curloc]
+  //   });
+  //   //console.log(eachDeal);
+    
+  //   var regionDeal={curloc:eachDeal};
+  //   console.log(regionDeal);
+  //   result+=regionDeal;
+
+  //   //console.log(curloc);
+  // }
+  //console.log(eachDeal);
+
+  const allDeal = await Deal.findAll({ 
+    where: { isDealDone: { [Op.eq]: 0 }, region: { [Op.eq]: req.params.region }},
+    include:[{
+    model: DealImage,
+    attributes: ['dealImage','id']
     },
-    order : [['createdAt', 'DESC']],
+    {model:User,attributes:['nick','curLocation3']},
+  ]
   });
-  const waitingDeals = await Deal.findAll( {
-    where : { [Op.and] : [
-      { isDealDone : false },
-      { dealDate : {[Op.gt] : recruitDeadline}}
-    ]
-    },
-    order : [['createdAt', 'DESC']],
-  });
-  const doneDeals = await Deal.findAll( { 
-    where : { [Op.and] : [
-      { isDealDone : true },
-    ]
-  },
-    order : [['createdAt', 'DESC']],
-  });
-  const result = {recruiting : recruitingDeals, waiting : waitingDeals, done : doneDeals};
-  return jsonResponse(res, 200, "전체 글 리스트", true, result);
+  console.log(allDeal.length);
+  for(i=0;i<allDeal.length;i++){
+    var toSetStatus=allDeal[i];
+    allDeal[i].dealDate=allDeal[i].dealDate
+    if(toSetStatus['dealDate']<Date.now()){
+      toSetStatus['status']="거래완료";
+    }
+    else if(toSetStatus['currentMember']===toSetStatus['totalMember']){
+      toSetStatus['status']="모집완료";
+    } else if(toSetStatus['dealDoneDate']<=Date.now()){
+      toSetStatus['status']=='모집마감' //모집 실패
+    }
+    //console.log(typeof(toSetStatus));
+    //toSetStatus.add({'Status':'tmp'});
+  }
+  //console.log(allDeal);
+  //reg=req.params.region;
+  var testres={"capsule":allDeal} 
+  // var yeoksamDeal = allDeal.findAll({ where: { region:{[Op.eq]:"yeoksam"}}})
+  // var testres={"yeoksam":yeoksamDeal};
+  return jsonResponse(res, 200, "전체 글 리스트", true, testres);
 })
 
 
 // 거래 생성하기
-router.post('/create', verifyToken, async (req, res, next) => {
-  const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
-  currentMember} = req.body; // currentMember 수정 필요.
+router.post('/create', isLoggedIn, async (req, res, next) => {
+  const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, image, link, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
   try {
     // console.log(req.decoded);
     // console.log(req.decoded.id);
@@ -78,25 +135,51 @@ router.post('/create', verifyToken, async (req, res, next) => {
       userId : user.id,
     })
     const deal = await Deal.create({
+      image:image,
+      link:link,
       title : title,
       content : content,
       totalPrice : totalPrice,
       personalPrice : personalPrice,
       totalMember : totalMember,
       dealDate : new Date(dealDate), // 날짜 변환
-      dealPlace : dealPlace,
+      dealDoneDate:new Date(dealDate)-(3*1000*3600*24),
+      dealPlace : place,
       currentMember : 1, // 내가 얼마나 가져갈지 선택지를 줘야할듯
       userId : user.id,
+      region:region
     })
+  
+  
+    console.log("image link is added");
+    console.log("deal id is "+deal.id);
+    if(imageLink1!==""){
+      const dealImage1 = await DealImage.create({
+        dealImage: imageLink1,
+        dealId: deal.id,
+      })
+    }
+    if (imageLink2 !== "") {
+      const dealImage2 = await DealImage.create({
+        dealImage: imageLink2,
+        dealId: deal.id,
+      })
+    }
+    if (imageLink3 !== "") {
+      const dealImage3 = await DealImage.create({
+        dealImage: imageLink3,
+        dealId: deal.id,
+      })
+    }
     await group.update({ dealId : deal.id }); // 업데이트
-    logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
-    const dealEnd = new Date(deal.dealDate);
-    const dealDeadLine = new Date();
-    dealDeadLine.setDate(dealEnd.getDate() - 3);
-    schedule.scheduleJob(dealDeadLine, async() => {
-      await deal.update({isDealDone : true});
-    })
-    logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
+    // logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
+    // const dealEnd = new Date(deal.dealDate);
+    // const dealDeadLine = new Date();
+    // dealDeadLine.setDate(dealEnd.getDate() - 3);
+    // schedule.scheduleJob(dealDeadLine, async() => {
+    //   await deal.update({isDealDone : true});
+    // })
+    // logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);

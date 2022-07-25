@@ -7,6 +7,7 @@ const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const logger = require('../config/winston');
+const { response } = require('express');
 const axios = require('axios');
 const qs = require('qs');
 const { serveWithOptions } = require('swagger-ui-express');
@@ -46,6 +47,12 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
       nick,
       password: hash,
     });
+    const curUser = await User.findOne({ where: { email } });
+    console.log(curUser.id);
+    var url = 'http://localhost:8080/users/location/'+curUser.id.toString();
+    axios.post(url).then(async (Response)=>{
+      console.log(Response.data);
+    }).catch((err)=>console.log(err));
     return jsonResponse(res, 200, "로컬 회원가입에 성공하였습니다.", true, user)
   } catch (error) {
     console.error(error);
