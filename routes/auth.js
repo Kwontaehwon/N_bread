@@ -10,6 +10,7 @@ const logger = require('../config/winston');
 const axios = require('axios');
 const qs = require('qs');
 const { serveWithOptions } = require('swagger-ui-express');
+const { urlencoded } = require('body-parser');
 
 
 const router = express.Router();
@@ -49,7 +50,6 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
     return jsonResponse(res, 200, "로컬 회원가입에 성공하였습니다.", true, user)
   } catch (error) {
     console.error(error);
-    
   }
 });
 
@@ -170,6 +170,37 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
   return jsonResponse(res, 404, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
 })
 
+router.delete('/kakao/signout', verifyToken, async (req, res, next) => {
+  try{
+    const user = await User.findOne({where : req.decoded.id });
+    const body = {
+      target_id_type : "user_id",
+      target_id : user.snsId
+    }
+    const qsBody = qs.stringify(body);
+    const headers = {
+      'Authorization': process.env.KAKAO_ADMIN_KEY,
+      'Content-Type': 'application/json'
+    }
+
+    axios.post( `https://kapi.kakao.com/v1/user/unlink/` + urlencoded(body), {headers : headers})
+    .then((response) => {
+      user.destroy()
+      .then(() => {
+        return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
+      })
+    })
+    .catch((error) => {
+      logger.error(error);
+      console.log(error);
+      return jsonResponse(res, 400, `Kakao signout error :   ${error}`, false, null);
+    })
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null);
+  }
+})
+
 router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const nowSec = await Math.round(new Date().getTime() / 1000);
   const expirySec = 120000;
@@ -209,8 +240,10 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
   console.log(qsData);
   axios.post('https://appleid.apple.com/auth/revoke', qsData, {headers: headers})
   .then((response) => {
-    await user.destroy();
-    return jsonResponse(res, 200, "애플 탈퇴완료", true, null)
+    user.destroy()
+    .then(() => {
+      return jsonResponse(res, 200, "애플 탈퇴완료", true, null);
+    })
   })
   .catch((error) => {
     logger.error(error);
