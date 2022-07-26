@@ -28,6 +28,18 @@ module.exports = class User extends Sequelize.Model {
         type: Sequelize.STRING(),
         allowNull: true,
       },
+      curLocation1:{
+        type:Sequelize.STRING(),
+        allowNull:true,
+      },
+      curLocation2: {
+        type: Sequelize.STRING(),
+        allowNull: true,
+      },
+      curLocation3: {
+        type: Sequelize.STRING(),
+        allowNull: true,
+      },
       userStatus:{
         type: Sequelize.STRING (),
         allowNull: true,
