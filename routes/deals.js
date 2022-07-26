@@ -33,6 +33,7 @@ function jsonResponse(res, code, message, isSuccess, result){
 router.get('/all/:region', async (req, res, next) => {
   const allDeal = await Deal.findAll({ 
     where: { region: { [Op.eq]: req.params.region }},
+    order:[['createdAt','DESC']],
     include:[{
     model: DealImage,
     attributes: ['dealImage','id']
@@ -67,7 +68,7 @@ router.get('/all/:region', async (req, res, next) => {
 
 // 거래 생성하기
 router.post('/create', verifyToken, async (req, res, next) => {
-  const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, image, link, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
+  const { title, link, totalPrice, personalPrice, totalMember, dealDate, place, content, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
   try {
     // console.log(req.decoded);
     // console.log(req.decoded.id);
@@ -81,7 +82,6 @@ router.post('/create', verifyToken, async (req, res, next) => {
       userId : user.id,
     })
     const deal = await Deal.create({
-      image:image,
       link:link,
       title : title,
       content : content,
