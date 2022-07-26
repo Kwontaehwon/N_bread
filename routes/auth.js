@@ -1,3 +1,5 @@
+const fetch = require('node-fetch');
+
 const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
@@ -10,8 +12,9 @@ const logger = require('../config/winston');
 const { response } = require('express');
 const axios = require('axios');
 const qs = require('qs');
-const { serveWithOptions } = require('swagger-ui-express');
 
+const { serveWithOptions } = require('swagger-ui-express');
+const { urlencoded } = require('body-parser');
 
 const router = express.Router();
 
@@ -56,7 +59,6 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
     return jsonResponse(res, 200, "로컬 회원가입에 성공하였습니다.", true, user)
   } catch (error) {
     console.error(error);
-    
   }
 });
 
@@ -177,6 +179,89 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
   return jsonResponse(res, 404, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
 })
 
+router.get('/kakao/signout', verifyToken, async (req, res, next) => {
+  try{
+    const user = await User.findOne({where : req.decoded.id });
+    const body = {
+      target_id_type : "user_id",
+      target_id : user.snsId
+    }
+    const qsBody = qs.stringify(body);
+    const headers = {
+      'Authorization': process.env.KAKAO_ADMIN_KEY,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    axios.post( `https://kapi.kakao.com/v1/user/unlink?target_id_type=user_id&target_id=${user.snsId}`, qsBody, {headers : headers})
+    .then((response) => {
+      console.log(response);
+      user.destroy()
+      .then(() => {
+        return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
+      })
+    })
+    .catch((error) => {
+      logger.error(error);
+      console.log(error);
+      return jsonResponse(res, 400, `Kakao signout error :   ${error}`, false, null);
+    })
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null);
+  }
+})
+
+
+router.get('/naver/signout', async (req, res, next) => {
+  try{
+    console.log(req.query);
+    const body = {
+      client_id : process.env.NAVER_CLIENT_ID,
+      client_secret : process.env.NAVER_CLIENT_SECRET,
+      grant_type : "authorization_code",
+      code : req.query.code,
+      state : process.env.CSRF_TOKEN,
+    }
+    const response = await axios.get(`https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=${body.client_id}&client_secret=${body.client_secret}&code=${body.code}&state=${body.state}`)
+    const accessToken = response.data.access_token;
+    const headers = {
+      'Authorization': `Bearer ${accessToken}`
+    }
+    const profileResponse = await axios.get(`https://openapi.naver.com/v1/nid/me`, {headers : headers});
+    console.log(profileResponse.data.response.id);
+    const user = await User.findOne({where : {snsId : profileResponse.data.response.id}})
+    if(user === null){
+      logger.error("가입되어 있지 않은 naver 사용자에 대한 탈퇴를 진행할 수 없습니다.");
+      return jsonResponse(res, 400, "가입되어 있지 않은 naver 사용자에 대한 탈퇴를 진행할 수 없습니다.", false, null);
+    }
+    const deleteResponse = await axios.get(`https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=${body.client_id}&client_secret=${body.client_secret}&access_token=${accessToken}&service_provider=NAVER`)
+    console.log(deleteResponse);
+    await user.destroy()
+    return jsonResponse(res, 200, "Naver 회원탈퇴가 완료되었습니다.", true, null);
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null);
+  }
+});
+
+router.get('/naver/reauth', async (req, res, next) => {
+  try{
+    const body = {
+      response_type : `code`,
+      client_id : process.env.NAVER_CLIENT_ID,
+      redirect_uri : encodeURI('http://localhost:5005/auth/naver/signout'),
+      state : process.env.CSRF_TOKEN,
+      auth_type : "reauthenticate"
+    }
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    res.redirect(`https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${body.client_id}&state=${body.state}&redirect_uri=${body.redirect_uri}&auth_type=reauthenticate`)
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null);
+  }
+})
+
 router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const nowSec = await Math.round(new Date().getTime() / 1000);
   const expirySec = 120000;
@@ -204,7 +289,7 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const data = {
     client_id : "shop.chocobread.service",
     client_secret : appleClientSecret,
-    token : user.appleRefreshToken,
+    token : user.refreshToken,
     token_type_hint : "refresh_token"
   }
 
@@ -215,11 +300,16 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const qsData = qs.stringify(data);
   console.log(qsData);
   axios.post('https://appleid.apple.com/auth/revoke', qsData, {headers: headers})
-  .then((response) => jsonResponse(res, 200, "탈퇴완료", true, null))
+  .then((response) => {
+    user.destroy()
+    .then(() => {
+      return jsonResponse(res, 200, "애플 탈퇴완료", true, null);
+    })
+  })
   .catch((error) => {
     logger.error(error);
     console.log(error);
-    jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
+    return jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
   })
 })
 

@@ -34,7 +34,7 @@ module.exports = () => {
             })
 
             if (exUser) {
-              exUser.update({appleRefreshToken : refreshToken});
+              exUser.update({refreshToken : refreshToken});
               done(null, exUser);
             }
             else if(exEmail) {
@@ -47,7 +47,7 @@ module.exports = () => {
                 snsId: id,
                 nick : "tempNickName-Apple",
                 provider: 'apple',
-                appleRefreshToken : refreshToken
+                refreshToken : refreshToken
               });
               done(null, newUser);
             }

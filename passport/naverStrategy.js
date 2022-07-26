@@ -25,6 +25,7 @@ module.exports = () => {
                // 이미 가입된 네이버 프로필이면 성공
                if (exUser) {
                   console.log("이미 가입된 유저입니다.");
+                  await exUser.update({accessToken : accessToken, refreshToken : refreshToken})
                   done(null, exUser);
                } else if(exEmail) {
                   console.log("다른 소셜로 이미 가입된 아이디입니다.");
@@ -36,6 +37,8 @@ module.exports = () => {
                      nick: profile.name,
                      snsId: profile.id,
                      provider: 'naver',
+                     accessToken : accessToken,
+                     refreshToken : refreshToken
                   });
                   done(null, newUser);
                }

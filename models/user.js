@@ -16,31 +16,23 @@ module.exports = class User extends Sequelize.Model {
         allowNull: true,
       },
       provider: { //snsType
-        type: Sequelize.STRING(10),
+        type: Sequelize.STRING(),
         allowNull: false,
         defaultValue: 'local',
       },
       snsId: {
-        type: Sequelize.STRING(70),
-        allowNull: true,
-      },
-      curLocation1:{
-        type:Sequelize.STRING(),
-        allowNull:true,
-      },
-      curLocation2: {
         type: Sequelize.STRING(),
         allowNull: true,
       },
-      curLocation3: {
+      accessToken: {
         type: Sequelize.STRING(),
         allowNull: true,
       },
       userStatus:{
-        type: Sequelize.STRING(),
+        type: Sequelize.STRING (),
         allowNull: true,
       },
-      appleRefreshToken: {
+      refreshToken: {
         type : Sequelize.STRING(),
         allowNull : true
       }
