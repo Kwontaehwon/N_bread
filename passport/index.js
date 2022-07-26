@@ -2,7 +2,7 @@ const passport = require('passport');
 const local = require('./localStrategy');
 const kakao = require('./kakaoStrategy');
 const naver = require('./naverStrategy');
-const apple = require('./appleStrategy');
+//const apple = require('./appleStrategy');
 
 const User = require('../models/user');
 
@@ -22,5 +22,5 @@ module.exports = () => {
   local();
   kakao();
   naver();
-  apple();
+  //apple(); 
 };

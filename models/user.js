@@ -28,6 +28,10 @@ module.exports = class User extends Sequelize.Model {
         type: Sequelize.STRING(),
         allowNull: true,
       },
+      userStatus:{
+        type: Sequelize.STRING (),
+        allowNull: true,
+      },
       refreshToken: {
         type : Sequelize.STRING(),
         allowNull : true
