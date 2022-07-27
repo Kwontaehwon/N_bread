@@ -22,5 +22,5 @@ module.exports = () => {
   local();
   kakao();
   naver();
-  //apple(); 
+  apple(); 
 };
