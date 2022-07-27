@@ -28,6 +28,38 @@ function jsonResponse(res, code, message, isSuccess, result){
 }
 
 
+AWS.config.update({
+  region : 'ap-northeast-2',
+  accessKeyId : process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey : process.env.S3_SECRET_ACCESS_KEY
+});
+
+const s3 = new AWS.S3();
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket : 'nbreadimg',
+    key : (req, file, cb) => {
+      cb(null, `original/${Date.now()}_${file.originalname}`)
+    }
+  }),
+  limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
+})
+
+router.post('/img', upload.array('img'),  (req,res)=>{
+  console.log(req.files);
+  const result = [];
+  for(let i of req.files){
+    console.log(i);
+    const originalUrl = i.location;
+    const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+    result.push(newUrl);
+  }
+  return jsonResponse(res, 200, `${result} 반환`, true, `${result}` );
+} )
+
+
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
 router.get('/all/:region', async (req, res, next) => {
@@ -67,11 +99,19 @@ router.get('/all/:region', async (req, res, next) => {
 
 
 // 거래 생성하기
-router.post('/create', verifyToken, async (req, res, next) => {
-  const { title, link, totalPrice, personalPrice, totalMember, dealDate, place, content, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
+router.post('/create', verifyToken, upload.array('img'), async (req, res, next) => {
   try {
-    // console.log(req.decoded);
-    // console.log(req.decoded.id);
+    const result = [];
+    for(let i of req.files){
+      console.log(i);
+      const originalUrl = i.location;
+      const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+      result.push(newUrl);
+    }
+    const body = req.body.body;
+    const parseResult = await JSON.parse(body);
+    const { title, link, totalPrice, personalPrice, totalMember, dealDate, place, content, region, imageLink1, imageLink2, imageLink3} = parseResult; // currentMember 수정 필요.
+
     const user = await User.findOne({where: { Id: req.decoded.id }});
     if(!user){
       logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
@@ -94,30 +134,19 @@ router.post('/create', verifyToken, async (req, res, next) => {
       userId : user.id,
       region:region
     })
-  
-  
     console.log("image link is added");
     console.log("deal id is "+deal.id);
-    if(imageLink1!==""){
-      const dealImage1 = await DealImage.create({
-        dealImage: imageLink1,
-        dealId: deal.id,
-      })
-    }
-    if (imageLink2 !== "") {
-      const dealImage2 = await DealImage.create({
-        dealImage: imageLink2,
-        dealId: deal.id,
-      })
-    }
-    if (imageLink3 !== "") {
-      const dealImage3 = await DealImage.create({
-        dealImage: imageLink3,
-        dealId: deal.id,
-      })
+    if(result.length > 0){
+      for(let url of result){
+        console.log(url);
+        await DealImage.create({
+          dealImage: url,
+          dealId: deal.id,
+        })
+      }
     }
     await group.update({ dealId : deal.id }); // 업데이트
-    // logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
+    logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
     // const dealEnd = new Date(deal.dealDate);
     // const dealDeadLine = new Date();
     // dealDeadLine.setDate(dealEnd.getDate() - 3);
@@ -125,7 +154,6 @@ router.post('/create', verifyToken, async (req, res, next) => {
     //   await deal.update({isDealDone : true});
     // })
     // logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
-    console.log("DFDFD");
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);
@@ -338,28 +366,5 @@ router.post('/:dealId/endRecruit', isLoggedIn, async(req, res, next) => {
 //   }
 // })
 
-AWS.config.update({
-  region : 'ap-northeast-2',
-  accessKeyId : process.env.S3_ACCESS_KEY_ID,
-  secretAccessKey : process.env.S3_SECRET_ACCESS_KEY
-});
-
-const s3 = new AWS.S3();
-
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket : 'nbreadimg',
-    key : (req, file, cb) => {
-      cb(null, `original/${Date.now()}_${file.originalname}`)
-    }
-  }),
-  limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
-})
-
-router.post('/img', isLoggedIn, upload.single('img'),  (req,res)=>{
-  logger.info(req.file);
-  return jsonResponse(res, 200, `${req.file.location} 반환`, true, `${req.file.location}` );
-} )
 
 module.exports = router;
