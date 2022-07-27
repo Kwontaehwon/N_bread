@@ -99,11 +99,19 @@ router.get('/all/:region', async (req, res, next) => {
 
 
 // 거래 생성하기
-router.post('/create', verifyToken, async (req, res, next) => {
-  const { title, link, totalPrice, personalPrice, totalMember, dealDate, place, content, region, imageLink1, imageLink2, imageLink3} = req.body; // currentMember 수정 필요.
+router.post('/create', verifyToken, upload.array('img'), async (req, res, next) => {
   try {
-    // console.log(req.decoded);
-    // console.log(req.decoded.id);
+    const result = [];
+    for(let i of req.files){
+      console.log(i);
+      const originalUrl = i.location;
+      const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+      result.push(newUrl);
+    }
+    const body = req.body.body;
+    const parseResult = await JSON.parse(body);
+    const { title, link, totalPrice, personalPrice, totalMember, dealDate, place, content, region, imageLink1, imageLink2, imageLink3} = parseResult; // currentMember 수정 필요.
+
     const user = await User.findOne({where: { Id: req.decoded.id }});
     if(!user){
       logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
@@ -128,26 +136,17 @@ router.post('/create', verifyToken, async (req, res, next) => {
     })
     console.log("image link is added");
     console.log("deal id is "+deal.id);
-    if(imageLink1!==""){
-      const dealImage1 = await DealImage.create({
-        dealImage: imageLink1,
-        dealId: deal.id,
-      })
-    }
-    if (imageLink2 !== "") {
-      const dealImage2 = await DealImage.create({
-        dealImage: imageLink2,
-        dealId: deal.id,
-      })
-    }
-    if (imageLink3 !== "") {
-      const dealImage3 = await DealImage.create({
-        dealImage: imageLink3,
-        dealId: deal.id,
-      })
+    if(result.length > 0){
+      for(let url of result){
+        console.log(url);
+        await DealImage.create({
+          dealImage: url,
+          dealId: deal.id,
+        })
+      }
     }
     await group.update({ dealId : deal.id }); // 업데이트
-    // logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
+    logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
     // const dealEnd = new Date(deal.dealDate);
     // const dealDeadLine = new Date();
     // dealDeadLine.setDate(dealEnd.getDate() - 3);
@@ -155,7 +154,6 @@ router.post('/create', verifyToken, async (req, res, next) => {
     //   await deal.update({isDealDone : true});
     // })
     // logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
-    console.log("DFDFD");
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);
