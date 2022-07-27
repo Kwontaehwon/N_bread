@@ -28,6 +28,38 @@ function jsonResponse(res, code, message, isSuccess, result){
 }
 
 
+AWS.config.update({
+  region : 'ap-northeast-2',
+  accessKeyId : process.env.S3_ACCESS_KEY_ID,
+  secretAccessKey : process.env.S3_SECRET_ACCESS_KEY
+});
+
+const s3 = new AWS.S3();
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket : 'nbreadimg',
+    key : (req, file, cb) => {
+      cb(null, `original/${Date.now()}_${file.originalname}`)
+    }
+  }),
+  limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
+})
+
+router.post('/img', upload.array('img'),  (req,res)=>{
+  console.log(req.files);
+  const result = [];
+  for(let i of req.files){
+    console.log(i);
+    const originalUrl = i.location;
+    const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+    result.push(newUrl);
+  }
+  return jsonResponse(res, 200, `${result} 반환`, true, `${result}` );
+} )
+
+
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
 router.get('/all/:region', async (req, res, next) => {
@@ -94,8 +126,6 @@ router.post('/create', verifyToken, async (req, res, next) => {
       userId : user.id,
       region:region
     })
-  
-  
     console.log("image link is added");
     console.log("deal id is "+deal.id);
     if(imageLink1!==""){
@@ -338,28 +368,5 @@ router.post('/:dealId/endRecruit', isLoggedIn, async(req, res, next) => {
 //   }
 // })
 
-AWS.config.update({
-  region : 'ap-northeast-2',
-  accessKeyId : process.env.S3_ACCESS_KEY_ID,
-  secretAccessKey : process.env.S3_SECRET_ACCESS_KEY
-});
-
-const s3 = new AWS.S3();
-
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket : 'nbreadimg',
-    key : (req, file, cb) => {
-      cb(null, `original/${Date.now()}_${file.originalname}`)
-    }
-  }),
-  limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
-})
-
-router.post('/img', isLoggedIn, upload.single('img'),  (req,res)=>{
-  logger.info(req.file);
-  return jsonResponse(res, 200, `${req.file.location} 반환`, true, `${req.file.location}` );
-} )
 
 module.exports = router;
