@@ -248,7 +248,7 @@ router.get('/naver/reauth', async (req, res, next) => {
     const body = {
       response_type : `code`,
       client_id : process.env.NAVER_CLIENT_ID,
-      redirect_uri : encodeURI('http://localhost:5005/auth/naver/signout'),
+      redirect_uri : encodeURI('https://chocobread.shop/auth/naver/signout'),
       state : process.env.CSRF_TOKEN,
       auth_type : "reauthenticate"
     }
