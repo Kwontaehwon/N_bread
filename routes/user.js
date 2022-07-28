@@ -7,7 +7,7 @@ const CryptoJS = require('crypto-js');
 const axios = require('axios');
 require('dotenv').config();
 
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
+const { isLoggedIn, isNotLoggedIn ,verifyToken} = require('./middlewares');
 const { User, Group, Deal,DealImage } = require('../models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
@@ -15,6 +15,7 @@ const { response } = require('express');
 const { resolve } = require('path');
 const { Op } = require('sequelize');
 const sequelize=require('../models');
+const logger = require('../config/winston');
 
 const router = express.Router();
 
@@ -94,6 +95,8 @@ router.post('/location/:userId', async(req,res)=>{
     const user = await User.findOne({ where: { id: req.params.userId } });
     const prom=new Promise((resolve,reject)=>{
         axios.get('https://api.ip.pe.kr/').then((Response)=>{
+          logger.info(Response.data);
+          console.log(Response.data);
             resolve(makeSignature(Response.data));
         }).catch((err)=>{
             console.log(err)
