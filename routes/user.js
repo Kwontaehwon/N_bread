@@ -152,8 +152,8 @@ router.post('/location/:userId', async(req,res)=>{
     //makeSignature();
 
 })
-router.get('/location', isLoggedIn, async(req,res)=>{
-    const loggedInUser = await User.findOne({ where: { Id: req.user.id } });
+router.get('/location', verifyToken, async(req,res)=>{
+  const loggedInUser = await User.findOne({ where: { Id: req.decoded.id } });
     const result={userId : loggedInUser.id,location:loggedInUser.curLocation3};
     jsonResponse(res,200,"현재 위치를 db에서 가져오는데 성공하였습니다",true,result)
 })
