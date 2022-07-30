@@ -157,7 +157,7 @@ router.post(
   }
 );
 
-router.get('/success', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+router.get('/success', isLoggedIn, (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
   const payload = {
     id : req.user.id,
     nick : req.user.nick,
@@ -181,7 +181,7 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
 
 router.get('/kakao/signout', verifyToken, async (req, res, next) => {
   try{
-    const user = await User.findOne({where : req.decoded.id });
+    const user = await User.findOne({where : {id : req.decoded.id} });
     const body = {
       target_id_type : "user_id",
       target_id : user.snsId
