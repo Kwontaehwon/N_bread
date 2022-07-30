@@ -37,10 +37,6 @@ module.exports = () => {
               exUser.update({refreshToken : refreshToken});
               done(null, exUser);
             }
-            else if(exEmail) {
-              console.log("다른 소셜로 이미 가입된 아이디입니다.");
-              done(null, false, {message : '이미 가입된 이메일 입니다.'});
-            }
             else {
               const newUser = await User.create({
                 email: email,
