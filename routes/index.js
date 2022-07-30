@@ -23,7 +23,7 @@ function jsonResponse(res, code, message, isSuccess, result) {
 router.get('/', async (req, res, next) => {
   try {
     const user = await User.findOne({
-      where: { id: req.user && req.user.id || null },
+      where: { id:req.decoded.id || null },
     });
     req.session.loginData=user;
     return jsonResponse(res, 200, `USER : ${req.session.loginData}`, true, req.session.loginData);

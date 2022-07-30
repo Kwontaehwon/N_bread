@@ -181,7 +181,7 @@ router.get('/:dealId', async (req, res, next) => {
 
 
 // 거래 수정하기
-router.put('/:dealId', isLoggedIn, async(req, res, next) => {
+router.put('/:dealId', verifyToken, async(req, res, next) => {
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
     currentMember} = req.body;
   try{
@@ -190,8 +190,8 @@ router.put('/:dealId', isLoggedIn, async(req, res, next) => {
       logger.info(`dealId : ${req.params.dealId}에 매칭되는 거래를 찾을 수 없습니다.`);
       return jsonResponse(res, 404, `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`, false, null);
     }
-    if(deal.userId != req.user.id){
-      logger.info(`userId : ${req.user.id}는 거래를 수정할 권한이 없습니다.`);
+    if(deal.userId != req.decoded.id){
+      logger.info(`userId : ${req.decoded.id}는 거래를 수정할 권한이 없습니다.`);
       return jsonResponse(res, 403, `글의 작성자만 거래를 수정할 수 있습니다.`, false, null);
     }
     const groups = await Group.findAll({where : {dealId : deal.id}});
@@ -220,13 +220,13 @@ router.put('/:dealId', isLoggedIn, async(req, res, next) => {
 
 
 // 거래 삭제
-router.delete('/:dealId', isLoggedIn, async (req, res, next) => {
+router.delete('/:dealId', verifyToken, async (req, res, next) => {
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
     if(!deal){
       return jsonResponse(res, 404, 'dealId에 매칭되는 deal를 찾을 수 없습니다.', false, null);
     }
-    if(deal.userId != req.user.id){
+    if (deal.userId != req.decoded.id){
       return jsonResponse(res, 403, '글의 작성자만 거래를 삭제할 수 있습니다.', false, null);
     }
     const groups = await Group.findAll({where : {dealId : deal.id}});
@@ -250,7 +250,7 @@ router.delete('/:dealId', isLoggedIn, async (req, res, next) => {
 
 
 // 참여자 : 거래 참여하기
-router.post('/:dealId/join/:userId', isLoggedIn, async (req, res, next) => {
+router.post('/:dealId/join/:userId', verifyToken, async (req, res, next) => {
   try {
     const user = await User.findOne({where: { Id: req.params.userId }});
     const deal = await Deal.findOne({where: { Id: req.params.dealId }});
@@ -325,13 +325,13 @@ router.get('/:dealId/users/:userId', async (req, res, next) => {
   }
 });
 
-router.post('/:dealId/endRecruit', isLoggedIn, async(req, res, next) => {
+router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
     if(!deal){
       return jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
     }
-    if(deal.userId != req.user.id){
+    if (deal.userId != req.decoded.id){
       return jsonResponse(res, 403, '글의 작성자만 모집을 마감 할 수 있습니다.', false, null)
     }
     deal.update({where : {isRecruitDone : true}});
