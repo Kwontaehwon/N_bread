@@ -176,7 +176,7 @@ router.get('/success', isLoggedIn, (req, res, next) => { // 다른 소셜간 이
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
   logger.error("auth/error 로그인 문제");
-  return jsonResponse(res, 404, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
+  return jsonResponse(res, 500, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
 })
 
 router.get('/kakao/signout', verifyToken, async (req, res, next) => {

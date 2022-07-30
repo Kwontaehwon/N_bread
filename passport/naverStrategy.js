@@ -18,19 +18,13 @@ module.exports = () => {
                   // 네이버 플랫폼에서 로그인 했고 & snsId필드에 네이버 아이디가 일치할경우
                   where: { snsId: profile.id, provider: 'naver' },
                });
-               const exEmail = await User.findOne({
-                  where: { email: profile.email },
-                })
           
                // 이미 가입된 네이버 프로필이면 성공
                if (exUser) {
                   console.log("이미 가입된 유저입니다.");
                   await exUser.update({accessToken : accessToken, refreshToken : refreshToken})
                   done(null, exUser);
-               } else if(exEmail) {
-                  console.log("다른 소셜로 이미 가입된 아이디입니다.");
-                  done(null, false, {message : '이미 가입된 이메일 입니다.'});
-               } else {
+               }  else {
                   // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
                   const newUser = await User.create({
                      email: profile.email,
