@@ -5,7 +5,7 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
+const { isLoggedIn, isNotLoggedIn ,verifyToken} = require('./middlewares');
 const { User, Group, Deal,Comment,Reply, sequelize } = require('../models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
@@ -28,8 +28,8 @@ function jsonResponse(res, code, message, isSuccess, result) {
 router.use(express.json());
 
 
-router.post('/:dealId', isLoggedIn, async (req, res) => {
-    const user = await User.findOne({ where: { id: req.user.id } });
+router.post('/:dealId', verifyToken, async (req, res) => {
+    const user = await User.findOne({ where: { id: req.decoded.id } });
     try{
         const comment=await Comment.create({
             userId : user.id,
@@ -44,8 +44,8 @@ router.post('/:dealId', isLoggedIn, async (req, res) => {
     }
 
 })
-router.post('/reply/:dealId', isLoggedIn, async (req, res) => { 
-    const user = await User.findOne({ where: { id: req.user.id } });
+router.post('/reply/:dealId', verifyToken, async (req, res) => { 
+    const user = await User.findOne({ where: { id: req.decoded.id } });
     //const comment = await Comment.findOne({ where: { dealId: req.params.dealId } });
     try {
         await Reply.create({
@@ -63,7 +63,8 @@ router.post('/reply/:dealId', isLoggedIn, async (req, res) => {
 
 })
 
-router.delete('/:commentId', isLoggedIn, async (req, res) => {
+router.delete('/:commentId', verifyToken, async (req, res) => {
+    const user = await User.findOne({ where: { id: req.decoded.id } });
     
     const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
     if(comment===null){
@@ -71,7 +72,7 @@ router.delete('/:commentId', isLoggedIn, async (req, res) => {
         res.end();
     }
     else{
-        if (comment.userId === req.user.id) {
+        if (comment.userId === user.id) {
             try {
                 await comment.destroy();
                 jsonResponse(res, 200, "삭제가 완료되었습니다.", false);
@@ -86,14 +87,15 @@ router.delete('/:commentId', isLoggedIn, async (req, res) => {
     }
 })
 
-router.delete('/reply/:replyId', isLoggedIn, async (req, res) => {
+router.delete('/reply/:replyId', verifyToken, async (req, res) => {
+    const user = await User.findOne({ where: { id: req.decoded.id } });
     const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId), deletedAt: { [Op.eq]: null } } });
     if (reply === null) {
         jsonResponse(res, 404, "이미 삭제된 답글입니다.", false);0
         res.end();
     }
     else {
-        if (reply.userId === req.user.id) {
+        if (reply.userId === user.id) {
             try {
                 await reply.destroy();
                 jsonResponse(res, 200, "삭제에 성공하였습니다.", true);
@@ -108,15 +110,15 @@ router.delete('/reply/:replyId', isLoggedIn, async (req, res) => {
     }
 })
 
-router.put('/:commentId', isLoggedIn, async (req, res) => {
-
+router.put('/:commentId', verifyToken, async (req, res) => {
+    const user = await User.findOne({ where: { id: req.decoded.id } });
     const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
     if (comment === null) {
         jsonResponse(res, 403, "댓글이 존재하지 않습니다.", false);
         res.end();
     }
     else {
-        if (comment.userId === req.user.id) {
+        if (comment.userId === user.id) {
             try {
                 await comment.update({
                     content:req.body.content
@@ -133,14 +135,15 @@ router.put('/:commentId', isLoggedIn, async (req, res) => {
     }
 })
 
-router.put('/reply/:replyId', isLoggedIn, async (req, res) => {
+router.put('/reply/:replyId', verifyToken, async (req, res) => {
+    const user = await User.findOne({ where: { id: req.decoded.id } });
     const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId)} });
     if (reply === null) {
         jsonResponse(res, 404, "답글이 존재하지 않습니다.", false);
         res.end();
     }
     else {
-        if (reply.userId === req.user.id) {
+        if (reply.userId === user.id) {
             try {
                 await reply.update({
                     content: req.body.content
