@@ -202,7 +202,7 @@ router.get('/kakao/signout', verifyToken, async (req, res, next) => {
     .catch((error) => {
       logger.error(error);
       console.log(error);
-      return jsonResponse(res, 400, `Kakao signout error :   ${error}`, false, null);
+      return jsonResponse(res, 400, `Kakao signout error :  ${error}`, false, null);
     })
   } catch (error) {
     logger.error(error);
