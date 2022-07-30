@@ -4,6 +4,7 @@ const CryptoJS = require('crypto-js');
 const axios = require('axios');
 const logger = require('../config/winston');
 const sequelize = require('../models');
+const requestIp = require('request-ip');
 
 
 function jsonResponse(res, code, message, isSuccess, result){
@@ -163,6 +164,8 @@ const postNaverGeoLocation = async(req,res)=>{
 
 // GET users/location 
 const getUserLocation = async(req, res) => {
+    console.log(req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress);
+    console.log("ip " + requestIp.getClientIp(req));
     const loggedInUser = await User.findOne({ where: { Id: req.decoded.id } });
     const result = {userId : loggedInUser.id, location:loggedInUser.curLocation3};
     logger.info(`users/location | userId : ${req.decoded.id}의 현재 지역 : ${result.location} 을 반환합니다.`)
