@@ -116,7 +116,7 @@ const postNaverGeoLocation = async(req,res)=>{
         console.log(error);
     })
 
-    let tmp = await prom;
+    let tmp = await makeSignature((req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress).replace(/^.*:/, ''));
     //console.log("url is : "+tmp.url);
     axios.get(tmp.url,{headers:{
         "x-ncp-apigw-signature-v2":tmp.signature,
@@ -164,8 +164,10 @@ const postNaverGeoLocation = async(req,res)=>{
 
 // GET users/location 
 const getUserLocation = async(req, res) => {
+	const headerIp = await (req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress).replace(/^.*:/, '');
+	const requestIps= await requestIp.getClientIp(req);
+	console.log(headerIp);
     console.log(req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress);
-    console.log("ip " + requestIp.getClientIp(req));
     const loggedInUser = await User.findOne({ where: { Id: req.decoded.id } });
     const result = {userId : loggedInUser.id, location:loggedInUser.curLocation3};
     logger.info(`users/location | userId : ${req.decoded.id}의 현재 지역 : ${result.location} 을 반환합니다.`)
