@@ -181,10 +181,7 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
 
 router.get('/kakao/signout', verifyToken, async (req, res, next) => {
   try{
-    console.log("decoded id : " + req.decoded.id);
-    const user = await User.findOne({ where : {id : req.decoded.id} });
-    console.log("SNS ID + " + user.id);
-
+    const user = await User.findOne({where : {id : req.decoded.id} });
     const body = {
       target_id_type : "user_id",
       target_id : user.snsId
