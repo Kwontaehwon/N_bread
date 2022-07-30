@@ -9,7 +9,7 @@ const dotenv = require('dotenv');
 const https = require('https');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-const { swaggerUi, specs } = require('./swagger');
+const { swaggerUi, specs } = require('./swagger/swagger');
 
 dotenv.config();
 const indexRouter = require('./routes');
