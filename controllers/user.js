@@ -103,6 +103,7 @@ const getMypageDeals = async (req, res, next) => {
 
 // POST users/location/:userId
 const postNaverGeoLocation = async(req,res)=>{
+  try{
     const user = await User.findOne({ where: { id: req.params.userId } });
     const prom = new Promise((resolve,reject)=>{
         axios.get('https://api.ip.pe.kr/').then((Response)=>{
@@ -160,18 +161,27 @@ const postNaverGeoLocation = async(req,res)=>{
         return { "signature": result, "timestamp": timestamp, "url":"https://geolocation.apigw.ntruss.com"+url,"accessKey":accessKey};
     }
     //makeSignature();
+  } catch(error){
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, result)
+  }
 }
 
 // GET users/location 
 const getUserLocation = async(req, res) => {
-	const headerIp = await (req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress).replace(/^.*:/, '');
-	const requestIps= await requestIp.getClientIp(req);
-	console.log(headerIp);
+  try{
+    const headerIp = await (req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress).replace(/^.*:/, '');
+    const requestIps= await requestIp.getClientIp(req);
+    console.log(headerIp);
     console.log(req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress);
     const loggedInUser = await User.findOne({ where: { Id: req.decoded.id } });
     const result = {userId : loggedInUser.id, location:loggedInUser.curLocation3};
     logger.info(`users/location | userId : ${req.decoded.id}의 현재 지역 : ${result.location} 을 반환합니다.`)
     jsonResponse(res, 200, `현재 위치 : ${result.location} 을(를) DB에서 가져오는데 성공하였습니다`,true,result)
+  } catch(error){
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, result)
+  }
 }
 
 // PUT users/:userId
