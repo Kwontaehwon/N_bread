@@ -1,4 +1,4 @@
-const { User, Group, Deal,DealImage } = require('../models');
+const { User, Group, Deal, DealImage } = require('../models');
 const { Op } = require('sequelize');
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
