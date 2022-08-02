@@ -175,9 +175,12 @@ router.get('/:dealId',async(req,res)=>{
         {
             model: Reply,
             paranoid: false,
+            required:false,
+            where: { dealId: req.params.dealId },
             include: {
                 model: User,
                 attributes: ['nick','userStatus'],
+                
             }
         }],
     })
@@ -222,3 +225,4 @@ router.get('/:dealId',async(req,res)=>{
 
 
 module.exports = router;
+
