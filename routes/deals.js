@@ -47,7 +47,7 @@ const upload = multer({
   limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
 })
 
-router.post('/img', upload.array('img'),  (req,res)=>{
+router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
   console.log(req.files);
   const result = [];
   for(let i of req.files){
@@ -55,6 +55,15 @@ router.post('/img', upload.array('img'),  (req,res)=>{
     const originalUrl = i.location;
     const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
     result.push(newUrl);
+  }
+  if(result.length > 0){
+    for(let url of result){
+      console.log(url);
+      await DealImage.create({
+        dealImage: url,
+        dealId: req.params.dealId,
+      })
+    }
   }
   return jsonResponse(res, 200, `${result} 반환`, true, `${result}` );
 } )
@@ -117,18 +126,11 @@ router.get('/all/:region', async (req, res, next) => {
 
 
 // 거래 생성하기
-router.post('/create', verifyToken, upload.array('img'), async (req, res, next) => {
+router.post('/create', verifyToken, async (req, res, next) => {
   try {
-    const result = [];
-    for(let i of req.files){
-      console.log(i);
-      const originalUrl = i.location;
-      const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
-      result.push(newUrl);
-    }
-    const body = req.body.body;
-    const parseResult = await JSON.parse(body);
-    const { title, link, totalPrice, personalPrice, totalMember, dealDate, place, content, region, imageLink1, imageLink2, imageLink3} = parseResult; // currentMember 수정 필요.
+    // console.log(req.body);
+    // const parseResult = await JSON.parse(body);
+    const { title, link, totalPrice, personalPrice, totalMember, dealDate, place, content, region} = req.body; // currentMember 수정 필요.
 
     const user = await User.findOne({where: { Id: req.decoded.id }});
     if(!user){
@@ -153,16 +155,7 @@ router.post('/create', verifyToken, upload.array('img'), async (req, res, next) 
       region:region
     })
     console.log("image link is added");
-    console.log("deal id is "+deal.id);
-    if(result.length > 0){
-      for(let url of result){
-        console.log(url);
-        await DealImage.create({
-          dealImage: url,
-          dealId: deal.id,
-        })
-      }
-    }
+    console.log("deal id is " + deal.id);
     await group.update({ dealId : deal.id }); // 업데이트
     logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
     // const dealEnd = new Date(deal.dealDate);

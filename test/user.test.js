@@ -1,6 +1,6 @@
-jest.mock('../models/user')
+jest.mock('../models')
 const { getUser } = require('../controllers/user');
-const User = require('../models/user');
+const { User, Group, Deal, DealImage } = require('../models');
 
 function jsonResponse(res, code, message, isSuccess, result){
     res.status(code).json({

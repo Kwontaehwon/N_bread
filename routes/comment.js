@@ -47,6 +47,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
 router.post('/reply/:dealId', verifyToken, async (req, res) => { 
     const user = await User.findOne({ where: { id: req.decoded.id } });
     //const comment = await Comment.findOne({ where: { dealId: req.params.dealId } });
+	console.log(req.body);
     try {
         await Reply.create({
             userId: user.id,
@@ -225,4 +226,3 @@ router.get('/:dealId',async(req,res)=>{
 
 
 module.exports = router;
-
