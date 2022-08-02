@@ -72,6 +72,9 @@ router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
 router.get('/all/:region', async (req, res, next) => {
+  var token = req.headers.authorization;
+  console.log(`token is ${token}`)
+  
   const allDeal = await Deal.findAll({ 
     where: { region: { [Op.eq]: req.params.region }},
     order:[['createdAt','DESC']],
@@ -82,10 +85,8 @@ router.get('/all/:region', async (req, res, next) => {
     {model:User,attributes:['nick','curLocation3']},
   ]
   });
-  console.log(allDeal.length);
   for(i=0;i<allDeal.length;i++){
     var toSetStatus=allDeal[i];
-    allDeal[i].dealDate=allDeal[i].dealDate;
     if ((toSetStatus['dealDate'] - (3 * 1000 * 3600 * 24))<Date.now()){
       if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="모집완료"
       else toSetStatus['status']="모집실패"
@@ -95,14 +96,31 @@ router.get('/all/:region', async (req, res, next) => {
     else if(toSetStatus['currentMember']===toSetStatus['totalMember']){
       toSetStatus['status']="모집완료";
     } else toSetStatus['status']="모집중"
-    //console.log(typeof(toSetStatus));
-    //toSetStatus.add({'Status':'tmp'});
   }
-  //console.log(allDeal);
-  //reg=req.params.region;
+
+  if (token != undefined) {
+    //mystatus 처리->"제안자" "참여자" ""
+    var decodedValue=jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+    for (i = 0; i < allDeal.length; i++) {
+      var toSetStatus = allDeal[i];
+      toSetStatus['mystatus']="";
+      if (toSetStatus['userId']===decodedValue.id) {
+        toSetStatus['mystatus']="제안자"
+      }else{ 
+        var groupMember = [];
+        var group=await Group.findAll({where:{dealId:toSetStatus['id']}});
+        for(j=0;j<group.length;j++){
+          groupMember.push(group[j]['userId']);
+        }
+        if(groupMember.includes(decodedValue.id)){
+          toSetStatus['mystatus']="참여자"
+        }
+      }
+    }
+  }
+
   var testres={"capsule":allDeal} 
-  // var yeoksamDeal = allDeal.findAll({ where: { region:{[Op.eq]:"yeoksam"}}})
-  // var testres={"yeoksam":yeoksamDeal};
+
   return jsonResponse(res, 200, "전체 글 리스트", true, testres);
 })
 
