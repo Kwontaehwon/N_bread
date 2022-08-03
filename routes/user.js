@@ -21,7 +21,7 @@ router.use(express.json());
 
 
 // 마이페이지 거래 내역:수정중
-router.get('/deals/:userId', getMypageDeals);
+router.get('/deals/:userId',verifyToken, getMypageDeals);
 
 // 유저 현재 위치 등록 (naver GeoLocation) -> verifyToken?
 router.post('/location/:userId', postNaverGeoLocation);
