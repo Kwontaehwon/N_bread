@@ -176,11 +176,12 @@ router.get('/:dealId',async(req,res)=>{
         {
             model: Reply,
             paranoid: false,
-	    required:false,
-	    where:{dealId:req.params.dealId},
+            required:false,
+            where: { dealId: req.params.dealId },
             include: {
                 model: User,
                 attributes: ['nick','userStatus'],
+                
             }
         }],
     })
