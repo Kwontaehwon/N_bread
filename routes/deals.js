@@ -10,10 +10,11 @@ const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 
 
-const { User, Group, Deal,Comment,Reply, DealImage } = require('../models');
+const { User, Group, Deal,Comment,Reply, DealImage, DealReport } = require('../models');
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { Op } = require('sequelize');
 const logger = require('../config/winston');
+const { timeLog } = require('console');
 
 
 const router = express.Router();
@@ -351,6 +352,41 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
     return jsonResponse(res, 200, "모집이 정상적으로 마감되었습니다.", true, result);
   }
   catch(error){
+    console.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null)
+  }
+});
+
+router.post('/:dealId/report', verifyToken, async(req, res, next) => {
+  try{
+    const {reporterId, title, content } = req.body;
+    if(req.params.dealId == ":dealId"){
+      return jsonResponse(res, 404, `parameter :dealId가 필요합니다.`, false, null);
+    }
+    const user = await User.findOne({where: { Id: req.decoded.id }});
+    const deal = await Deal.findOne({where : { Id : req.params.dealId} });
+
+    if(!user){
+      logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
+      return jsonResponse(res, 404, `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`, false, null);
+    }
+    if(!deal){
+      logger.info(`dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`);
+      return jsonResponse(res, 404, `dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`, false, null);
+    }
+    if(user.id === deal.userId){
+      logger.info(`userId : ${req.decoded.id} 자신이 작성한 글을 신고 할 수 없습니다.`);
+      return jsonResponse(res, 403, `userId : ${req.decoded.id} 자신이 작성한 글을 신고 할 수 없습니다.`, false, null);
+    }
+    const dealReport = await DealReport.create({
+      title : title,
+      content : content,
+      reporterId : reporterId,
+      dealId : req.params.dealId
+    })
+    logger.info(`${reporterId}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`);
+    return jsonResponse(res, 200, `${reporterId}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`, true, dealReport);
+  }catch(error){
     console.error(error);
     return jsonResponse(res, 500, "서버 에러", false, null)
   }

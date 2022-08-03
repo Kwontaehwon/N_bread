@@ -14,7 +14,7 @@ module.exports = class DealImage extends Sequelize.Model {
             
         }, { // 글 삭제 여부(추가?) ||  작성시간(timestamp?), 현재모집인원(수정 필요), 
             sequelize,
-            timestamps: false,
+            timestamps: true,
             underscored: false,
             modelName: 'DealImage',
             tableName: 'dealImages',
