@@ -345,6 +345,15 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
   }
 });
 
+router.post('/:dealId/report', verifyToken, async(req, res, next) => {
+  try{
+    
+  }catch(error){
+    console.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null)
+  }
+});
+
 // router.post('/:dealId/endDeal', isLoggedIn, async(req, res, next) => {
 //   try{
 //     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
