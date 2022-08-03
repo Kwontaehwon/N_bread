@@ -41,12 +41,12 @@ const getUser = async (req, res, next) => {
 // GET users/deals/:userId
 const getMypageDeals = async (req, res, next) => {
     try{
-        const user = await User.findOne({ where: { id: req.params.userId } }); 
-        const refDeal = await Group.findAll({where:{userId:req.params.userId}});
+        const user = await User.findOne({ where: { id: req.decoded.id } }); 
+      const refDeal = await Group.findAll({ where: { userId: req.decoded.id}});
         console.log("refDeal : "+refDeal);
         if(refDeal.length===0){
           console.log("refDeal is null")
-          logger.info(`users/deals/:userId | userId : ${req.params.userId}의 마이페이지에 [] 을 반환합니다.`);
+          logger.info(`users/deals/:userId | userId : ${req.decoded.id}의 마이페이지에 [] 을 반환합니다.`);
           return jsonResponse(res, 200, "전체 글 리스트", true, []);
         } else{
           const [tmpres, metadata] = await sequelize.sequelize.query(
@@ -85,10 +85,10 @@ const getMypageDeals = async (req, res, next) => {
           //mystatus처리
           for (i = 0; i < deal.length; i++) {
             if (suggesterId.includes(deal[i]['id'])) {
-              deal[i]['mystatus'] = "제안"
+              deal[i]['mystatus'] = "제안자"
             }
             else {
-              deal[i]['mystatus'] = "참여"
+              deal[i]['mystatus'] = "참여자"
             }
           }
           logger.info(`users/deals/:userId | userId : ${req.params.userId}의 마이페이지에 글을 반환합니다.`);
