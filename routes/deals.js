@@ -41,7 +41,14 @@ const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket : 'nbreadimg',
-    key : (req, file, cb) => {
+    key : async (req, file, cb) => {
+      const dealImages = await DealImage.findAll({where : {dealId : req.params.dealId}})
+      console.log(dealImages);
+      if(dealImages.length > 0){
+        for(dealImage of dealImages){
+          await dealImage.destroy(); // 그냥 삭제하는 것이 맞는가? 거래 수정됬을 때 어떻게 수정하면 좋을까?
+        }
+      }
       cb(null, `original/${Date.now()}_${file.originalname}`)
     }
   }),
