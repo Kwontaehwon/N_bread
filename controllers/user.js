@@ -84,6 +84,19 @@ const getMypageDeals = async (req, res, next) => {
       
           //mystatus처리
           for (i = 0; i < deal.length; i++) {
+            var toSetStatus = deal[i];
+            toSetStatus['mystatus'] = "user";
+            if ((toSetStatus['dealDate'] - (3 * 1000 * 3600 * 24)) < Date.now()) {
+              if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "모집완료"
+              else toSetStatus['status'] = "모집실패"
+            } else if (toSetStatus['dealDate'] < Date.now()) {
+              toSetStatus['status'] = "거래완료";
+            }
+            else if (toSetStatus['currentMember'] === toSetStatus['totalMember']) {
+              toSetStatus['status'] = "모집완료";
+            } else toSetStatus['status'] = "모집중"
+            
+
             if (suggesterId.includes(deal[i]['id'])) {
               deal[i]['mystatus'] = "제안자"
             }
