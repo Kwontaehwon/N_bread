@@ -195,6 +195,13 @@ router.get('/:dealId',async(req,res)=>{
     //console.log(comments[0]['dataValues']);
     //comment userStatus처리
     for(i=0;i<comments.length;i++){
+        //deleted comment 처리
+        if(comments[i]['deletedAt']!=null){
+            comments[i]['content']="삭제된 댓글입니다.";
+        }
+
+
+
         // comments UserStatus
         if(comments[i]['userId']===suggester){
             comments[i]['User']["userStatus"]="제안자";
@@ -207,6 +214,11 @@ router.get('/:dealId',async(req,res)=>{
         //reply UserStauts
         for(j=0;j<comments[i]['Replies'].length;j++){
             var curReply=comments[i]['Replies'][j];
+            if(curReply['deletedAt']!=null){
+                curReply['content']="삭제된 댓글입니다."
+            }
+
+
             if (curReply['userId']==suggester){
                 curReply['User']['userStatus']="제안자"
             } else if(groupMember.includes(curReply['userId'])){
