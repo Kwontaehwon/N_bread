@@ -285,7 +285,7 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
   const privKey = fs.readFileSync(path);
   const appleClientSecret = jwt.sign(payload, privKey, signOptions);
 
-  const user = await User.findOne({where : req.decoded.id });
+  const user = await User.findOne({where : {Id :  req.decoded.id}});
   const data = {
     client_id : "shop.chocobread.service",
     client_secret : appleClientSecret,
