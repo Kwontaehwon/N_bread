@@ -35,11 +35,11 @@ router.post('/:dealId', verifyToken, async (req, res) => {
             userId : user.id,
             content : req.body.content,
             dealId : req.params.dealId
-        })
+        }) 
         console.log(req.params.dealId);
         jsonResponse(res,200,"댓글 작성에 성공하였습니다.",true);
     } catch(err){
-        jsonResponse(res, 404, "댓글 삭제에 실패하였습니다.", false);
+        jsonResponse(res, 404, "댓글 작성에 실패하였습니다.", false);
         console.log(err);
     }
 

@@ -230,8 +230,32 @@ const putUserNick = async (req, res, next) => {
     }
 }
 
+const checkUserNick = async (req, res, next) => {
+  try {
+    const { nick } = req.body;
+    const user = await User.findOne({ where: { Id: req.params.userId } });
+    if (!user) {
+      logger.info(`userId : ${req.params.userId}에 해당되는 유저가 없습니다.`);
+      return jsonResponse(res, 404, `userId : ${req.params.userId}에 해당되는 유저가 없습니다.`, false, null);
+    }
+    const isDuplicated = await User.findOne({ where: { nick: nick } });
+    if (isDuplicated) {
+      logger.info(`중복된 닉네임 (${nick})이 이미 존재합니다.`);
+      return jsonResponse(res, 409, `중복된 닉네임 (${nick})이 이미 존재합니다.`, false, null);
+    }else{
+      return jsonResponse(res, 200, `(${nick})은 사용가능한 닉네임입니다.`,true, null);
+    }
+
+  } catch (error) {
+    console.log(error);
+    logger.error(error);
+    return jsonResponse(res, 500, `서버 에러`, false, result)
+  }
+}
+
 exports.getUser = getUser;
 exports.getMypageDeals = getMypageDeals;
 exports.postNaverGeoLocation = postNaverGeoLocation;
 exports.getUserLocation = getUserLocation;
 exports.putUserNick = putUserNick;
+exports.checkUserNick = checkUserNick;
