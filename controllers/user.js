@@ -232,7 +232,7 @@ const putUserNick = async (req, res, next) => {
 
 const checkUserNick = async (req, res, next) => {
   try {
-    const { nick } = req.body;
+    const { nick } = req.params.nick;
     const user = await User.findOne({ where: { Id: req.params.userId } });
     if (!user) {
       logger.info(`userId : ${req.params.userId}에 해당되는 유저가 없습니다.`);

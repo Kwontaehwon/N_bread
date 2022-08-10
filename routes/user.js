@@ -36,7 +36,7 @@ router.get('/:userId', getUser);
 router.put('/:userId', putUserNick);
 
 //유저 닉네임 중복체크 
-router.get('/check/:userId', checkUserNick)
+router.get('/check/:userId/:nick', checkUserNick)
 
 
 // router.delete('/:userId', async (req, res, next) => {
