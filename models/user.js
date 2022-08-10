@@ -47,6 +47,10 @@ module.exports = class User extends Sequelize.Model {
       refreshToken: {
         type : Sequelize.STRING(),
         allowNull : true
+      },
+      isNewUser: {
+        type : Sequelize.BOOLEAN(),
+        allowNull : false
       }
     }, {
       sequelize,

@@ -15,6 +15,7 @@ const qs = require('qs');
 
 const { serveWithOptions } = require('swagger-ui-express');
 const { urlencoded } = require('body-parser');
+const { session } = require('passport');
 
 const router = express.Router();
 
@@ -157,11 +158,15 @@ router.post(
   }
 );
 
-router.get('/success', isLoggedIn, (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+router.get('/success', isLoggedIn, async (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+  console.log(req.exUser);
+  const user = await User.findOne({where: { id : req.user.id}});
+  req.logout();
+  req.session.destroy();
   const payload = {
-    id : req.user.id,
-    nick : req.user.nick,
-    provider : req.user.provider
+    id : user.id,
+    nick : user.nick,
+    provider : user.provider
   }
   const accessToken = jwt.sign(
     payload, process.env.JWT_SECRET, {
@@ -169,9 +174,9 @@ router.get('/success', isLoggedIn, (req, res, next) => { // 다른 소셜간 이
     issuer: 'chocoBread'
   });
   res.cookie('accessToken', accessToken);
-  logger.info(`User Id ${req.user.id} 님이 ${req.user.provider} 로그인에 성공하였습니다.`);
+  logger.info(`User Id ${user.id} 님이 ${user.provider} 로그인에 성공하였습니다.`);
   logger.info(`jwt Token을 발행합니다.`);
-  return jsonResponse(res, 200, `${req.user.provider} 로그인에 성공하였습니다.`, true, req.user);
+  return jsonResponse(res, 200, `${user.provider} 로그인에 성공하였습니다.`, true, user);
 })
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
