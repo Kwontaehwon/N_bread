@@ -146,8 +146,8 @@ const postNaverGeoLocation = async(req,res)=>{
             'location': data.geoLocation.r1 + " " + data.geoLocation.r2 + " " + data.geoLocation.r3});
     }).catch((err) => {
         console.log("err : "+err)
-        logger.error(error);
-        return jsonResponse(res, 500, "서버 에러", false, result)
+        logger.error(err);
+        return jsonResponse(res, 500, "서버 에러", false, err)
     })
  
     function makeSignature(ipAddr) {
