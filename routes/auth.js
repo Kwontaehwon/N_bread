@@ -312,6 +312,16 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
     return jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
   })
 })
+router.get('/kakao/logout',async(req,res,next)=>{
+  try {
+    return jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null);
+  }
+  
+  
+})
 
 //https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
 

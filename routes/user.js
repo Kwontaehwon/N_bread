@@ -12,7 +12,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../models');
-const { getUser, getMypageDeals, postNaverGeoLocation, getUserLocation, putUserNick,checkUserNick } = require('../controllers/user');
+const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick } = require('../controllers/user');
 
 
 const router = express.Router();
@@ -24,7 +24,7 @@ router.use(express.json());
 router.get('/deals/:userId',verifyToken, getMypageDeals);
 
 // 유저 현재 위치 등록 (naver GeoLocation) -> verifyToken?
-router.post('/location/:userId', postNaverGeoLocation);
+router.post('/location/:userId/:latitude/:longitude', getNaverGeoLocation);
 
 // 유저 DB에서 저장된 위치 GET -> verifyToken 삭제?
 router.get('/location', verifyToken, getUserLocation);

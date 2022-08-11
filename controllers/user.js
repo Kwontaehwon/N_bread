@@ -5,6 +5,8 @@ const axios = require('axios');
 const logger = require('../config/winston');
 const sequelize = require('../models');
 const requestIp = require('request-ip');
+const { env } = require('process');
+const { RDS } = require('aws-sdk');
 
 
 function jsonResponse(res, code, message, isSuccess, result){
@@ -115,65 +117,39 @@ const getMypageDeals = async (req, res, next) => {
     }
 }
 
-// POST users/location/:userId
-const postNaverGeoLocation = async(req,res)=>{
+// GET users/location/:userId/:latitude/:longitude
+const getNaverGeoLocation = async(req,res)=>{
   try{
+    const longitude=req.params.longitude;
+    const latitude=req.params.latitude;
     const user = await User.findOne({ where: { id: req.params.userId } });
-    const prom = new Promise((resolve,reject)=>{
-        axios.get('https://api.ip.pe.kr/').then((Response)=>{
-          logger.info(Response.data);
-          console.log(Response.data);
-            resolve(makeSignature(Response.data));
-        }).catch((err)=>{
-            console.log(err)
-        })
-    }).catch((error)=>{
-        console.log(error);
-    })
-
-    let tmp = await makeSignature((req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress).replace(/^.*:/, ''));
-    //console.log("url is : "+tmp.url);
-    axios.get(tmp.url,{headers:{
-        "x-ncp-apigw-signature-v2":tmp.signature,
-        "x-ncp-iam-access-key":tmp.accessKey,
-        "x-ncp-apigw-timestamp":tmp.timestamp,
-
+  
+    const url =`https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=admcode&output=json`
+   
+    axios.get(url,{headers:{
+        "X-NCP-APIGW-API-KEY-ID":env.NAVER_CLIENTKEY,
+        "X-NCP-APIGW-API-KEY":env.NAVER_CLIENTSECRETKEY,
     }}).then(async (Response) => {
-        const data=Response.data;
-        console.log(Response.data)
-        console.log(data.geoLocation.r2);
-        user.update({ curLocation1: data.geoLocation.r1, curLocation2: data.geoLocation.r2, curLocation3: data.geoLocation.r3})
-        jsonResponse(res, 200, "현재 위치 저장이 완료되었습니다.", true, {
-            'location': data.geoLocation.r1 + " " + data.geoLocation.r2 + " " + data.geoLocation.r3});
+      if(Response.data['status']['code']===200){
+        jsonResponse(res,401,"Naver ClientKey, Naver ClientSecretKey가 필요합니다.",false,null);
+      } else if (Response.data['status']['code'] === 100){
+        jsonResponse(res,400,"좌표가 유효하지 않습니다. 올바른 좌표를 넣어주세요.",false,null)
+      }else{
+        const tmpdata=Response.data;
+        const data = tmpdata['results'][0]['region'];
+        console.log(['area1']['name']);
+        //console.log(data.geoLocation.r2);
+        user.update({ curLocation1: data['area1']['name'], curLocation2: data['area2']['name'], curLocation3: data['area3']['name'] })
+        jsonResponse(res, 200, `현재 위치 저장이 완료되었습니다. 현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${ data['area3']['name']}입니다. `, true, null);
+      }
+      
     }).catch((err) => {
         console.log("err : "+err)
         logger.error(err);
         return jsonResponse(res, 500, "서버 에러", false, err)
     })
  
-    function makeSignature(ipAddr) {
-        var space = " ";				// one space
-        var newLine = "\n";				// new line
-        var method = "GET";				// method
-        var url = "/geolocation/v2/geoLocation?ip="+ipAddr+"&ext=t&responseFormatType=json";	// url (include query string)
-        var timestamp = Date.now().toString();			// current timestamp (epoch)
-        var accessKey = process.env.NAVER_ACCESSKEY;			// access key id (from portal or Sub Account)
-        var secretKey = process.env.NAVER_SECRETKEY;			// secret key (from portal or Sub Account)
-
-        var hmac = CryptoJS.algo.HMAC.create(CryptoJS.algo.SHA256, secretKey);
-        hmac.update(method);
-        hmac.update(space);
-        hmac.update(url);
-        hmac.update(newLine);
-        hmac.update(timestamp);
-        hmac.update(newLine);
-        hmac.update(accessKey);
-
-        var hash = hmac.finalize();
-
-        let result = hash.toString(CryptoJS.enc.Base64);
-        return { "signature": result, "timestamp": timestamp, "url":"https://geolocation.apigw.ntruss.com"+url,"accessKey":accessKey};
-    }
+ 
     //makeSignature();
   } catch(error){
     logger.error(error);
@@ -256,7 +232,7 @@ const checkUserNick = async (req, res, next) => {
 
 exports.getUser = getUser;
 exports.getMypageDeals = getMypageDeals;
-exports.postNaverGeoLocation = postNaverGeoLocation;
+exports.getNaverGeoLocation = getNaverGeoLocation;
 exports.getUserLocation = getUserLocation;
 exports.putUserNick = putUserNick;
 exports.checkUserNick = checkUserNick;
