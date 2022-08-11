@@ -123,6 +123,9 @@ const getNaverGeoLocation = async(req,res)=>{
     const longitude=req.params.longitude;
     const latitude=req.params.latitude;
     const user = await User.findOne({ where: { id: req.params.userId } });
+    if(!user){
+      return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null);
+    }
   
     const url =`https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=admcode&output=json`
    
@@ -140,8 +143,8 @@ const getNaverGeoLocation = async(req,res)=>{
         console.log(['area1']['name']);
         //console.log(data.geoLocation.r2);
         user.update({ curLocation1: data['area1']['name'], curLocation2: data['area2']['name'], curLocation3: data['area3']['name'] })
-        jsonResponse(res, 200, `현재 위치 저장이 완료되었습니다. 현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${ data['area3']['name']}입니다. `, true, null);
-      }
+        jsonResponse(res, 200, `현재 위치 저장이 완료되었습니다. 현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${data['area3']['name']}입니다. `, true, { 'location1': data['area1']['name'], 'location2': data['area2']['name'], 'location3': data['area3']['name'] }
+        );}
       
     }).catch((err) => {
         console.log("err : "+err)
