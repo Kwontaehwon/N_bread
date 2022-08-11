@@ -19,7 +19,7 @@ function jsonResponse(res, code, message, isSuccess, result){
 // GET users/:userId
 const getUser = async (req, res, next) => {
     try{
-        const user = await User.findOne({where : { Id : req.params.userId}});
+        const user = await User.findOne({where : { Id : req.params.userId},paranoid:false});
         if(!user){
             return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null)
         }
@@ -28,6 +28,7 @@ const getUser = async (req, res, next) => {
             nick : user.nick,
             provider : user.provider,
             addr : user.curLocation3,
+            deletedAt:user.deletedAt
         }
         logger.info(`GET users/:userId | userId : ${req.params.userId} 의 유저 정보를 반환합니다.`);
         return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result)
@@ -146,8 +147,8 @@ const postNaverGeoLocation = async(req,res)=>{
             'location': data.geoLocation.r1 + " " + data.geoLocation.r2 + " " + data.geoLocation.r3});
     }).catch((err) => {
         console.log("err : "+err)
-        logger.error(error);
-        return jsonResponse(res, 500, "서버 에러", false, result)
+        logger.error(err);
+        return jsonResponse(res, 500, "서버 에러", false, err)
     })
  
     function makeSignature(ipAddr) {
