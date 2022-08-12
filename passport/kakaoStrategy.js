@@ -19,6 +19,7 @@ module.exports = () => {
       console.log("profile.email : " + profile._json.kakao_account.email);
       
       if (exUser) {
+        await exUser.update({isNewUser : false});
         done(null, exUser);
       }
       else {
@@ -27,6 +28,7 @@ module.exports = () => {
           nick: profile.displayName,
           snsId: profile.id,
           provider: 'kakao',
+          isNewUser: true
         });
         done(null, newUser);
       }

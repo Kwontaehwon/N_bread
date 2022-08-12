@@ -22,7 +22,11 @@ module.exports = () => {
                // 이미 가입된 네이버 프로필이면 성공
                if (exUser) {
                   console.log("이미 가입된 유저입니다.");
-                  await exUser.update({accessToken : accessToken, refreshToken : refreshToken})
+                  await exUser.update({
+                     accessToken : accessToken, 
+                     refreshToken : refreshToken,
+                     isNewUser : false
+                  });
                   done(null, exUser);
                }  else {
                   // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
@@ -32,7 +36,8 @@ module.exports = () => {
                      snsId: profile.id,
                      provider: 'naver',
                      accessToken : accessToken,
-                     refreshToken : refreshToken
+                     refreshToken : refreshToken,
+                     isNewUser : true
                   });
                   done(null, newUser);
                }

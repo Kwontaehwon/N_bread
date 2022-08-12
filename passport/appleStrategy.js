@@ -34,7 +34,10 @@ module.exports = () => {
             })
 
             if (exUser) {
-              exUser.update({refreshToken : refreshToken});
+              exUser.update({
+                refreshToken : refreshToken,
+                isNewUser : false
+              });
               done(null, exUser);
             }
             else {
@@ -43,7 +46,8 @@ module.exports = () => {
                 snsId: id,
                 nick : "tempNickName-Apple",
                 provider: 'apple',
-                refreshToken : refreshToken
+                refreshToken : refreshToken,
+                isNewUser : true
               });
               done(null, newUser);
             }
