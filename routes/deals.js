@@ -90,7 +90,7 @@ router.get('/all/:region', async (req, res, next) => {
     model: DealImage,
     attributes: ['dealImage','id']
     },
-    {model:User,attributes:['nick','curLocation3']},
+    {model:User,attributes:['nick','curLocation3'],paranoid:false},
   ]
   });
   for(i=0;i<allDeal.length;i++){
