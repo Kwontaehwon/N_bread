@@ -199,7 +199,7 @@ router.get('/kakao/signout', verifyToken, async (req, res, next) => {
     axios.post( `https://kapi.kakao.com/v1/user/unlink?target_id_type=user_id&target_id=${user.snsId}`, qsBody, {headers : headers})
     .then((response) => {
       console.log(response);
-      user.destroy()
+     user.destroy()
       .then(() => {
         return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
       })

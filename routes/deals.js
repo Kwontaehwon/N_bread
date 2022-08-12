@@ -52,7 +52,7 @@ const upload = multer({
       cb(null, `original/${Date.now()}_${file.originalname}`)
     }
   }),
-  limits : {fileSize : 5 * 1024 * 1024} // 이미지 최대 size 5MB
+  limits : {fileSize : 100 * 1024 * 1024} // 이미지 최대 size 5MB
 })
 
 router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
