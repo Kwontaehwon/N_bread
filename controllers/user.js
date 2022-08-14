@@ -81,7 +81,7 @@ const getMypageDeals = async (req, res, next) => {
               model: DealImage,
               attributes: ['dealImage', 'id']
             },
-            { model: User, attributes: ['nick', 'curLocation3'] },
+            { model: User, attributes: ['nick', 'curLocation3'],paranoid:false },
             ]
           })
       
