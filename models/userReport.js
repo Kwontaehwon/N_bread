@@ -24,6 +24,7 @@ module.exports = class UserReport extends Sequelize.Model {
   }
 
   static associate(db) {
-    db.Group.belongsTo(db.User, { foreignKey : 'reporterId', targetKey : 'id' } );
+    db.UserReport.belongsTo(db.User, { foreignKey : 'reporterId', targetKey : 'id' } );
+    db.UserReport.belongsTo(db.User, { foreignKey : 'reportedUserId', targetKey : 'id' } );
   }
 };

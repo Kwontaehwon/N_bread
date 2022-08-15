@@ -12,7 +12,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../models');
-const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick } = require('../controllers/user');
+const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick, postReportUser } = require('../controllers/user');
 
 
 const router = express.Router();
@@ -37,6 +37,9 @@ router.put('/:userId', putUserNick);
 
 //유저 닉네임 중복체크 
 router.get('/check/:userId/:nick', checkUserNick)
+
+// 유저 신고
+router.post('/report/:userId', verifyToken, postReportUser);
 
 
 // router.delete('/:userId', async (req, res, next) => {

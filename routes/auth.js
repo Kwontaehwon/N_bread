@@ -53,10 +53,10 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
     });
     const curUser = await User.findOne({ where: { email } });
     console.log(curUser.id);
-    var url = 'http://localhost:8080/users/location/'+curUser.id.toString();
-    axios.post(url).then(async (Response)=>{
-      console.log(Response.data);
-    }).catch((err)=>console.log(err));
+    // var url = `http://localhost:${process.env.PORT}/users/location/`;
+    // axios.post(url).then(async (Response)=>{
+    //   console.log(Response.data);
+    // }).catch((err)=>console.log(err));
     return jsonResponse(res, 200, "로컬 회원가입에 성공하였습니다.", true, user)
   } catch (error) {
     console.error(error);

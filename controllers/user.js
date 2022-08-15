@@ -1,4 +1,4 @@
-const { User, Group, Deal, DealImage } = require('../models');
+const { User, Group, Deal, DealImage, UserReport } = require('../models');
 const { Op } = require('sequelize');
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
@@ -233,9 +233,49 @@ const checkUserNick = async (req, res, next) => {
   }
 }
 
+const postReportUser = async (req, res, next) => {
+  try{
+    const {title, content} = req.body;
+    if(title === undefined || content === undefined){
+      logger.info(`Body에 빠진 정보가 있습니다.`);
+      return jsonResponse(res, 400, `req.body에 빠진 정보가 있습니다`, false, null);
+    }
+    if(req.params.userId == ":userId"){
+      return jsonResponse(res, 404, `parameter :userId가 필요합니다.`, false, null);
+    }
+    const reporter = await User.findOne({where: { Id: req.decoded.id }});
+    const reportedUser = await User.findOne({where: { Id: req.params.userId }});
+
+    if(!reporter){
+      logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
+      return jsonResponse(res, 404, `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`, false, null);
+    }
+    if(!reportedUser){
+      logger.info(`userId : ${req.params.userId} 에 해당되는 유저가 없어 신고할 수 없습니다.`);
+      return jsonResponse(res, 404, `userId : ${req.params.userId} 에 유저가 없어 신고할 수 없습니다.`, false, null);
+    }
+    if(reporter.id === reportedUser.id){
+      logger.info(`userId : ${req.decoded.id} 자기 자신을 신고 할 수 없습니다.`);
+      return jsonResponse(res, 403, `userId : ${req.decoded.id} 자기 자신을 신고 할 수 없습니다.`, false, null);
+    }
+    const userReport = await UserReport.create({
+      title : title,
+      content : content,
+      reportedUserId : req.params.userId,
+      reporterId : req.decoded.id
+    })
+    logger.info(`${req.params.userId} 님이 userId : ${req.params.userId}을 신고 하였습니다.`);
+    return jsonResponse(res, 200, `${req.params.userId} 님이 userId : ${req.params.userId}을 신고 하였습니다.`, true, userReport);
+  }catch(error){
+    console.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null)
+  }
+}
+
 exports.getUser = getUser;
 exports.getMypageDeals = getMypageDeals;
 exports.getNaverGeoLocation = getNaverGeoLocation;
 exports.getUserLocation = getUserLocation;
 exports.putUserNick = putUserNick;
 exports.checkUserNick = checkUserNick;
+exports.postReportUser = postReportUser;

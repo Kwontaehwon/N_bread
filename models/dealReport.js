@@ -24,7 +24,7 @@ module.exports = class DealReport extends Sequelize.Model {
   }
 
   static associate(db) {
-    db.Group.belongsTo(db.User, { foreignKey : 'reporterId', targetKey : 'id' } );
-    db.Group.belongsTo(db.Deal, { foreignKey: 'dealId', targetKey : 'id' });
+    db.DealReport.belongsTo(db.User, { foreignKey : 'reporterId', targetKey : 'id' } );
+    db.DealReport.belongsTo(db.Deal, { foreignKey: 'dealId', targetKey : 'id' });
   }
 };
