@@ -172,6 +172,7 @@ router.get('/:dealId',async(req,res)=>{
         include: [{
             model: User,
             attributes: ['nick','userStatus'],
+            paranoid: false,
         },
         {
             model: Reply,
@@ -181,6 +182,7 @@ router.get('/:dealId',async(req,res)=>{
             include: {
                 model: User,
                 attributes: ['nick','userStatus'],
+                paranoid: false,
                 
             }
         }],
