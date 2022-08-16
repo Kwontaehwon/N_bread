@@ -154,7 +154,7 @@ router.post(
     res.cookie('accessToken', accessToken);
     logger.info(`User Id ${req.user.id} 님이 ${req.user.provider} 로그인에 성공하였습니다.`);
     logger.info(`jwt Token을 발행합니다.`);
-    return jsonResponse(res, 200, `${req.user.provider} 로그인에 성공하였습니다.`, true, req.user);
+    return res.status(200).send();
   }
 );
 
@@ -176,7 +176,7 @@ router.get('/success', isLoggedIn, async (req, res, next) => { // 다른 소셜�
   res.cookie('accessToken', accessToken);
   logger.info(`User Id ${user.id} 님이 ${user.provider} 로그인에 성공하였습니다.`);
   logger.info(`jwt Token을 발행합니다.`);
-  return jsonResponse(res, 200, `${user.provider} 로그인에 성공하였습니다.`, true, user);
+  return res.status(200).send();
 })
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
