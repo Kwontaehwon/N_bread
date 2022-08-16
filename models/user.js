@@ -50,7 +50,8 @@ module.exports = class User extends Sequelize.Model {
       },
       isNewUser: {
         type : Sequelize.BOOLEAN(),
-        allowNull : false
+        allowNull : false,
+        defaultValue : true
       }
     }, {
       sequelize,
@@ -69,5 +70,8 @@ module.exports = class User extends Sequelize.Model {
     db.User.hasOne(db.Deal, { foreignKey: 'userId', sourceKey : 'id' });
     db.User.hasMany(db.Comment, { foreignKey: 'userId', sourceKey: 'id' });
     db.User.hasMany(db.DealReport, { foreignKey : 'reporterId', sourceKey : 'id' } );
+    db.User.hasMany(db.UserReport, { foreignKey : 'reporterId', sourceKey : 'id' } );
+    db.User.hasMany(db.UserReport, { foreignKey : 'reportedUserId', sourceKey : 'id' } );
+
   }
 };
