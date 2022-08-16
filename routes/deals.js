@@ -366,7 +366,7 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
 
 router.post('/:dealId/report', verifyToken, async(req, res, next) => {
   try{
-    const {reporterId, title, content } = req.body;
+    const {title, content } = req.body;
     if(req.params.dealId == ":dealId"){
       return jsonResponse(res, 404, `parameter :dealId가 필요합니다.`, false, null);
     }
@@ -388,11 +388,11 @@ router.post('/:dealId/report', verifyToken, async(req, res, next) => {
     const dealReport = await DealReport.create({
       title : title,
       content : content,
-      reporterId : reporterId,
+      reporterId : req.decoded.id,
       dealId : req.params.dealId
     })
-    logger.info(`${reporterId}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`);
-    return jsonResponse(res, 200, `${reporterId}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`, true, dealReport);
+    logger.info(`${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`);
+    return jsonResponse(res, 200, `${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`, true, dealReport);
   }catch(error){
     console.error(error);
     return jsonResponse(res, 500, "서버 에러", false, null)
