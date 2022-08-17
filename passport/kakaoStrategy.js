@@ -14,19 +14,13 @@ module.exports = () => {
       const exUser = await User.findOne({
         where: { snsId: profile.id, provider: 'kakao' }, 
       });
-      const exEmail = await User.findOne({
-        where: { email: profile._json.kakao_account.email },
-      })
 
       console.log("profile.id : " + profile._json.id);
       console.log("profile.email : " + profile._json.kakao_account.email);
       
       if (exUser) {
+        await exUser.update({isNewUser : false});
         done(null, exUser);
-      }
-      else if(exEmail) {
-        console.log("다른 소셜로 이미 가입된 아이디입니다.");
-        done(null, false, {message : '이미 가입된 이메일 입니다.'});
       }
       else {
         const newUser = await User.create({
@@ -34,6 +28,7 @@ module.exports = () => {
           nick: profile.displayName,
           snsId: profile.id,
           provider: 'kakao',
+          isNewUser: true
         });
         done(null, newUser);
       }

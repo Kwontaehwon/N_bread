@@ -14,14 +14,14 @@ module.exports = class Group extends Sequelize.Model {
       underscored: false,
       modelName: 'Group',
       tableName: 'groups',
-      paranoid: false,
-      charset: 'utf8', //mb4 적용해야지 이모티콘 사용 가능
-      collate: 'utf8_general_ci',
+      paranoid: true,
+      charset: 'utf8mb4', //mb4 적용해야지 이모티콘 사용 가능
+      collate: 'utf8mb4_general_ci',
     });
   }
 
   static associate(db) {
-    db.Group.belongsTo(db.User,{ foreignKey : 'userId', sourceKey : 'id' } );
-    db.Group.belongsTo(db.Deal, { foreignKey : 'dealId', sourceKey : 'id' });
+    db.Group.belongsTo(db.User,{ foreignKey : 'userId', targetKey : 'id' } );
+    db.Group.belongsTo(db.Deal, { foreignKey: 'dealId', targetKey : 'id' });
   }
 };

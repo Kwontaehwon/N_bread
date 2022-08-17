@@ -1,53 +1,36 @@
-
-
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { User, Domain } = require('../models');
-const { isLoggedIn } = require('./middlewares');
+const { isLoggedIn, verifyToken } = require('./middlewares');
 const net = require('net');
 const externalip = require('externalip');
 const axios=require('axios');
+const { verify } = require('crypto');
 
 
 const router = express.Router();
 
-router.get('/', async (req, res, next) => {
+
+function jsonResponse(res, code, message, isSuccess, result) {
+  res.status(code).json({
+      code: code,
+      message: message,
+      isSuccess: isSuccess,
+      result: result
+  })
+}
+
+
+router.get('/', verifyToken, async (req, res, next) => {
   try {
     const user = await User.findOne({
-      where: { id: req.user && req.user.id || null },
+      where: { id:req.decoded.id || null },
     });
     req.session.loginData=user;
-    res.render('login', {
-      user,
-    });
+    return jsonResponse(res, 200, `USER : ${req.session.loginData}`, true, req.session.loginData);
   } catch (err) {
     console.error(err);
     next(err);
   }
 });
-
-router.post('/domain', isLoggedIn, async (req, res, next) => {
-  try {
-    await Domain.create({
-      UserId: req.user.id,
-      host: req.body.host,
-      type: req.body.type,
-      clientSecret: uuidv4(),
-    });
-    res.redirect('/');
-  } catch (err) {
-    console.error(err);
-    next(err);
-  }
-});
-router.put('/myip', async (req, res) => {
-  axios.get('https://api.ip.pe.kr/').then((Response) => {
-    console.log(Response.data);
-  }).catch((Error) => {
-    console.log(Error);
-  })
-  
-  res.send({hihi:"hihi"}).json;
-});
-
 module.exports = router;

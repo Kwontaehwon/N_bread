@@ -4,6 +4,11 @@ const config = require('../config/config')[env];
 const User = require('./user');
 const Deal = require('./deal');
 const Group = require('./group');
+const Comment = require('./comment');
+const Reply = require('./reply');
+const DealImage = require('./dealImage');
+const DealReport = require('./dealReport');
+const UserReport = require('./userReport');
 
 
 
@@ -16,13 +21,28 @@ db.sequelize = sequelize;
 db.Deal = Deal;
 db.User = User;
 db.Group = Group;
+db.Comment=Comment;
+db.Reply = Reply;
+db.DealImage=DealImage;
+db.DealReport=DealReport;
+db.UserReport = UserReport;
 
 Deal.init(sequelize);
 User.init(sequelize);
 Group.init(sequelize);
+Comment.init(sequelize);
+Reply.init(sequelize);
+DealImage.init(sequelize);
+DealReport.init(sequelize);
+UserReport.init(sequelize);
 
 Deal.associate(db);
 User.associate(db);
 Group.associate(db);
+Comment.associate(db);
+Reply.associate(db);
+DealImage.associate(db);
+DealReport.associate(db);
+UserReport.associate(db);
 
 module.exports = db;

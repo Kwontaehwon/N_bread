@@ -6,18 +6,25 @@ const morgan = require('morgan');
 const session = require('express-session');
 const nunjucks = require('nunjucks');
 const dotenv = require('dotenv');
-const { swaggerUi, specs } = require('./swagger');
+const https = require('https');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const { swaggerUi, specs } = require('./swagger/swagger');
 
 dotenv.config();
 const indexRouter = require('./routes');
 const dealRouter = require('./routes/deals');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
-// const v1 = require('./routes/v1');
+const commentRouter = require('./routes/comment');
+
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
 
+const logger = require('./config/winston');
+
 const app = express();
+
 passportConfig();
 app.set('port', process.env.PORT || 5005);
 app.set('view engine', 'html');
@@ -27,7 +34,7 @@ nunjucks.configure('views', {
 });
 sequelize.sync({ force: false })
   .then(() => {
-    console.log('데이터베이스 연결 성공');
+    console.log('데이터베이스 연결 성공'); 
   })
   .catch((err) => {
     console.error(err);
@@ -49,11 +56,14 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/deals', dealRouter);
 app.use('/users', userRouter);
+app.use('/comments',commentRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use((req, res, next) => {
@@ -65,10 +75,23 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
-  res.status(err.status || 500);
-  res.render('error');
+  logger.error(err);
+  res.status(err.status || 500).json({message : err.message, error : res.locals.error});
 });
 
-app.listen(app.get('port'),'0.0.0.0', () => {
-  console.log(app.get('port'), '번 포트에서 대기중');
-});
+if(process.env.NODE_ENV == 'production'){
+  const options = {
+    ca: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/cert.pem'),
+  };  
+  https.createServer(options, app).listen(app.get('port'), () => {
+    logger.info(`HTTPS:${app.get('port')} 서버 시작`);
+  });
+}
+else{
+  app.listen(app.get('port'),'0.0.0.0', () => {
+    logger.info(`development HTTP:${app.get('port')} 서버 시작`);
+  });
+}
+
