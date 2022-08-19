@@ -32,6 +32,7 @@ const getUser = async (req, res, next) => {
             addr : user.curLocation3,
             deletedAt:user.deletedAt,
             id : user.id,
+            email : user.email,
         }
         logger.info(`GET users/:userId | userId : ${req.params.userId} 의 유저 정보를 반환합니다.`);
         return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result)
