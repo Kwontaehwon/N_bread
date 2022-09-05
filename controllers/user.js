@@ -23,7 +23,7 @@ const getUser = async (req, res, next) => {
     try{
         const user = await User.findOne({where : { Id : req.params.userId},paranoid:false});
         if(!user){
-            return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null)
+            return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
         }
         const result = {
             createdAt : user.createdAt,
@@ -36,6 +36,23 @@ const getUser = async (req, res, next) => {
         }
         logger.info(`GET users/:userId | userId : ${req.params.userId} 의 유저 정보를 반환합니다.`);
         return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result)
+        /* #swagger.responses[200] = {
+            description: 'User successfully obtained.',
+            schema: {
+              "code": 200,
+              "message": "userId의 정보를 반환합니다.",
+              "isSuccess": true,
+              "result": {
+                  "createdAt": "2022-08-15T13:45:36.000Z",
+                  "nick": "kygkt4h12354",
+                  "provider": "local",
+                  "addr": null,
+                  "deletedAt": null,
+                  "id": 1,
+                  "email": "kygkth1234@gmail.com"
+              }
+            }
+        } */
     } catch (error){
         logger.error(error);
         return jsonResponse(res, 500, "서버 에러", false, result)
