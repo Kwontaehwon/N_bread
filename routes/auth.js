@@ -35,6 +35,7 @@ function createClientSecret(){
 
 
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
+  // #swagger.summary = '로컬 회원가입'
   const { email, nick, password } = req.body;
   try {
     const exUser = await User.findOne({ where: { email } });
