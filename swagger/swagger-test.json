@@ -55,6 +55,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "로컬 회원가입",
         "description": "",
         "parameters": [
           {
@@ -84,6 +85,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "로컬 로그인",
         "description": "",
         "parameters": [],
         "responses": {
@@ -98,6 +100,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "로컬 로그아웃",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -108,6 +111,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "카카오 로그인",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -118,6 +122,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "카카오 로그인 CallBack",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -128,6 +133,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "네이버 로그인",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -138,6 +144,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "네이버 로그인 CallBack",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -148,6 +155,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "애플 로그인",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -158,6 +166,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "애플 로그인 CallBack",
         "description": "",
         "parameters": [],
         "responses": {
@@ -172,6 +181,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "로그인 성공시 토큰 반환",
         "description": "",
         "parameters": [],
         "responses": {
@@ -186,6 +196,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "로그인 Error",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -196,6 +207,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "카카오 회원탈퇴",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -206,6 +218,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "네이버 회원탈퇴",
         "description": "",
         "parameters": [
           {
@@ -222,6 +235,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "네이버 회원탈퇴 전 재로그인",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -232,6 +246,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "애플 회원탈퇴",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -242,6 +257,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "카카오 로그아웃",
         "description": "",
         "parameters": [],
         "responses": {}

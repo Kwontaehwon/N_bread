@@ -65,6 +65,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
 });
 
 router.post('/login', isNotLoggedIn, (req, res, next) => {
+  // #swagger.summary = '로컬 로그인'
   passport.authenticate('local', {session : false}, (authError, user, info) => {
     console.log("USER : " + user);
     if (authError) {
@@ -98,24 +99,33 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
 });
 
 router.get('/logout', verifyToken, (req, res) => {
+  // #swagger.summary = '로컬 로그아웃'
   req.logout();
   req.session.destroy();
   return jsonResponse(res, 200, '로그아웃에 성공하였습니다.', true, null);
 
 });
 
-router.get('/kakao', passport.authenticate('kakao',  {session : false}));
+router.get(
+  // #swagger.summary = '카카오 로그인'
+  '/kakao',
+  passport.authenticate('kakao',  {session : false}));
 
 router.get('/kakao/callback', passport.authenticate('kakao', {
+  // #swagger.summary = '카카오 로그인 CallBack'
   failureRedirect: '/auth/error',
   successRedirect: '/auth/success'
 }), (req, res) => {
   
 });
 
-router.get('/naver', passport.authenticate('naver', {session : false}));
+router.get(
+  // #swagger.summary = '네이버 로그인'
+  '/naver',
+  passport.authenticate('naver', {session : false}));
 
 router.get('/naver/callback', passport.authenticate('naver', {
+  // #swagger.summary = '네이버 로그인 CallBack'
   failureRedirect: '/auth/error',
   successRedirect: '/auth/success'
 })), (req, res) => {
@@ -134,8 +144,13 @@ router.get('/naver/callback', passport.authenticate('naver', {
   return jsonResponse(res, 200, "네이버 로그인에 성공하였습니다.", true, req.user);
 }
 
-router.get('/apple', passport.authenticate('apple'));
+router.get(
+  // #swagger.summary = '애플 로그인'
+  '/apple',
+  passport.authenticate('apple'));
+
 router.post(
+  // #swagger.summary = '애플 로그인 CallBack'
   '/apple/callback',
   express.urlencoded({ extended: false }),
   passport.authenticate('apple'),
@@ -160,6 +175,7 @@ router.post(
 );
 
 router.get('/success', isLoggedIn, async (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+  // #swagger.summary = '로그인 성공시 토큰 반환'
   console.log(req.exUser);
   const user = await User.findOne({where: { id : req.user.id}});
   req.logout();
@@ -181,11 +197,13 @@ router.get('/success', isLoggedIn, async (req, res, next) => { // 다른 소셜�
 })
 
 router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+  // #swagger.summary = '로그인 Error'
   logger.error("auth/error 로그인 문제");
   return jsonResponse(res, 500, "정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)", false, req.user);
 })
 
 router.get('/kakao/signout', verifyToken, async (req, res, next) => {
+  // #swagger.summary = '카카오 회원탈퇴'
   try{
     const user = await User.findOne({where : {id : req.decoded.id} });
     const body = {
@@ -218,6 +236,7 @@ router.get('/kakao/signout', verifyToken, async (req, res, next) => {
 
 
 router.get('/naver/signout', async (req, res, next) => {
+  // #swagger.summary = '네이버 회원탈퇴'
   try{
     console.log(req.query);
     const body = {
@@ -250,6 +269,7 @@ router.get('/naver/signout', async (req, res, next) => {
 });
 
 router.get('/naver/reauth', async (req, res, next) => {
+  // #swagger.summary = '네이버 회원탈퇴 전 재로그인'
   try{
     const body = {
       response_type : `code`,
@@ -269,6 +289,7 @@ router.get('/naver/reauth', async (req, res, next) => {
 })
 
 router.get('/apple/signout', verifyToken, async (req, res, next) => {
+  // #swagger.summary = '애플 회원탈퇴'
   const nowSec = await Math.round(new Date().getTime() / 1000);
   const expirySec = 120000;
   const expSec = await nowSec + expirySec;
@@ -318,15 +339,15 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
     return jsonResponse(res, 400, `apple signout error :   ${error}`, false, null);
   })
 })
+
 router.get('/kakao/logout',async(req,res,next)=>{
+  // #swagger.summary = '카카오 로그아웃'
   try {
     return jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
   } catch (error) {
     logger.error(error);
     return jsonResponse(res, 500, "서버 에러", false, null);
   }
-  
-  
 })
 
 //https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
