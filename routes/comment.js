@@ -29,6 +29,7 @@ router.use(express.json());
 
 
 router.post('/:dealId', verifyToken, async (req, res) => {
+    // #swagger.summary = '댓글 생성'
     const user = await User.findOne({ where: { id: req.decoded.id } });
     try{
         const comment=await Comment.create({
@@ -44,7 +45,8 @@ router.post('/:dealId', verifyToken, async (req, res) => {
     }
 
 })
-router.post('/reply/:dealId', verifyToken, async (req, res) => { 
+router.post('/reply/:dealId', verifyToken, async (req, res) => {
+    // #swagger.summary = '대댓글 생성'
     const user = await User.findOne({ where: { id: req.decoded.id } });
     //const comment = await Comment.findOne({ where: { dealId: req.params.dealId } });
 	console.log(req.body);
@@ -65,6 +67,7 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
 })
 
 router.delete('/:commentId', verifyToken, async (req, res) => {
+    // #swagger.summary = '댓글 삭제'
     const user = await User.findOne({ where: { id: req.decoded.id } });
     
     const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
@@ -89,6 +92,7 @@ router.delete('/:commentId', verifyToken, async (req, res) => {
 })
 
 router.delete('/reply/:replyId', verifyToken, async (req, res) => {
+    // #swagger.summary = '대댓글 삭제'
     const user = await User.findOne({ where: { id: req.decoded.id } });
     const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId), deletedAt: { [Op.eq]: null } } });
     if (reply === null) {
@@ -112,6 +116,7 @@ router.delete('/reply/:replyId', verifyToken, async (req, res) => {
 })
 
 router.put('/:commentId', verifyToken, async (req, res) => {
+    // #swagger.summary = '댓글 수정'
     const user = await User.findOne({ where: { id: req.decoded.id } });
     const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
     if (comment === null) {
@@ -137,6 +142,7 @@ router.put('/:commentId', verifyToken, async (req, res) => {
 })
 
 router.put('/reply/:replyId', verifyToken, async (req, res) => {
+    // #swagger.summary = '대댓글 수정'
     const user = await User.findOne({ where: { id: req.decoded.id } });
     const reply = await Reply.findOne({ where: { id: parseInt(req.params.replyId)} });
     if (reply === null) {
@@ -161,10 +167,9 @@ router.put('/reply/:replyId', verifyToken, async (req, res) => {
     }
 })  
 router.get('/:dealId',async(req,res)=>{
-
+    // #swagger.summary = '거래글 댓글 조회'
     const suggest=await Deal.findOne({where:{id:req.params.dealId},attributes:['id','userId']});
     const group=await Group.findAll({where:{dealId:req.params.dealId},attributes:['dealId','userId']});
-
 
     const comments=await Comment.findAll({
         where:{dealId:req.params.dealId},

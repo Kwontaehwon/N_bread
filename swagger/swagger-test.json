@@ -252,6 +252,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "S3 이미지(Array) 업로드",
         "description": "",
         "parameters": [
           {
@@ -269,6 +270,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "지역 전체 거래 GET",
         "description": "",
         "parameters": [
           {
@@ -291,6 +293,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "거래 생성",
         "description": "",
         "parameters": [
           {
@@ -338,6 +341,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "거래 세부정보 GET",
         "description": "",
         "parameters": [
           {
@@ -353,6 +357,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "거래 수정",
         "description": "",
         "parameters": [
           {
@@ -401,6 +406,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "거래 삭제",
         "description": "",
         "parameters": [
           {
@@ -418,6 +424,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "거래 참여",
         "description": "",
         "parameters": [
           {
@@ -441,6 +448,7 @@
         "tags": [
           "Deals"
         ],
+        "summary": "거래 유저 상태(참여자, 제안자, 참여하지 않음)",
         "description": "",
         "parameters": [
           {
@@ -459,28 +467,12 @@
         "responses": {}
       }
     },
-    "/deals/{dealId}/endRecruit": {
-      "post": {
-        "tags": [
-          "Deals"
-        ],
-        "description": "",
-        "parameters": [
-          {
-            "name": "dealId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {}
-      }
-    },
     "/deals/{dealId}/report": {
       "post": {
         "tags": [
           "Deals"
         ],
+        "summary": "거래 신고",
         "description": "",
         "parameters": [
           {
@@ -506,6 +498,25 @@
           }
         ],
         "responses": {}
+      }
+    },
+    "/deals/{dealId}/endRecruit": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "모집 마감하기",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {},
+        "deprecated": true
       }
     },
     "/users/deals/{userId}": {
@@ -706,6 +717,7 @@
         "tags": [
           "Comments"
         ],
+        "summary": "댓글 생성",
         "description": "",
         "parameters": [
           {
@@ -738,6 +750,7 @@
         "tags": [
           "Comments"
         ],
+        "summary": "거래글 댓글 조회",
         "description": "",
         "parameters": [
           {
@@ -755,6 +768,7 @@
         "tags": [
           "Comments"
         ],
+        "summary": "대댓글 생성",
         "description": "",
         "parameters": [
           {
@@ -792,6 +806,7 @@
         "tags": [
           "Comments"
         ],
+        "summary": "댓글 삭제",
         "description": "",
         "parameters": [
           {
@@ -812,6 +827,7 @@
         "tags": [
           "Comments"
         ],
+        "summary": "댓글 수정",
         "description": "",
         "parameters": [
           {
@@ -846,6 +862,7 @@
         "tags": [
           "Comments"
         ],
+        "summary": "대댓글 삭제",
         "description": "",
         "parameters": [
           {
@@ -866,6 +883,7 @@
         "tags": [
           "Comments"
         ],
+        "summary": "대댓글 수정",
         "description": "",
         "parameters": [
           {
