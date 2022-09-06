@@ -1,0 +1,933 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "N빵 API",
+    "description": "SWM-ChocoBread N빵 API 명세서",
+    "version": "1.0.0"
+  },
+  "host": "localhost:5005",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User에 대한 설명"
+    },
+    {
+      "name": "Deals",
+      "description": "Deals에 대한 설명"
+    },
+    {
+      "name": "Comments",
+      "description": "Comment에 대한 설명"
+    },
+    {
+      "name": "Auth",
+      "description": "Auth에 대한 설명"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "securityDefinitions": {
+    "bearerAuth": {
+      "type": "http",
+      "scheme": "bearer",
+      "in": "header",
+      "bearerFormat": "JWT"
+    }
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "로컬 회원가입",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "example": "any"
+                },
+                "nick": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "로컬 로그인",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "로컬 로그아웃",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/kakao": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 로그인",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/kakao/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 로그인 CallBack",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/naver": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "네이버 로그인",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/naver/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "네이버 로그인 CallBack",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/apple": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "애플 로그인",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/apple/callback": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "애플 로그인 CallBack",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/auth/success": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "로그인 성공시 토큰 반환",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/auth/error": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "로그인 Error",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/kakao/signout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 회원탈퇴",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/naver/signout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "네이버 회원탈퇴",
+        "description": "",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/auth/naver/reauth": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "네이버 회원탈퇴 전 재로그인",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/apple/signout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "애플 회원탈퇴",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/kakao/logout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 로그아웃",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/deals/{dealId}/img": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "S3 이미지(Array) 업로드",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/deals/all/{region}": {
+      "get": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "지역 전체 거래 GET",
+        "description": "",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/deals/create": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "거래 생성",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "any"
+                },
+                "link": {
+                  "example": "any"
+                },
+                "totalPrice": {
+                  "example": "any"
+                },
+                "personalPrice": {
+                  "example": "any"
+                },
+                "totalMember": {
+                  "example": "any"
+                },
+                "dealDate": {
+                  "example": "any"
+                },
+                "place": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                },
+                "region": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/deals/{dealId}": {
+      "get": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "거래 세부정보 GET",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      },
+      "put": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "거래 수정",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                },
+                "totalPrice": {
+                  "example": "any"
+                },
+                "personalPrice": {
+                  "example": "any"
+                },
+                "totalMember": {
+                  "example": "any"
+                },
+                "dealDate": {
+                  "example": "any"
+                },
+                "dealPlace": {
+                  "example": "any"
+                },
+                "currentMember": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      },
+      "delete": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "거래 삭제",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/deals/{dealId}/join/{userId}": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "거래 참여",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/deals/{dealId}/users/{userId}": {
+      "get": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "거래 유저 상태(참여자, 제안자, 참여하지 않음)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/deals/{dealId}/report": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "거래 신고",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/deals/{dealId}/endRecruit": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "모집 마감하기",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {},
+        "deprecated": true
+      }
+    },
+    "/users/deals/{userId}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "마이페이지 거래내역 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/location/{userId}/{latitude}/{longitude}": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "네이버 GeoLocation으로 현 위치 저장",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "latitude",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "longitude",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/location": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "X-FORWARDED-FOR",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {},
+        "deprecated": true
+      }
+    },
+    "/users/{userId}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "유저 정보 반환",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "닉네임 변경",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nick": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/check/{userId}/{nick}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "닉네임 중복 확인",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "nick",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/report/{userId}": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "유저 신고",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "any"
+                },
+                "content": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/comments/{dealId}": {
+      "post": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "댓글 생성",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      },
+      "get": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "거래글 댓글 조회",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/comments/reply/{dealId}": {
+      "post": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "대댓글 생성",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                },
+                "parentId": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/comments/{commentId}": {
+      "delete": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "댓글 삭제",
+        "description": "",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      },
+      "put": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "댓글 수정",
+        "description": "",
+        "parameters": [
+          {
+            "name": "commentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/comments/reply/{replyId}": {
+      "delete": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "대댓글 삭제",
+        "description": "",
+        "parameters": [
+          {
+            "name": "replyId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      },
+      "put": {
+        "tags": [
+          "Comments"
+        ],
+        "summary": "대댓글 수정",
+        "description": "",
+        "parameters": [
+          {
+            "name": "replyId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    }
+  }
+}

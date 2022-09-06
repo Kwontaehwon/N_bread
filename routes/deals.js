@@ -56,6 +56,7 @@ const upload = multer({
 })
 
 router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
+  // #swagger.summary = 'S3 이미지(Array) 업로드'
   console.log(req.files);
   const result = [];
   for(let i of req.files){
@@ -80,6 +81,7 @@ router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
 router.get('/all/:region', async (req, res, next) => {
+  // #swagger.summary = '지역 전체 거래 GET'
   var token = req.headers.authorization;
   console.log(`token is ${token}`)
   
@@ -126,15 +128,14 @@ router.get('/all/:region', async (req, res, next) => {
       }
     }
   }
-
   var testres={"capsule":allDeal} 
-
   return jsonResponse(res, 200, "전체 글 리스트", true, testres);
 })
 
 
 // 거래 생성하기
 router.post('/create', verifyToken, async (req, res, next) => {
+  // #swagger.summary = '거래 생성'
   try {
     // console.log(req.body);
     // const parseResult = await JSON.parse(body);
@@ -183,6 +184,7 @@ router.post('/create', verifyToken, async (req, res, next) => {
 
 // 거래 세부정보
 router.get('/:dealId', async (req, res, next) => {
+  // #swagger.summary = '거래 세부정보 GET'
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
     if(!deal){
@@ -201,6 +203,7 @@ router.get('/:dealId', async (req, res, next) => {
 
 // 거래 수정하기
 router.put('/:dealId', verifyToken, async(req, res, next) => {
+  // #swagger.summary = '거래 수정'
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
     currentMember} = req.body;
   try{
@@ -240,6 +243,7 @@ router.put('/:dealId', verifyToken, async(req, res, next) => {
 
 // 거래 삭제
 router.delete('/:dealId', verifyToken, async (req, res, next) => {
+  // #swagger.summary = '거래 삭제'
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
     if(!deal){
@@ -270,6 +274,7 @@ router.delete('/:dealId', verifyToken, async (req, res, next) => {
 
 // 참여자 : 거래 참여하기
 router.post('/:dealId/join/:userId', verifyToken, async (req, res, next) => {
+  // #swagger.summary = '거래 참여'
   try {
     const user = await User.findOne({where: { Id: req.params.userId }});
     const deal = await Deal.findOne({where: { Id: req.params.dealId }});
@@ -307,6 +312,7 @@ router.post('/:dealId/join/:userId', verifyToken, async (req, res, next) => {
 
 // 거래에 대응되는 userId에 대해 제안자, 참여자 여부
 router.get('/:dealId/users/:userId', async (req, res, next) => {
+  // #swagger.summary = '거래 유저 상태(참여자, 제안자, 참여하지 않음)'
   try{
       const user = await User.findOne({where : { Id : req.params.userId}});
       if(!user){
@@ -344,27 +350,9 @@ router.get('/:dealId/users/:userId', async (req, res, next) => {
   }
 });
 
-router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
-  try{
-    const deal = await Deal.findOne({ where : {id : req.params.dealId}});
-    if(!deal){
-      return jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
-    }
-    if (deal.userId != req.decoded.id){
-      return jsonResponse(res, 403, '글의 작성자만 모집을 마감 할 수 있습니다.', false, null)
-    }
-    deal.update({where : {isRecruitDone : true}});
-    const groups = await Group.findAll({where : {dealId : deal.id}});
-    const result = {deal : deal, groups : groups};
-    return jsonResponse(res, 200, "모집이 정상적으로 마감되었습니다.", true, result);
-  }
-  catch(error){
-    console.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null)
-  }
-});
 
 router.post('/:dealId/report', verifyToken, async(req, res, next) => {
+  // #swagger.summary = '거래 신고'
   try{
     const {title, content } = req.body;
     if(req.params.dealId == ":dealId"){
@@ -394,6 +382,28 @@ router.post('/:dealId/report', verifyToken, async(req, res, next) => {
     logger.info(`${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`);
     return jsonResponse(res, 200, `${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`, true, dealReport);
   }catch(error){
+    console.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null)
+  }
+});
+
+router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
+  // #swagger.summary = '모집 마감하기'
+  // #swagger.deprecated = true
+  try{
+    const deal = await Deal.findOne({ where : {id : req.params.dealId}});
+    if(!deal){
+      return jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
+    }
+    if (deal.userId != req.decoded.id){
+      return jsonResponse(res, 403, '글의 작성자만 모집을 마감 할 수 있습니다.', false, null)
+    }
+    deal.update({where : {isRecruitDone : true}});
+    const groups = await Group.findAll({where : {dealId : deal.id}});
+    const result = {deal : deal, groups : groups};
+    return jsonResponse(res, 200, "모집이 정상적으로 마감되었습니다.", true, result);
+  }
+  catch(error){
     console.error(error);
     return jsonResponse(res, 500, "서버 에러", false, null)
   }
