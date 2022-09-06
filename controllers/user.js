@@ -20,10 +20,11 @@ function jsonResponse(res, code, message, isSuccess, result){
 
 // GET users/:userId
 const getUser = async (req, res, next) => {
+    // #swagger.summary = '유저 정보 반환'
     try{
         const user = await User.findOne({where : { Id : req.params.userId},paranoid:false});
         if(!user){
-            return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null)
+            return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
         }
         const result = {
             createdAt : user.createdAt,
@@ -35,16 +36,17 @@ const getUser = async (req, res, next) => {
             email : user.email,
         }
         logger.info(`GET users/:userId | userId : ${req.params.userId} 의 유저 정보를 반환합니다.`);
-        return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result)
+        return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result); // #swagger.responses[200]
     } catch (error){
         logger.error(error);
-        return jsonResponse(res, 500, "서버 에러", false, result)
+        return jsonResponse(res, 500, "서버 에러", false, result) // #swagger.responses[500]
     }
 }
 
 
 // GET users/deals/:userId
 const getMypageDeals = async (req, res, next) => {
+    // #swagger.summary = '마이페이지 거래내역 조회'
     try{
         const user = await User.findOne({ where: { id: req.decoded.id } }); 
       const refDeal = await Group.findAll({ where: { userId: req.decoded.id}});
@@ -121,6 +123,7 @@ const getMypageDeals = async (req, res, next) => {
 
 // GET users/location/:userId/:latitude/:longitude
 const getNaverGeoLocation = async(req,res)=>{
+  // #swagger.summary = '네이버 GeoLocation으로 현 위치 저장'
   try{
     const longitude=req.params.longitude;
     const latitude=req.params.latitude;
@@ -153,8 +156,6 @@ const getNaverGeoLocation = async(req,res)=>{
         logger.error(err);
         return jsonResponse(res, 500, "서버 에러", false, err)
     })
- 
- 
     //makeSignature();
   } catch(error){
     logger.error(error);
@@ -164,6 +165,7 @@ const getNaverGeoLocation = async(req,res)=>{
 
 // GET users/location 
 const getUserLocation = async(req, res) => {
+  // #swagger.deprecated = true
   try{
     const headerIp = await (req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress).replace(/^.*:/, '');
     const requestIps= await requestIp.getClientIp(req);
@@ -181,6 +183,7 @@ const getUserLocation = async(req, res) => {
 
 // PUT users/:userId
 const putUserNick = async (req, res, next) => {
+  // #swagger.summary = '닉네임 변경'
     try{
         const {nick} = req.body;
         const user = await User.findOne({where : { Id : req.params.userId}});
@@ -213,6 +216,7 @@ const putUserNick = async (req, res, next) => {
 }
 
 const checkUserNick = async (req, res, next) => {
+  // #swagger.summary = '닉네임 중복 확인'
   try {
     const nick = req.params.nick;
     const user = await User.findOne({ where: { Id: req.params.userId } });
@@ -236,6 +240,7 @@ const checkUserNick = async (req, res, next) => {
 }
 
 const postReportUser = async (req, res, next) => {
+  // #swagger.summary = '유저 신고'
   try{
     const {title, content} = req.body;
     if(title === undefined || content === undefined){

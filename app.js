@@ -9,7 +9,9 @@ const dotenv = require('dotenv');
 const https = require('https');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-const { swaggerUi, specs } = require('./swagger/swagger');
+// const { swaggerUi, specs } = require('./swagger/swagger');
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger/swagger-test.json');
 
 dotenv.config();
 const indexRouter = require('./routes');
@@ -60,11 +62,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.use('/', indexRouter);
-app.use('/auth', authRouter);
-app.use('/deals', dealRouter);
-app.use('/users', userRouter);
-app.use('/comments',commentRouter);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use(
+  '/auth',
+  // #swagger.tags = ['Auth'] 
+  authRouter);
+app.use(
+  // #swagger.tags = ['Deals'] 
+  '/deals',
+  dealRouter); 
+app.use(
+  // #swagger.tags = ['Users']
+  '/users', 
+  userRouter);
+app.use(
+  '/comments',
+  // #swagger.tags = ['Comments']
+  commentRouter);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use((req, res, next) => {
   const error =  new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
