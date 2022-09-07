@@ -57,24 +57,30 @@ const upload = multer({
 
 router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
   // #swagger.summary = 'S3 이미지(Array) 업로드'
-  console.log(req.files);
-  const result = [];
-  for(let i of req.files){
-    console.log(i);
-    const originalUrl = i.location;
-    const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
-    result.push(newUrl);
-  }
-  if(result.length > 0){
-    for(let url of result){
-      console.log(url);
-      await DealImage.create({
-        dealImage: url,
-        dealId: req.params.dealId,
-      })
+  try{
+    console.log(req.files);
+    const result = [];
+    for(let i of req.files){
+      console.log(i);
+      const originalUrl = i.location;
+      const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+      result.push(newUrl);
     }
+    if(result.length > 0){
+      for(let url of result){
+        console.log(url);
+        await DealImage.create({
+          dealImage: url,
+          dealId: req.params.dealId,
+        })
+      }
+    }
+    return jsonResponse(res, 200, `${result} 반환`, true, `${result}` );
+  } catch(error){
+    logger.error("[거래 이미지 생성] POST /deals/:dealId/img");
+    jsonResponse(res, 500, "[거래 이미지 생성] POST /deals/:dealId/img", false); 
   }
-  return jsonResponse(res, 200, `${result} 반환`, true, `${result}` );
+
 } )
 
 
@@ -82,54 +88,60 @@ router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
 // offset, limit 적용 방안 생각해야됨.
 router.get('/all/:region', async (req, res, next) => {
   // #swagger.summary = '지역 전체 거래 GET'
-  var token = req.headers.authorization;
-  console.log(`token is ${token}`)
-  
-  const allDeal = await Deal.findAll({ 
-    where: { region: { [Op.eq]: req.params.region }},
-    order:[['createdAt','DESC']],
-    include:[{
-    model: DealImage,
-    attributes: ['dealImage','id']
-    },
-    {model:User,attributes:['nick','curLocation3'],paranoid:false},
-  ]
-  });
-  for(i=0;i<allDeal.length;i++){
-    var toSetStatus=allDeal[i];
-    toSetStatus['mystatus'] = "user";
-    if ((toSetStatus['dealDate'] - (3 * 1000 * 3600 * 24))<Date.now()){
-      if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="모집완료"
-      else toSetStatus['status']="모집실패"
-    } else if(toSetStatus['dealDate']<Date.now()){
-      toSetStatus['status']="거래완료";
+  try{
+    var token = req.headers.authorization;
+    console.log(`token is ${token}`)
+    
+    const allDeal = await Deal.findAll({ 
+      where: { region: { [Op.eq]: req.params.region }},
+      order:[['createdAt','DESC']],
+      include:[{
+      model: DealImage,
+      attributes: ['dealImage','id']
+      },
+      {model:User,attributes:['nick','curLocation3'],paranoid:false},
+    ]
+    });
+    for(i=0;i<allDeal.length;i++){
+      var toSetStatus=allDeal[i];
+      toSetStatus['mystatus'] = "user";
+      if ((toSetStatus['dealDate'] - (3 * 1000 * 3600 * 24))<Date.now()){
+        if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="모집완료"
+        else toSetStatus['status']="모집실패"
+      } else if(toSetStatus['dealDate']<Date.now()){
+        toSetStatus['status']="거래완료";
+      }
+      else if(toSetStatus['currentMember']===toSetStatus['totalMember']){
+        toSetStatus['status']="모집완료";
+      } else toSetStatus['status']="모집중"
     }
-    else if(toSetStatus['currentMember']===toSetStatus['totalMember']){
-      toSetStatus['status']="모집완료";
-    } else toSetStatus['status']="모집중"
-  }
-
-  if (token != undefined) {
-    //mystatus 처리->"제안자" "참여자" ""
-    var decodedValue=jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
-    for (i = 0; i < allDeal.length; i++) {
-      var toSetStatus = allDeal[i];
-      if (toSetStatus['userId']===decodedValue.id) {
-        toSetStatus['mystatus']="제안자"
-      }else{ 
-        var groupMember = [];
-        var group=await Group.findAll({where:{dealId:toSetStatus['id']}});
-        for(j=0;j<group.length;j++){
-          groupMember.push(group[j]['userId']);
-        }
-        if(groupMember.includes(decodedValue.id)){
-          toSetStatus['mystatus']="참여자"
+  
+    if (token != undefined) {
+      //mystatus 처리->"제안자" "참여자" ""
+      var decodedValue=jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+      for (i = 0; i < allDeal.length; i++) {
+        var toSetStatus = allDeal[i];
+        if (toSetStatus['userId']===decodedValue.id) {
+          toSetStatus['mystatus']="제안자"
+        }else{ 
+          var groupMember = [];
+          var group=await Group.findAll({where:{dealId:toSetStatus['id']}});
+          for(j=0;j<group.length;j++){
+            groupMember.push(group[j]['userId']);
+          }
+          if(groupMember.includes(decodedValue.id)){
+            toSetStatus['mystatus']="참여자"
+          }
         }
       }
     }
+    var testres={"capsule":allDeal} 
+    return jsonResponse(res, 200, "전체 글 리스트", true, testres);
+  } catch(error){
+    logger.error("[홈 전체 글 리스트] GET /deals/all/:region");
+    jsonResponse(res, 500, "[홈 전체 글 리스트] GET /deals/all/:region", false); 
   }
-  var testres={"capsule":allDeal} 
-  return jsonResponse(res, 200, "전체 글 리스트", true, testres);
+
 })
 
 
@@ -177,7 +189,7 @@ router.post('/create', verifyToken, async (req, res, next) => {
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null);
+    return jsonResponse(res, 500, "[거래 생성] POST /deals/create 서버 에러", false, null);
   }
 });
 
@@ -196,7 +208,7 @@ router.get('/:dealId', async (req, res, next) => {
   }
   catch (error){
     logger.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null);
+    return jsonResponse(res, 500, "[거래 세부정보] GET /deals/:dealId 서버 에러", false, null);
   }
 })
 
@@ -236,7 +248,7 @@ router.put('/:dealId', verifyToken, async(req, res, next) => {
     return jsonResponse(res, 200, deal.id + `의 거래를 수정하였습니다.`, true, deal);
   }catch (error){
     logger.error(error);
-    return jsonResponse(res, 500, '서버 에러', false, null);
+    return jsonResponse(res, 500, '[거래 수정] PUT deals/:dealId 서버 에러', false, null);
   }
 })
 
@@ -267,7 +279,7 @@ router.delete('/:dealId', verifyToken, async (req, res, next) => {
   }
   catch (error){
     logger.error(error);
-    return jsonResponse(res, 500, '서버 에러', false, null);
+    return jsonResponse(res, 500, '[거래 삭제] Delete /deals/:dealId 서버 에러', false, null);
   }
 })
 
@@ -306,7 +318,7 @@ router.post('/:dealId/join/:userId', verifyToken, async (req, res, next) => {
     return jsonResponse(res, 200, `거래 참여가 완료되었습니다.`, true, {deal : deal, group : group});
   }catch (error) {
     logger.error(error);
-    return jsonResponse(res, 500, `서버 에러`, false, null) 
+    return jsonResponse(res, 500, `[거래 참여] deals/:dealId/join/:userId 서버 에러`, false, null) 
   }
 });
 
@@ -346,7 +358,7 @@ router.get('/:dealId/users/:userId', async (req, res, next) => {
       return jsonResponse(res, 200, "거래에 대한 상태를 반환합니다.", true, result);
   } catch (error){
       logger.log(error);
-      return jsonResponse(res, 500, "서버 에러", false, null)
+      return jsonResponse(res, 500, "[거래 유저 상태] GET deals/:dealId/users/:userId 서버 에러", false, null)
   }
 });
 
@@ -383,7 +395,7 @@ router.post('/:dealId/report', verifyToken, async(req, res, next) => {
     return jsonResponse(res, 200, `${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`, true, dealReport);
   }catch(error){
     console.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null)
+    return jsonResponse(res, 500, "[거래 신고] deals/:dealId/report 서버 에러", false, null)
   }
 });
 
@@ -405,7 +417,7 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
   }
   catch(error){
     console.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null)
+    return jsonResponse(res, 500, "[모집 마감 - 삭제됨] POST /deals/:dealId/endRecruit 서버 에러", false, null)
   }
 });
 

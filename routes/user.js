@@ -36,7 +36,7 @@ router.get('/:userId', getUser);
 router.put('/:userId', putUserNick);
 
 //유저 닉네임 중복체크 
-router.get('/check/:userId/:nick', checkUserNick)
+router.get('/check/:userId/:nick', checkUserNick) // 닉네임 중복체크를 하는데 userId가 필요한 이유는?
 
 // 유저 신고
 router.post('/report/:userId', verifyToken, postReportUser);

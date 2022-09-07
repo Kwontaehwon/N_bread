@@ -36,8 +36,8 @@ function createClientSecret(){
 
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   // #swagger.summary = '로컬 회원가입'
-  const { email, nick, password } = req.body;
   try {
+    const { email, nick, password } = req.body;
     const exUser = await User.findOne({ where: { email } });
     const exNick = await User.findOne({ where: { nick }});
     if (exUser) {
@@ -61,6 +61,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
     return jsonResponse(res, 200, "로컬 회원가입에 성공하였습니다.", true, user)
   } catch (error) {
     console.error(error);
+    jsonResponse(res, 500, "[로컬 회원가입] POST /users/signup", false); 
   }
 });
 
