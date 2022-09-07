@@ -42,7 +42,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
         jsonResponse(res, 200, "댓글 작성에 성공하였습니다.", true);
     } catch(err){
         jsonResponse(res, 500, "[댓글 생성] POST comments/:dealId 서버 에러", false);
-        console.log(err);
+        logger.error(err);
     }
 
 })
@@ -63,7 +63,7 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
     }
      catch (err) {
         jsonResponse(res, 500, "[대댓글 생성] POST /comments/reply/:dealId 서버 에러", false);
-        console.log(err);
+        logger.error(err);
     }
 
 })
@@ -93,7 +93,7 @@ router.delete('/:commentId', verifyToken, async (req, res) => {
         }
     } catch (error){
         jsonResponse(res, 500, "[대댓글 생성] POST /comments/reply/:dealId 서버 에러", false);
-        console.log(err);
+        logger.error(error);
     }
 
 })
