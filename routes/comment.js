@@ -72,7 +72,6 @@ router.delete('/:commentId', verifyToken, async (req, res) => {
     // #swagger.summary = '댓글 삭제'
     try{
         const user = await User.findOne({ where: { id: req.decoded.id } });
-    
         const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
         if(comment===null){
             jsonResponse(res, 404, "해당 댓글을 찾을 수 없습니다.", false);
@@ -153,7 +152,6 @@ router.put('/:commentId', verifyToken, async (req, res) => {
         logger.error("[대댓글 생성] POST /comments/reply/:dealId 서버 에러");
         jsonResponse(res, 500, "[대댓글 생성] POST /comments/reply/:dealId 서버 에러", false);
     }
-
 })
 
 router.put('/reply/:replyId', verifyToken, async (req, res) => {

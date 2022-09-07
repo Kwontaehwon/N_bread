@@ -417,7 +417,7 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
   }
   catch(error){
     console.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null)
+    return jsonResponse(res, 500, "[모집 마감 - 삭제됨] POST /deals/:dealId/endRecruit 서버 에러", false, null)
   }
 });
 
