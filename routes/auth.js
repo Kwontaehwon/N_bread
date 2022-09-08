@@ -124,12 +124,16 @@ router.get('/kakao/callback', passport.authenticate('kakao', {
 //로그인 시 회원번호, email을 받아 db에 저장
 router.post('/kakaosdk/signup/',async(req,res,next)=>{
   const { kakaoNumber , email }=req.body;
+  console.log('kakaosdk signup');
   try{
-    const userWithKakaoNumber=User.findOne({where:{kakaoNumber:kakaoNumber}});
-    if (userWithKakaoNumber.kakaoNumber === undefined){
+    const userWithKakaoNumber=await User.findOne({where:{kakaoNumber:kakaoNumber}});
+    console.log('cur usernumber is '+ kakaoNumber);
+    if (!userWithKakaoNumber){
+      console.log('유저 못찾음');
       if (email === null) {
         const user = await User.create({
           kakaoNumber: kakaoNumber,
+          nick:'test',
           provider:"kakao"
         })
         logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 회원번호 저장을 완료하였습니다.`)
@@ -138,13 +142,18 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         const user = await User.create({
           kakaoNumber: kakaoNumber,
           email: email,
-          provider: "kakao"
+          nick:'test22', 
+          provider: "kakao" 
         })
         logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 email, 회원번호 저장을 완료하였습니다.`)
       }
       jsonResponse(res,200,"[카카오SDK 회원가입] 회원정보 저장을 완료하였습니다[신규]",true,null)
     }
     else{
+      console.log('유저 찾음');
+      //닉네임이 null이 아님 -> 로그인(홈화면 이동[id provider nick으로 jwt토큰 발급 후 프론트 전달])
+      //닉네임이 null -> 약관동의화면 이동
+
       if(email!=null){
         const user = await User.update({ email: email }, { where: { kakaoNumber: kakaoNumber } });
         logger.info(`[카카오SDK 회원가입] db에 이미 회원 번호가 등록된 회원입니다. DB에 email값 추가를 완료하였습니다.`)
