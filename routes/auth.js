@@ -130,11 +130,9 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
     const userWithKakaoNumber=await User.findOne({where:{kakaoNumber:kakaoNumber}});
     console.log('cur usernumber is '+ kakaoNumber);
     if (!userWithKakaoNumber){
-      console.log('유저 못찾음');
       if (email === null) {
         const user = await User.create({
           kakaoNumber: kakaoNumber,
-          //nick:'test',
           provider:"kakao"
         })
         logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 회원번호 저장을 완료하였습니다.`)
@@ -142,8 +140,7 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
       else {
         const user = await User.create({
           kakaoNumber: kakaoNumber,
-          email: email,
-          //nick:'test22', 
+          email: email, 
           provider: "kakao" 
         })
         logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 email, 회원번호 저장을 완료하였습니다.`)
@@ -151,11 +148,10 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
       return jsonResponse(res,200,"[카카오SDK 회원가입] 회원정보 저장을 완료하였습니다[신규]",true,null)
     }
     else{
-      console.log('유저 찾음');
       //닉네임이 null이 아님 -> 로그인(홈화면 이동[id provider nick으로 jwt토큰 발급 후 프론트 전달])
       //닉네임이 null -> 약관동의화면 이동
       if(userWithKakaoNumber.nick!=null){
-        logger.info('이전에 회원가입을 완료한 회원입니다. jwt토큰 발급 api로 리다이렉트합니다.');
+        logger.info('이전에 회원가입을 완료한 회원입니다. jwt토큰 발급 api를 호출합니다.');
         const url='http://localhost:5005/auth/kakaosdk/createToken/'+kakaoNumber;
         //jsonResponse(res, 200, "[카카오SDK 회원가입] 이전에 회원가입을 완료한 회원입니다. jwt토큰 발급 api로 리다이렉트합니다.", true, null)
         try {
@@ -169,7 +165,7 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
             isSuccess: getToken.data['isSuccess'],
             result:null
           }
-          jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다.", true, toJwtReturn)
+          jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.", true, toJwtReturn)
         } catch (error) {
           logger.error(error);
           return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);

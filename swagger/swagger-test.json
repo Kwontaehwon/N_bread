@@ -133,6 +133,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "카카오 SDK 로그인 api",
         "description": "",
         "parameters": [
           {
@@ -149,6 +150,23 @@
                 }
               }
             }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/auth/kakaosdk/createToken/{kakaoNumber}": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "kakaoNumber",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {}
