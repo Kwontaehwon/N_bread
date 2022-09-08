@@ -153,6 +153,14 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
       console.log('유저 찾음');
       //닉네임이 null이 아님 -> 로그인(홈화면 이동[id provider nick으로 jwt토큰 발급 후 프론트 전달])
       //닉네임이 null -> 약관동의화면 이동
+      if(userWithKakaoNumber.nick!=null){
+        //jwt토큰 발급하는 api로 리다이렉트
+      }
+      else{
+        console.log('찾은 유저의 nickname이 null입니다.');
+        jsonResponse(res, 300,"[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.",true,null);
+
+      }
 
       if(email!=null){
         const user = await User.update({ email: email }, { where: { kakaoNumber: kakaoNumber } });
