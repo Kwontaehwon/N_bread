@@ -120,6 +120,45 @@ router.get('/kakao/callback', passport.authenticate('kakao', {
   
 });
 
+//카카오 SDK 로그인 api
+//로그인 시 회원번호, email을 받아 db에 저장
+router.post('/kakaosdk/signup/',async(req,res,next)=>{
+  const { kakaoNumber , email }=req.body;
+  try{
+    const userWithKakaoNumber=User.findOne({where:{kakaoNumber:kakaoNumber}});
+    if (userWithKakaoNumber.kakaoNumber === undefined){
+      if (email === null) {
+        const user = await User.create({
+          kakaoNumber: kakaoNumber,
+          provider:"kakao"
+        })
+        logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 회원번호 저장을 완료하였습니다.`)
+      }
+      else {
+        const user = await User.create({
+          kakaoNumber: kakaoNumber,
+          email: email,
+          provider: "kakao"
+        })
+        logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 email, 회원번호 저장을 완료하였습니다.`)
+      }
+      jsonResponse(res,200,"[카카오SDK 회원가입] 회원정보 저장을 완료하였습니다[신규]",true,null)
+    }
+    else{
+      if(email!=null){
+        const user = await User.update({ email: email }, { where: { kakaoNumber: kakaoNumber } });
+        logger.info(`[카카오SDK 회원가입] db에 이미 회원 번호가 등록된 회원입니다. DB에 email값 추가를 완료하였습니다.`)
+      }
+      jsonResponse(res, 200, "[카카오SDK 회원가입] 회원정보 저장을 완료하였습니다[기존]", true, null)
+    }
+  }catch(error){
+    logger.error(error);
+    return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn 서버 에러", false, null);
+  }
+  
+
+})
+
 router.get(
   // #swagger.summary = '네이버 로그인'
   '/naver',

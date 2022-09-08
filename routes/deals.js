@@ -7,7 +7,7 @@ const passport = require('passport');
 const schedule = require('node-schedule');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk'); 
 
 
 const { User, Group, Deal,Comment,Reply, DealImage, DealReport } = require('../models');
