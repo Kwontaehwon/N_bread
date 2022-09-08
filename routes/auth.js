@@ -366,8 +366,8 @@ router.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
     logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`)
     return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
   } catch (error) {
-    logger.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null);
+    logger.error("[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러" + error);
+    return jsonResponse(res, 500, "[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러", false, null);
   }
 })
 
