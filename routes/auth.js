@@ -184,6 +184,7 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
 })
 
 router.get('/kakaosdk/createToken/:kakaoNumber',async(req,res,next)=>{
+  // #swagger.summary = '카카오 SDK로그인 시 토큰 생성 api'
   try{
     const user = await User.findOne({ where: { kakaoNumber: req.params.kakaoNumber } });
     const payload = {
