@@ -7,6 +7,8 @@ const sequelize = require('../models');
 const requestIp = require('request-ip');
 const { env } = require('process');
 const { RDS } = require('aws-sdk');
+const { resourceLimits } = require('worker_threads');
+const exp = require('constants');
 
 
 function jsonResponse(res, code, message, isSuccess, result){
@@ -39,7 +41,7 @@ const getUser = async (req, res, next) => {
         return jsonResponse(res, 200, "userId의 정보를 반환합니다.", true, result); // #swagger.responses[200]
     } catch (error){
         logger.error(error);
-        return jsonResponse(res, 500, "서버 에러", false, result) // #swagger.responses[500]
+        return jsonResponse(res, 500, "[유저 정보 반환] GET users/:userId 서버 에러", false, result) // #swagger.responses[500]
     }
 }
 
@@ -49,7 +51,7 @@ const getMypageDeals = async (req, res, next) => {
     // #swagger.summary = '마이페이지 거래내역 조회'
     try{
         const user = await User.findOne({ where: { id: req.decoded.id } }); 
-      const refDeal = await Group.findAll({ where: { userId: req.decoded.id}});
+        const refDeal = await Group.findAll({ where: { userId: req.decoded.id}});
         console.log("refDeal : "+refDeal);
         if(refDeal.length===0){
           console.log("refDeal is null")
@@ -88,7 +90,6 @@ const getMypageDeals = async (req, res, next) => {
             { model: User, attributes: ['nick', 'curLocation3'],paranoid:false },
             ]
           })
-      
           //mystatus처리
           for (i = 0; i < deal.length; i++) {
             var toSetStatus = deal[i];
@@ -117,7 +118,7 @@ const getMypageDeals = async (req, res, next) => {
         }
     } catch(error){
         logger.error(error);
-        return jsonResponse(res, 500, "서버 에러", false, result)
+        return jsonResponse(res, 500, "[마이페이지 거래내역] /users/deals/:userId 서버 에러", false, result)
     }
 }
 
@@ -154,12 +155,12 @@ const getNaverGeoLocation = async(req,res)=>{
     }).catch((err) => {
         console.log("err : "+err)
         logger.error(err);
-        return jsonResponse(res, 500, "서버 에러", false, err)
+        return jsonResponse(res, 500, "[Naver GeoLocation] users/location/:userId/:latitude/:longitude 내부 서버 에러", false, err)
     })
     //makeSignature();
   } catch(error){
     logger.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, result)
+    return jsonResponse(res, 500, "[Naver GeoLocation] users/location/:userId/:latitude/:longitude 서버 에러", false, result)
   }
 }
 
@@ -177,8 +178,8 @@ const getUserLocation = async(req, res) => {
     jsonResponse(res, 200, `현재 위치 : ${result.location} 을(를) DB에서 가져오는데 성공하였습니다`,true,result)
   } catch(error){
     logger.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, result)
-  }
+    return jsonResponse(res, 500, "[사용하지 않는 API] GET users/location 서버 에러", false, result)
+  } 
 }
 
 // PUT users/:userId
@@ -211,7 +212,7 @@ const putUserNick = async (req, res, next) => {
     } catch(error){ 
         console.log(error);
         logger.error(error);
-        return jsonResponse(res, 500, `서버 에러`, false, result)
+        return jsonResponse(res, 500, `[닉네임 변경] PUT users/:userId 서버 에러`, false, result)
     }
 }
 
@@ -235,7 +236,7 @@ const checkUserNick = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     logger.error(error);
-    return jsonResponse(res, 500, `서버 에러`, false, result)
+    return jsonResponse(res, 500, `[닉네임 중복 체크] /check/:userId/:nick 서버 에러`, false, result)
   }
 }
 
@@ -275,7 +276,39 @@ const postReportUser = async (req, res, next) => {
     return jsonResponse(res, 200, `${req.params.userId} 님이 userId : ${req.params.userId}을 신고 하였습니다.`, true, userReport);
   }catch(error){
     console.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null)
+    return jsonResponse(res, 500, "[유저신고] /report/:userId 서버 에러", false, null)
+  }
+}
+
+const isSetNickname = async (req, res, next) => {
+  // #swagger.summary = '회원가입 여부 반환'
+  try {
+    const user = await User.findOne({ where: { Id: req.params.userId }, paranoid: false });
+    if (!user) {
+      return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
+    }
+    else if(user.deletedAt!=null){
+      return jsonResponse(res, 404, "탈퇴한 유저입니다.", false, null) // #swagger.responses[404]
+    }
+    else{
+      const result = {
+        nick: user.nick,
+        provider: user.provider,
+        deletedAt: user.deletedAt,
+        setNickname : false,
+      }
+      if(user.nick!=null){
+        logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료한 회원입니다.`);
+        result.setNickname=true;
+      }
+      else{
+        logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다.`);
+      }
+      return jsonResponse(res, 200, "[회원가입 완료 여부]userId의 회원가입 완료 여부를 반환합니다.", true, result); // #swagger.responses[200]
+    }
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "[회원가입 완료 여부] GET users/check/:userId 서버 에러", false, null) // #swagger.responses[500]
   }
 }
 
@@ -286,3 +319,4 @@ exports.getUserLocation = getUserLocation;
 exports.putUserNick = putUserNick;
 exports.checkUserNick = checkUserNick;
 exports.postReportUser = postReportUser;
+exports.isSetNickname=isSetNickname;

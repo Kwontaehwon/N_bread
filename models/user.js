@@ -52,6 +52,11 @@ module.exports = class User extends Sequelize.Model {
         type : Sequelize.BOOLEAN(),
         allowNull : false,
         defaultValue : true
+      },
+      //추가한부분 : 숫자의 나열이니 string이 안전할 것이라고 판단.
+      kakaoNumber:{
+        type: Sequelize.STRING(),
+        allowNull:true
       }
     }, {
       sequelize,
