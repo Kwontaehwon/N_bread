@@ -93,8 +93,8 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         issuer: 'chocoBread',
       });
       res.cookie('accessToken', accessToken);
-      return res.json("로그인 성공!");
-      //return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
+      // return res.json("로그인 성공!");
+      return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
@@ -350,6 +350,27 @@ router.get('/kakao/logout',async(req,res,next)=>{
     return jsonResponse(res, 500, "서버 에러", false, null);
   }
 })
+
+
+router.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
+  // #swagger.summary = '카카오 SDK 회원탈퇴'
+  try{
+    const user = await User.findOne({where : {id : req.decoded.id} });
+    const userId = req.decoded.id;
+    console.log(user);
+    if(!user){
+      logger.info("[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.");
+      return jsonResponse(res, 404, "[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.", false, null);
+    }
+    await user.destroy()
+    logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`)
+    return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "서버 에러", false, null);
+  }
+})
+
 
 //https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
 

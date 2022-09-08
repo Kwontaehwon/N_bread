@@ -88,11 +88,7 @@
         "summary": "로컬 로그인",
         "description": "",
         "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
+        "responses": {}
       }
     },
     "/auth/logout": {
@@ -258,6 +254,17 @@
           "Auth"
         ],
         "summary": "카카오 로그아웃",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/kakaosdk/signout": {
+      "delete": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 SDK 회원탈퇴",
         "description": "",
         "parameters": [],
         "responses": {}
