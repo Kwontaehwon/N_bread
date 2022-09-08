@@ -108,12 +108,12 @@ router.get('/logout', verifyToken, (req, res) => {
 });
 
 router.get(
-  // #swagger.summary = '카카오 로그인'
+  // #swagger.summary = '카카오 웹뷰 로그인'
   '/kakao',
   passport.authenticate('kakao',  {session : false}));
 
 router.get('/kakao/callback', passport.authenticate('kakao', {
-  // #swagger.summary = '카카오 로그인 CallBack'
+  // #swagger.summary = '카카오 웹뷰 로그인 CallBack'
   failureRedirect: '/auth/error',
   successRedirect: '/auth/success'
 }), (req, res) => {
@@ -204,7 +204,7 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
 })
 
 router.get('/kakao/signout', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '카카오 회원탈퇴'
+  // #swagger.summary = '카카오 웹뷰 회원탈퇴'
   try{
     const user = await User.findOne({where : {id : req.decoded.id} });
     const body = {
@@ -342,7 +342,7 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
 })
 
 router.get('/kakao/logout',async(req,res,next)=>{
-  // #swagger.summary = '카카오 로그아웃'
+  // #swagger.summary = '카카오 웹뷰 로그아웃'
   try {
     return jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
   } catch (error) {

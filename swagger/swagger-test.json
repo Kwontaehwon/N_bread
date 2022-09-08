@@ -107,7 +107,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 로그인",
+        "summary": "카카오 웹뷰 로그인",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -118,7 +118,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 로그인 CallBack",
+        "summary": "카카오 웹뷰 로그인 CallBack",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -203,7 +203,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 회원탈퇴",
+        "summary": "카카오 웹뷰 회원탈퇴",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -253,7 +253,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 로그아웃",
+        "summary": "카카오 웹뷰 로그아웃",
         "description": "",
         "parameters": [],
         "responses": {}
