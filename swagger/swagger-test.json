@@ -728,6 +728,34 @@
         "responses": {}
       }
     },
+    "/users/check/{userId}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "회원가입 여부 반환",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/comments/{dealId}": {
       "post": {
         "tags": [

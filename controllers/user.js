@@ -7,6 +7,8 @@ const sequelize = require('../models');
 const requestIp = require('request-ip');
 const { env } = require('process');
 const { RDS } = require('aws-sdk');
+const { resourceLimits } = require('worker_threads');
+const exp = require('constants');
 
 
 function jsonResponse(res, code, message, isSuccess, result){
@@ -278,6 +280,38 @@ const postReportUser = async (req, res, next) => {
   }
 }
 
+const isSetNickname = async (req, res, next) => {
+  // #swagger.summary = '회원가입 여부 반환'
+  try {
+    const user = await User.findOne({ where: { Id: req.params.userId }, paranoid: false });
+    if (!user) {
+      return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
+    }
+    else if(user.deletedAt!=null){
+      return jsonResponse(res, 404, "탈퇴한 유저입니다.", false, null) // #swagger.responses[404]
+    }
+    else{
+      const result = {
+        nick: user.nick,
+        provider: user.provider,
+        deletedAt: user.deletedAt,
+        setNickname : false,
+      }
+      if(user.nick!=null){
+        logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료한 회원입니다.`);
+        result.setNickname=true;
+      }
+      else{
+        logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다.`);
+      }
+      return jsonResponse(res, 200, "[회원가입 완료 여부]userId의 회원가입 완료 여부를 반환합니다.", true, result); // #swagger.responses[200]
+    }
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "[회원가입 완료 여부] GET users/check/:userId 서버 에러", false, null) // #swagger.responses[500]
+  }
+}
+
 exports.getUser = getUser;
 exports.getMypageDeals = getMypageDeals;
 exports.getNaverGeoLocation = getNaverGeoLocation;
@@ -285,3 +319,4 @@ exports.getUserLocation = getUserLocation;
 exports.putUserNick = putUserNick;
 exports.checkUserNick = checkUserNick;
 exports.postReportUser = postReportUser;
+exports.isSetNickname=isSetNickname;
