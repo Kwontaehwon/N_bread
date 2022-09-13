@@ -152,14 +152,7 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         const getToken = await axios.get(url);
         console.log(getToken.data);
         console.log(getToken.data['result']['accessToken']);
-        res.cookie('accessToken', getToken.data['result']['accessToken']);
-        var toJwtReturn = {
-          code: getToken.data['code'],
-          message: getToken.data['message'],
-          isSuccess: getToken.data['isSuccess'],
-          result: null
-        }
-        jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, toJwtReturn)
+        jsonResponse(res, 300, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, { "accessToken": getToken.data['result']['accessToken'] })
       } catch (error) {
         logger.error(error);
         return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);
@@ -173,23 +166,22 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         const getToken = await axios.get(url);
         console.log(getToken.data);
         console.log(getToken.data['result']['accessToken']);
-        res.cookie('accessToken', getToken.data['result']['accessToken']);
-
+      
         if (userWithKakaoNumber.nick != null) {
           logger.info('이전에 회원가입을 완료한 회원입니다. 홈 화면으로 리다이렉트합니다.');
-          return jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.", true, null)
+          return jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.", true, { "accessToken": getToken.data['result']['accessToken']})
           // const url='http://localhost:5005/auth/kakaosdk/createToken/'+kakaoNumber;
 
         }
         else {
           console.log('찾은 유저의 nickname이 null입니다.');
           logger.info('회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.');
-          return jsonResponse(res, 300, "[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.", true, null);
+          return jsonResponse(res, 300, "[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.", true, { "accessToken": getToken.data['result']['accessToken'] });
         }
         
       } catch (error) {
         logger.error(error);
-        return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);
+        return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다[기존sdk로그인유저].", false, null);
       }
     }
   }catch(error){
