@@ -216,6 +216,39 @@ const putUserNick = async (req, res, next) => {
     }
 }
 
+const putKakaoUserNick = async(req, res) => {
+  // #swagger.summary = '카카오 유저 닉네임 변경'
+  try{
+    const {nick} = req.body;
+    const user = await User.findOne({where : { kakaoNumber : req.params.kakaoNumber}});
+    if(!user){
+        logger.info(`kakaoNumber : ${req.params.kakaoNumber}에 해당되는 유저가 없습니다.`);
+        return jsonResponse(res, 404, `kakaoNumber : ${req.params.kakaoNumber}에 해당되는 유저가 없습니다.`, false, null);
+    }
+    const isDuplicated = await User.findOne({ where : {nick : nick}});
+    if(isDuplicated){
+        logger.info(`중복된 닉네임 (${nick})으로는 변경할 수 없습니다.`);
+        return jsonResponse(res, 409, `중복된 닉네임 (${nick})으로는 변경할 수 없습니다.`, false, null);
+    }
+    else{
+        await user.update({
+            nick : nick
+        });
+        const result = {
+            userId : user.id,
+            nick : user.nick,
+        };
+        logger.info(`PUT users/:kakaoNumber | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`)
+        return jsonResponse(res, 200, `닉네임 변경 완료`, true, result);
+    }
+    
+} catch(error){ 
+    console.log(error);
+    logger.error(error);
+    return jsonResponse(res, 500, `[닉네임 변경] PUT users/:userId 서버 에러`, false, result)
+  }
+}
+
 const checkUserNick = async (req, res, next) => {
   // #swagger.summary = '닉네임 중복 확인'
   try {
@@ -320,3 +353,4 @@ exports.putUserNick = putUserNick;
 exports.checkUserNick = checkUserNick;
 exports.postReportUser = postReportUser;
 exports.isSetNickname=isSetNickname;
+exports.putKakaoUserNick = putKakaoUserNick

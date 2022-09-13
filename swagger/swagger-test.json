@@ -673,6 +673,36 @@
         "responses": {}
       }
     },
+    "/users/kakaosdk/{kakaoNumber}": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "카카오 유저 닉네임 변경",
+        "description": "",
+        "parameters": [
+          {
+            "name": "kakaoNumber",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nick": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/users/check/{userId}/{nick}": {
       "get": {
         "tags": [

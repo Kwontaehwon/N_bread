@@ -12,7 +12,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../models');
-const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick, postReportUser,isSetNickname } = require('../controllers/user');
+const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick, postReportUser,isSetNickname, putKakaoUserNick } = require('../controllers/user');
 
 
 const router = express.Router();
@@ -34,6 +34,9 @@ router.get('/:userId', getUser);
 
 // 유저 닉네임 변경
 router.put('/:userId', putUserNick);
+
+// 카카오 유저 닉네임 변경
+router.put('/kakaosdk/:kakaoNumber', putKakaoUserNick);
 
 //유저 닉네임 중복체크 
 router.get('/check/:userId/:nick', checkUserNick) // 닉네임 중복체크를 하는데 userId가 필요한 이유는?
