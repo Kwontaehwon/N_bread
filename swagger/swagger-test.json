@@ -210,11 +210,7 @@
         "summary": "애플 로그인 CallBack",
         "description": "",
         "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
+        "responses": {}
       }
     },
     "/auth/success": {
@@ -698,36 +694,6 @@
         "parameters": [
           {
             "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "nick": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {}
-      }
-    },
-    "/users/kakaosdk/{kakaoNumber}": {
-      "put": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "카카오 유저 닉네임 변경",
-        "description": "",
-        "parameters": [
-          {
-            "name": "kakaoNumber",
             "in": "path",
             "required": true,
             "type": "string"

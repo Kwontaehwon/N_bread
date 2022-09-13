@@ -446,10 +446,12 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
 router.get('/kakao/logout',async(req,res,next)=>{
   // #swagger.summary = '카카오 웹뷰 로그아웃'
   try {
-    return jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
+    res.status(200).send();
+    //return jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
   } catch (error) {
     logger.error(error);
-    return jsonResponse(res, 500, "서버 에러", false, null);
+    res.status(500).send();
+    //return jsonResponse(res, 500, "서버 에러", false, null);
   }
 })
 

@@ -300,11 +300,13 @@ const isSetNickname = async (req, res, next) => {
       if(user.nick!=null){
         logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료한 회원입니다.`);
         result.setNickname=true;
+        return jsonResponse(res, 200, `[회원가입 완료 여부]${req.params.userId} 는 회원가입을 완료한 회원입니다. 홈 화면으로 리다이렉트합니다.`, true, result); // #swagger.responses[200]
       }
       else{
         logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다.`);
+        return jsonResponse(res, 300, `[회원가입 완료 여부]${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다. 약관동의 화면으로 리다이렉트합니다.`, true, result); // #swagger.responses[200]
       }
-      return jsonResponse(res, 200, "[회원가입 완료 여부]userId의 회원가입 완료 여부를 반환합니다.", true, result); // #swagger.responses[200]
+      
     }
   } catch (error) {
     logger.error(error);
