@@ -88,11 +88,7 @@
         "summary": "로컬 로그인",
         "description": "",
         "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
+        "responses": {}
       }
     },
     "/auth/logout": {
@@ -111,7 +107,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 로그인",
+        "summary": "카카오 웹뷰 로그인",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -122,7 +118,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 로그인 CallBack",
+        "summary": "카카오 웹뷰 로그인 CallBack",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -252,7 +248,7 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 회원탈퇴",
+        "summary": "카카오 웹뷰 회원탈퇴",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -302,7 +298,18 @@
         "tags": [
           "Auth"
         ],
-        "summary": "카카오 로그아웃",
+        "summary": "카카오 웹뷰 로그아웃",
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/auth/kakaosdk/signout": {
+      "delete": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 SDK 회원탈퇴",
         "description": "",
         "parameters": [],
         "responses": {}
@@ -691,6 +698,36 @@
         "parameters": [
           {
             "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "nick": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/kakaosdk/{kakaoNumber}": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "카카오 유저 닉네임 변경",
+        "description": "",
+        "parameters": [
+          {
+            "name": "kakaoNumber",
             "in": "path",
             "required": true,
             "type": "string"

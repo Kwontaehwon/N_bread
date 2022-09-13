@@ -93,8 +93,8 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         issuer: 'chocoBread',
       });
       res.cookie('accessToken', accessToken);
-      return res.json("로그인 성공!");
-      //return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
+      // return res.json("로그인 성공!");
+      return jsonResponse(res,200,"로컬 로그인에 성공하였습니다.",true,req.user)
     });
   })(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
@@ -108,12 +108,12 @@ router.get('/logout', verifyToken, (req, res) => {
 });
 
 router.get(
-  // #swagger.summary = '카카오 로그인'
+  // #swagger.summary = '카카오 웹뷰 로그인'
   '/kakao',
   passport.authenticate('kakao',  {session : false}));
 
 router.get('/kakao/callback', passport.authenticate('kakao', {
-  // #swagger.summary = '카카오 로그인 CallBack'
+  // #swagger.summary = '카카오 웹뷰 로그인 CallBack'
   failureRedirect: '/auth/error',
   successRedirect: '/auth/success'
 }), (req, res) => {
@@ -257,18 +257,23 @@ router.post(
     console.log("req.refresh : " + req.refresh);
     const payload = {
       id : req.user.id,
-      nick : req.user.nick,
       provider : req.user.provider
     }
     const accessToken = jwt.sign(
       payload, process.env.JWT_SECRET, {
       algorithm : 'HS256',
       issuer: 'chocoBread'
-    });
+    }); 
     res.cookie('accessToken', accessToken);
-    logger.info(`User Id ${req.user.id} 님이 ${req.user.provider} 로그인에 성공하였습니다.`);
-    logger.info(`jwt Token을 발행합니다.`);
-    return res.status(200).send();
+    logger.info(`[애플로그인] ${req.user.id} 의 nick : ${req.user.nick} `);
+    if(req.user.nick == null){ 
+      logger.info(`[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.`);
+      return jsonResponse(res, 300, "[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, null );
+    }
+    else{
+      logger.info(`[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.`);
+      return jsonResponse(res, 200, "[애플 로그인] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.", true, null );
+    }
   }
 );
 
@@ -301,7 +306,7 @@ router.get('/error', (req, res, next) => { // 다른 소셜간 이메일 중복�
 })
 
 router.get('/kakao/signout', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '카카오 회원탈퇴'
+  // #swagger.summary = '카카오 웹뷰 회원탈퇴'
   try{
     const user = await User.findOne({where : {id : req.decoded.id} });
     const body = {
@@ -439,7 +444,7 @@ router.get('/apple/signout', verifyToken, async (req, res, next) => {
 })
 
 router.get('/kakao/logout',async(req,res,next)=>{
-  // #swagger.summary = '카카오 로그아웃'
+  // #swagger.summary = '카카오 웹뷰 로그아웃'
   try {
     return jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
   } catch (error) {
@@ -447,6 +452,27 @@ router.get('/kakao/logout',async(req,res,next)=>{
     return jsonResponse(res, 500, "서버 에러", false, null);
   }
 })
+
+
+router.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
+  // #swagger.summary = '카카오 SDK 회원탈퇴'
+  try{
+    const user = await User.findOne({where : {id : req.decoded.id} });
+    const userId = req.decoded.id;
+    console.log(user);
+    if(!user){
+      logger.info("[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.");
+      return jsonResponse(res, 404, "[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.", false, null);
+    }
+    await user.destroy()
+    logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`)
+    return jsonResponse(res, 200, "카카오 탈퇴완료", true, null);
+  } catch (error) {
+    logger.error("[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러" + error);
+    return jsonResponse(res, 500, "[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러", false, null);
+  }
+})
+
 
 //https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
 
