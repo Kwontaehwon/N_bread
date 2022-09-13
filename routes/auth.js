@@ -391,7 +391,7 @@ router.get('/naver/reauth', async (req, res, next) => {
   }
 })
 
-router.get('/apple/signout', verifyToken, async (req, res, next) => {
+router.delete('/apple/signout', verifyToken, async (req, res, next) => {
   // #swagger.summary = '애플 회원탈퇴'
   const nowSec = await Math.round(new Date().getTime() / 1000);
   const expirySec = 120000;
