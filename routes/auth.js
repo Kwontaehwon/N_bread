@@ -152,7 +152,8 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
       //닉네임이 null -> 약관동의화면 이동
       if(userWithKakaoNumber.nick!=null){
         logger.info('이전에 회원가입을 완료한 회원입니다. jwt토큰 발급 api를 호출합니다.');
-        const url='http://localhost:5005/auth/kakaosdk/createToken/'+kakaoNumber;
+        // const url='http://localhost:5005/auth/kakaosdk/createToken/'+kakaoNumber;
+        const url='https://www.chocobread.shop/auth/kakaosdk/createToken/'+kakaoNumber;
         //jsonResponse(res, 200, "[카카오SDK 회원가입] 이전에 회원가입을 완료한 회원입니다. jwt토큰 발급 api로 리다이렉트합니다.", true, null)
         try {
           const getToken = await axios.get(url);
