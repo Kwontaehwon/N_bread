@@ -12,7 +12,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../models');
-const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick, postReportUser,isSetNickname } = require('../controllers/user');
+const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick, postReportUser,isSetNickname, putKakaoUserNick } = require('../controllers/user');
 
 
 const router = express.Router();
