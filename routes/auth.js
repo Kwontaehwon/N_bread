@@ -160,18 +160,23 @@ router.post(
     console.log("req.refresh : " + req.refresh);
     const payload = {
       id : req.user.id,
-      nick : req.user.nick,
       provider : req.user.provider
     }
     const accessToken = jwt.sign(
       payload, process.env.JWT_SECRET, {
       algorithm : 'HS256',
       issuer: 'chocoBread'
-    });
+    }); 
     res.cookie('accessToken', accessToken);
-    logger.info(`User Id ${req.user.id} 님이 ${req.user.provider} 로그인에 성공하였습니다.`);
-    logger.info(`jwt Token을 발행합니다.`);
-    return res.status(200).send();
+    logger.info(`[애플로그인] ${req.user.id} 의 nick : ${req.user.nick} `);
+    if(req.user.nick == null){ 
+      logger.info(`[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.`);
+      return jsonResponse(res, 300, "[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, null );
+    }
+    else{
+      logger.info(`[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.`);
+      return jsonResponse(res, 200, "[애플 로그인] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.", true, null );
+    }
   }
 );
 
