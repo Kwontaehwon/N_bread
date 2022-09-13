@@ -128,6 +128,51 @@
         "responses": {}
       }
     },
+    "/auth/kakaosdk/signup/": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 SDK 로그인 api",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "kakaoNumber": {
+                  "example": "any"
+                },
+                "email": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/auth/kakaosdk/createToken/{kakaoNumber}": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "카카오 SDK로그인 시 토큰 생성 api",
+        "description": "",
+        "parameters": [
+          {
+            "name": "kakaoNumber",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/auth/naver": {
       "get": {
         "tags": [
