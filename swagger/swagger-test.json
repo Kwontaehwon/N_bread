@@ -160,6 +160,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "카카오 SDK로그인 시 토큰 생성 api",
         "description": "",
         "parameters": [
           {

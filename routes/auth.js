@@ -136,7 +136,7 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
           provider:"kakao"
         })
         logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 회원번호 저장을 완료하였습니다.`)
-      }
+      } 
       else {
         const user = await User.create({
           kakaoNumber: kakaoNumber,
@@ -145,38 +145,52 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         })
         logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 email, 회원번호 저장을 완료하였습니다.`)
       }
-      return jsonResponse(res,200,"[카카오SDK 회원가입] 회원정보 저장을 완료하였습니다[신규]",true,null)
+      //token
+      logger
+      const url = 'https://www.chocobread.shop/auth/kakaosdk/createToken/' + kakaoNumber;
+      try {
+        const getToken = await axios.get(url);
+        console.log(getToken.data);
+        console.log(getToken.data['result']['accessToken']);
+        res.cookie('accessToken', getToken.data['result']['accessToken']);
+        var toJwtReturn = {
+          code: getToken.data['code'],
+          message: getToken.data['message'],
+          isSuccess: getToken.data['isSuccess'],
+          result: null
+        }
+        jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, toJwtReturn)
+      } catch (error) {
+        logger.error(error);
+        return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);
+      }
     }
     else{
       //닉네임이 null이 아님 -> 로그인(홈화면 이동[id provider nick으로 jwt토큰 발급 후 프론트 전달])
       //닉네임이 null -> 약관동의화면 이동
-      if(userWithKakaoNumber.nick!=null){
-        logger.info('이전에 회원가입을 완료한 회원입니다. jwt토큰 발급 api를 호출합니다.');
-        // const url='http://localhost:5005/auth/kakaosdk/createToken/'+kakaoNumber;
-        const url='https://www.chocobread.shop/auth/kakaosdk/createToken/'+kakaoNumber;
-        //jsonResponse(res, 200, "[카카오SDK 회원가입] 이전에 회원가입을 완료한 회원입니다. jwt토큰 발급 api로 리다이렉트합니다.", true, null)
-        try {
-          const getToken = await axios.get(url);
-          console.log(getToken.data);
-          console.log(getToken.data['result']['accessToken']);
-          res.cookie('accessToken', getToken.data['result']['accessToken']);
-          var toJwtReturn ={
-            code: getToken.data['code'],
-            message: getToken.data['message'],
-            isSuccess: getToken.data['isSuccess'],
-            result:null
-          }
-          jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.", true, toJwtReturn)
-        } catch (error) {
-          logger.error(error);
-          return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);
+      const url = 'https://www.chocobread.shop/auth/kakaosdk/createToken/' + kakaoNumber;
+      try {
+        const getToken = await axios.get(url);
+        console.log(getToken.data);
+        console.log(getToken.data['result']['accessToken']);
+        res.cookie('accessToken', getToken.data['result']['accessToken']);
+
+        if (userWithKakaoNumber.nick != null) {
+          logger.info('이전에 회원가입을 완료한 회원입니다. 홈 화면으로 리다이렉트합니다.');
+          return jsonResponse(res, 200, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.", true, null)
+          // const url='http://localhost:5005/auth/kakaosdk/createToken/'+kakaoNumber;
+
         }
+        else {
+          console.log('찾은 유저의 nickname이 null입니다.');
+          logger.info('회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.');
+          return jsonResponse(res, 300, "[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.", true, null);
+        }
+        
+      } catch (error) {
+        logger.error(error);
+        return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);
       }
-      else{
-        console.log('찾은 유저의 nickname이 null입니다.');
-        return jsonResponse(res, 300,"[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.",true,null);
-      }
-      
     }
   }catch(error){
     logger.error(error);
@@ -190,7 +204,6 @@ router.get('/kakaosdk/createToken/:kakaoNumber',async(req,res,next)=>{
     const user = await User.findOne({ where: { kakaoNumber: req.params.kakaoNumber } });
     const payload = {
       id: user.id,
-      nick: user.nick,
       provider: user.provider
     }
     const accessToken = jwt.sign(
