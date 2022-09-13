@@ -181,7 +181,7 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         
       } catch (error) {
         logger.error(error);
-        return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);
+        return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다[기존sdk로그인유저].", false, null);
       }
     }
   }catch(error){
