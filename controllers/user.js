@@ -56,7 +56,7 @@ const getMypageDeals = async (req, res, next) => {
         if(refDeal.length===0){
           console.log("refDeal is null")
           logger.info(`users/deals/:userId | userId : ${req.decoded.id}의 마이페이지에 [] 을 반환합니다.`);
-          return jsonResponse(res, 200, "전체 글 리스트", true, []);
+          return jsonResponse(res, 200, "마이페이지 글 리스트", true, []);
         } else{
           const [tmpres, metadata] = await sequelize.sequelize.query(
             `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
@@ -75,6 +75,7 @@ const getMypageDeals = async (req, res, next) => {
           for (i = 0; i < suggesterDeal.length; i++) {
             suggesterId.push(suggesterDeal[i]['id']);
           }
+          //logger.debug()
           console.log('suggesterId : ', suggesterId);
       
           for (i = 0; i < tmpres.length; i++) {
@@ -94,17 +95,16 @@ const getMypageDeals = async (req, res, next) => {
           for (i = 0; i < deal.length; i++) {
             var toSetStatus = deal[i];
             toSetStatus['mystatus'] = "user";
-            if ((toSetStatus['dealDate'] - (3 * 1000 * 3600 * 24)) < Date.now()) {
-              if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "모집완료"
-              else toSetStatus['status'] = "모집실패"
-            } else if (toSetStatus['dealDate'] < Date.now()) {
-              toSetStatus['status'] = "거래완료";
-            }
-            else if (toSetStatus['currentMember'] === toSetStatus['totalMember']) {
-              toSetStatus['status'] = "모집완료";
-            } else toSetStatus['status'] = "모집중"
-            
 
+            if (toSetStatus['dealDate'] < new Date(Date.now())) {
+              if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "거래완료";
+              else toSetStatus['status'] = "모집실패";
+            }
+            else {
+              if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "모집완료";
+              else toSetStatus['status'] = "모집중";
+            } 
+            
             if (suggesterId.includes(deal[i]['id'])) {
               deal[i]['mystatus'] = "제안자"
             }
