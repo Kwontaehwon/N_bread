@@ -279,7 +279,7 @@
       }
     },
     "/auth/apple/signout": {
-      "get": {
+      "delete": {
         "tags": [
           "Auth"
         ],
@@ -297,7 +297,14 @@
         "summary": "카카오 웹뷰 로그아웃",
         "description": "",
         "parameters": [],
-        "responses": {}
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
       }
     },
     "/auth/kakaosdk/signout": {
