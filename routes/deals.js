@@ -108,7 +108,7 @@ router.get('/all/:region', async (req, res, next) => {
       if (toSetStatus['dealDate'] < new Date(Date.now())){
         if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="모집완료"
         else toSetStatus['status']="모집실패"
-      } else if(toSetStatus['dealDate']<Date.now()){
+      } else if (toSetStatus['dealDate'] < new Date(Date.now())){
         toSetStatus['status']="거래완료";
       }
       else if(toSetStatus['currentMember']===toSetStatus['totalMember']){
