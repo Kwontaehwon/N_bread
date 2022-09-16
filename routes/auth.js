@@ -176,7 +176,7 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         else {
           console.log('찾은 유저의 nickname이 null입니다.');
           logger.info('회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.');
-          return jsonResponse(res, 300, "[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.", true, { "accessToken": getToken.data['result']['accessToken'] });
+          return jsonResponse(res, 301, "[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.", true, { "accessToken": getToken.data['result']['accessToken'] });
         }
         
       } catch (error) {
