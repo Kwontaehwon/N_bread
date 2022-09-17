@@ -93,7 +93,12 @@ router.get('/all/:region', async (req, res, next) => {
     console.log(`token is ${token}`)
     
     const allDeal = await Deal.findAll({ 
-      where: { region: { [Op.eq]: req.params.region }},
+      where: {
+        [Op.or]: [
+          { region: req.params.region },
+          { region: 'glabal' }
+        ]
+      },
       order:[['createdAt','DESC']],
       include:[{
       model: DealImage,
