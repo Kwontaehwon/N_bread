@@ -133,7 +133,7 @@ const getNaverGeoLocation = async(req,res)=>{
       return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null);
     }
   
-    const url =`https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=admcode&output=json`
+    const url = `https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=legalcode&output=json`
    
     axios.get(url,{headers:{
         "X-NCP-APIGW-API-KEY-ID":env.NAVER_CLIENTKEY,
@@ -288,6 +288,7 @@ const isSetNickname = async (req, res, next) => {
       return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
     }
     else if(user.deletedAt!=null){
+      logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 탈퇴한 회원입니다.`);
       return jsonResponse(res, 404, "탈퇴한 유저입니다.", false, null) // #swagger.responses[404]
     }
     else{
