@@ -58,26 +58,36 @@ const upload = multer({
 router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
   // #swagger.summary = 'S3 이미지(Array) 업로드'
   try{
-    console.log(req.files);
+    const dealId = parseInt(req.params.dealId);
+    if(Number.isNaN(dealId)){
+      logger.info(`[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`);
+      return jsonResponse(res, 400, `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`, false); 
+    }
+    const targetDeal = await Deal.findOne({where : {id : dealId}});
+    if(targetDeal === null){
+      logger.info(`[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`);
+      return jsonResponse(res, 404, `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`, false); 
+    }
     const result = [];
     for(let i of req.files){
       console.log(i);
       const originalUrl = i.location;
-      const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
-      result.push(newUrl);
+      // const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+      result.push(originalUrl);
     }
     if(result.length > 0){
       for(let url of result){
         console.log(url);
-        await DealImage.create({
+        const tmpImage = await DealImage.create({
           dealImage: url,
-          dealId: req.params.dealId,
+          dealId: dealId,
         })
+        logger.info(`dealId : ${dealId}에 dealImageId : ${tmpImage.id} 가 생성되었습니다.`);
       }
     }
-    return jsonResponse(res, 200, `${result} 반환`, true, `${result}` );
+    return jsonResponse(res, 200, `dealId : ${dealId}에 ${result.length}개의 이미지가 생성되었습니다.`, true, `${result}` );
   } catch(error){
-    logger.error("[거래 이미지 생성] POST /deals/:dealId/img");
+    logger.error(`[거래 이미지 생성] POST /deals/:dealId/img ${error}`);
     jsonResponse(res, 500, "[거래 이미지 생성] POST /deals/:dealId/img", false); 
   }
 
@@ -142,7 +152,7 @@ router.get('/all/:region', async (req, res, next) => {
     var testres={"capsule":allDeal} 
     return jsonResponse(res, 200, "전체 글 리스트", true, testres);
   } catch(error){
-    logger.error("[홈 전체 글 리스트] GET /deals/all/:region");
+    logger.error(`[홈 전체 글 리스트] GET /deals/all/:region`);
     jsonResponse(res, 500, "[홈 전체 글 리스트] GET /deals/all/:region", false); 
   }
 
