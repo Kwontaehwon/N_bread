@@ -106,7 +106,7 @@ router.get('/all/:region', async (req, res, next) => {
       where: {
         [Op.or]: [
           { region: req.params.region },
-          { region: 'glabal' }
+          { region: 'global' }
         ]
       },
       order:[['createdAt','DESC']],
