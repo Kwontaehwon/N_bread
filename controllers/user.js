@@ -9,6 +9,7 @@ const { env } = require('process');
 const { RDS } = require('aws-sdk');
 const { resourceLimits } = require('worker_threads');
 const exp = require('constants');
+const { json } = require('body-parser');
 
 
 function jsonResponse(res, code, message, isSuccess, result){
@@ -164,7 +165,57 @@ const getNaverGeoLocation = async(req,res)=>{
   }
 }
 
-// GET users/location 
+// GET users/location/:latitude/:longitude
+const getLocationByNaverMapsApi = async (req, res) => {
+  // #swagger.summary = '네이버 Reverse Geocoding으로 현 위치 획득'
+  try {
+    const longitude = req.params.longitude;
+    const latitude = req.params.latitude;
+    const url = `https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=legalcode&output=json`
+
+    axios.get(url, {
+      headers: {
+        "X-NCP-APIGW-API-KEY-ID": env.NAVER_CLIENTKEY,
+        "X-NCP-APIGW-API-KEY": env.NAVER_CLIENTSECRETKEY,
+      }
+    }).then(async (Response) => {
+      if (Response.data['status']['code'] === 200) {
+        jsonResponse(res, 401, "Naver ClientKey, Naver ClientSecretKey가 필요합니다.", false, null);
+      } else if (Response.data['status']['code'] === 100) {
+        jsonResponse(res, 400, "[getLocationByNaver] 좌표가 유효하지 않습니다. 올바른 좌표를 넣어주세요.", false, null)
+      } else {
+        const tmpdata = Response.data;
+        const data = tmpdata['results'][0]['region'];
+        jsonResponse(res, 200, `[getLocationByNaver]현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${data['area3']['name']}입니다. `, true, { 'location1': data['area1']['name'], 'location2': data['area2']['name'], 'location3': data['area3']['name'] }
+        );
+      }
+    }).catch((err) => {
+      console.log("err : " + err)
+      logger.error(err);
+      return jsonResponse(res, 500, "[getLocationByNaver] users/location/:latitude/:longitude 내부 서버 에러", false, err)
+    })
+    //makeSignature();
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "[getLocationByNaver] users/location/:latitude/:longitude 서버 에러", false, result)
+  }
+}
+// POST users/location/:userId/:loc1/:loc2/:loc3
+const setLocationByNaverMapsApi = async (req, res) => {
+  // #swagger.summary = '네이버 Reverse Geocoding으로 현 위치 저장'
+  try {
+    const user = await User.findOne({ where: { id: req.params.userId } });
+    if (!user) {
+      return jsonResponse(res, 404, "[setLocationByNaver] userId에 해당되는 유저가 없습니다.", false, null);
+    }
+    user.update({ curLocation1: req.params.loc1, curLocation2: req.params.loc2, curLocation3: req.params.loc3 })
+    return jsonResponse(res, 200, `[setLocationByNaver] 유저${user.id}의 위치가 ${req.params.loc1} ${req.params.loc2} ${req.params.loc3}으로 저장되었습니다.`)
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "[setLocationByNaver] users/location/:userId/:loc1/:loc2/:loc3 서버 에러", false, result)
+  }
+}
+// GET users/location
 const getUserLocation = async(req, res) => {
   // #swagger.deprecated = true
   try{
@@ -323,3 +374,5 @@ exports.putUserNick = putUserNick;
 exports.checkUserNick = checkUserNick;
 exports.postReportUser = postReportUser;
 exports.isSetNickname=isSetNickname;
+exports.getLocationByNaverMapsApi = getLocationByNaverMapsApi;
+exports.setLocationByNaverMapsApi = setLocationByNaverMapsApi;
