@@ -209,7 +209,7 @@ const setLocationByNaverMapsApi = async (req, res) => {
       return jsonResponse(res, 404, "[setLocationByNaver] userId에 해당되는 유저가 없습니다.", false, null);
     }
     user.update({ curLocation1: req.params.loc1, curLocation2: req.params.loc2, curLocation3: req.params.loc3 })
-    return jsonResponse(res, 200, `[setLocationByNaver] 유저${user.id}의 위치가 ${req.params.loc1} ${req.params.loc2} ${req.params.loc3}으로 저장되었습니다.`)
+    return jsonResponse(res, 200, `[setLocationByNaver] 유저${user.id}의 위치가 ${req.params.loc1} ${req.params.loc2} ${req.params.loc3}으로 저장되었습니다.`,true,null)
   } catch (error) {
     logger.error(error);
     return jsonResponse(res, 500, "[setLocationByNaver] users/location/:userId/:loc1/:loc2/:loc3 서버 에러", false, result)
