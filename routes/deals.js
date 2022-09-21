@@ -567,9 +567,8 @@ router.post('/admin/fillLocation', async (req, res, next) => {
       console.log(curDeal.userId);
       const user=await User.findOne({where:{id:curDeal.userId}, paranoid:false});
       await curDeal.update({loc1:user.curLocation1});
-      curDeal.loc1=user.curLocation1;
-      curDeal.loc2 = user.curLocation2;
-      curDeal.loc3 = user.curLocation3;
+      await curDeal.update({ loc2: user.curLocation2 });
+      await curDeal.update({ loc3: user.curLocation3 });
     }
     return jsonResponse(res, 200, "[관리자용 api] POST /admin/fillLocation 가 성공적으로 수행되었습니다.", true, null)
   } catch (error) {
