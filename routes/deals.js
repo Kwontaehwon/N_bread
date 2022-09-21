@@ -245,7 +245,7 @@ router.get('/all/:region', async (req, res, next) => {
       var toSetStatus = allDeal[i];
       toSetStatus['mystatus'] = "user";
       var dDate = new Date(toSetStatus['dealDate']);
-      dDate.setHours(dDate.getHours() + 9);
+      dDate.setHours(dDate.getHours()); //2.0.1업데이트 시 +9해주기
       toSetStatus['dealDate'] = dDate;
       if (toSetStatus['dealDate'] < new Date(Date.now())) {
         if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "거래완료";
@@ -553,6 +553,28 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
     console.error(error);
     return jsonResponse(res, 500, "[모집 마감 - 삭제됨] POST /deals/:dealId/endRecruit 서버 에러", false, null)
   }
+});
+
+//관리자용 api
+//deals Table의 loc1, loc2, loc3을 채우기 위함
+router.post('/admin/fillLocation', async (req, res, next) => {
+  // #swagger.summary = '관리자 : deals Table loc1,2,3'
+  // #swagger.deprecated = true
+  try {
+    const deal=await Deal.findAll();
+    for(i=0;i<deal.length;i++){
+      var curDeal=deal[i];
+      console.log(curDeal.userId);
+      const user=await User.findOne({where:{id:curDeal.userId}, paranoid:false});
+      await curDeal.update({loc1:user.curLocation1});
+      curDeal.loc1=user.curLocation1;
+      curDeal.loc2 = user.curLocation2;
+      curDeal.loc3 = user.curLocation3;
+    }
+    return jsonResponse(res, 200, "[관리자용 api] POST /admin/fillLocation 가 성공적으로 수행되었습니다.", true, null)
+  } catch (error) {
+    console.error(error);
+    return jsonResponse(res, 500, "[관리자용 api] POST /admin/fillLocation 에러", false, null)}
 });
 
 // router.post('/:dealId/endDeal', isLoggedIn, async(req, res, next) => {

@@ -619,6 +619,18 @@
         "deprecated": true
       }
     },
+    "/deals/admin/fillLocation": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "관리자 : deals Table loc1,2,3",
+        "description": "",
+        "parameters": [],
+        "responses": {},
+        "deprecated": true
+      }
+    },
     "/users/deals/{userId}": {
       "get": {
         "tags": [
