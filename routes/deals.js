@@ -12,7 +12,7 @@ const AWS = require('aws-sdk');
 
 const { User, Group, Deal,Comment,Reply, DealImage, DealReport } = require('../models');
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const logger = require('../config/winston');
 const { timeLog } = require('console');
 
@@ -222,25 +222,85 @@ router.get('/all/:range/:region', async (req, res, next) => {
 
 router.get('/all/:region', async (req, res, next) => {
   // #swagger.summary = '지역 전체 거래 GET(삭제예정)'
+  const gangnam = ['압구정동', '신사동', '청담동', '논현동', '삼성동', '역삼동', '대치동', '도곡동', '개포동', '일원동', '수서동', '자곡동', '율현동', '세곡동'];
+  const seocho = ['서초동', '반포동', '방배동', '잠원동', '내곡동', '양재동', '우면동', '신원동', '염곡동', '원지동'];
+  const guanak = ['남현동', '봉천동', '신림동'];
+  const guangjin = ['중곡동', '군자동', '능동', '화양동', '자양동', '구의동', '광장동'];
+  const guArray = [gangnam, seocho, guanak, guangjin];
+  const guName = ['강남구', '서초구', '관악구', '광진구'];
+
   try {
     var token = req.headers.authorization;
-    console.log(`token is ${token}`)
-    allDeal = await Deal.findAll({
-      where: {
-        [Op.or]: [
-          { loc3: req.params.region },
-          { loc3: 'global' }
+    console.log(`token is ${token}`);
+    let region;
+    console.log(`Ex region : ${region}`)
+    for(let i = 0 ; i < guArray.length ; i++){
+      let gu = guArray[i];
+      for(let dong of gu){
+        if(dong == req.params.region){
+          console.log(`${dong} AND ${req.params.region}`)
+          region = guName[i];
+          break;
+        }
+      }
+      if(region !== undefined) break;
+    }
+    console.log(`After Region : ${region}`);
+    if(region === '서초구' || region === '강남구'){
+      console.log(`THIS REGION IS ${region}`)
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc2: '강남구' },
+            { loc2: '서초구' },
+            { loc2: 'global' }
+          ]
+        },
+        order: [[Sequelize.fn('FIELD', Sequelize.col('loc2'), region), 'DESC'], ['loc2', 'DESC'], ['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
         ]
-      },
-      order: [['createdAt', 'DESC']],
-      include: [{
-        model: DealImage,
-        attributes: ['dealImage', 'id']
-      },
-      { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
-      ]
-    });
-  
+      });
+    }
+    else if (region === undefined) {
+      logger.info(`서초, 광진, 강남, 관악 이외 : ${req.params.region} 사용자가 홈 거래를 불러왔습니다.`);
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc3: req.params.region },
+            { loc3: 'global' }
+          ]
+        },
+        order: [['loc3', 'DESC'], ['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+    }
+    else{
+      logger.info(`${region} 홈 모든 거래 info`);
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc2: region },
+            { loc2: 'global' }
+          ]
+        },
+        order: [['loc2', 'DESC'], ['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+    }
     for (i = 0; i < allDeal.length; i++) {
       var toSetStatus = allDeal[i];
       toSetStatus['mystatus'] = "user";
@@ -279,7 +339,7 @@ router.get('/all/:region', async (req, res, next) => {
     var testres = { "capsule": allDeal }
     return jsonResponse(res, 200, "전체 글 리스트", true, testres);
   } catch (error) {
-    logger.error(`[홈 전체 글 리스트] GET /deals/all/:region`);
+    logger.error(`${error}  [홈 전체 글 리스트] GET /deals/all/:region`);
     jsonResponse(res, 500, "[홈 전체 글 리스트] GET /deals/all/:region", false);
   }
 
@@ -559,7 +619,6 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
 //deals Table의 loc1, loc2, loc3을 채우기 위함
 router.post('/admin/fillLocation', async (req, res, next) => {
   // #swagger.summary = '관리자 : deals Table loc1,2,3'
-  // #swagger.deprecated = true
   try {
     const deal=await Deal.findAll();
     for(i=0;i<deal.length;i++){
