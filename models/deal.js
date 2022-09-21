@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 module.exports = class Deal extends Sequelize.Model {
   static init(sequelize) { 
     return super.init({ //이미지,링크, written 처리,status처리
-      region: {
+      loc1: {
         type: Sequelize.STRING(),
         allowNull: false,
       },
@@ -51,7 +51,15 @@ module.exports = class Deal extends Sequelize.Model {
         type: Sequelize.STRING(),
         allowNull: false,
         defaultValue:"모집중"
-      }
+      },
+      loc2: {
+        type: Sequelize.STRING(),
+        allowNull: true,
+      },
+      loc3: {
+        type: Sequelize.STRING(),
+        allowNull: true,
+      },
     }, { // 글 삭제 여부(추가?) ||  작성시간(timestamp?), 현재모집인원(수정 필요), 
       sequelize,
       timestamps: true,

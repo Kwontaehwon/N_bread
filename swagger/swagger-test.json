@@ -336,7 +336,7 @@
         "responses": {}
       }
     },
-    "/deals/all/{region}": {
+    "/deals/all/{range}/{region}": {
       "get": {
         "tags": [
           "Deals"
@@ -344,6 +344,12 @@
         "summary": "지역 전체 거래 GET",
         "description": "",
         "parameters": [
+          {
+            "name": "range",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
           {
             "name": "region",
             "in": "path",

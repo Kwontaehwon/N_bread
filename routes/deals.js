@@ -96,27 +96,63 @@ router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
 
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
-router.get('/all/:region', async (req, res, next) => {
+router.get('/all/:range/:region', async (req, res, next) => {
   // #swagger.summary = '지역 전체 거래 GET'
   try{
     var token = req.headers.authorization;
     console.log(`token is ${token}`)
-    
-    const allDeal = await Deal.findAll({ 
-      where: {
-        [Op.or]: [
-          { region: req.params.region },
-          { region: 'global' }
+    var allDeal;
+    if(req.params.range==="loc1"){
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc1: req.params.region },
+            { loc1: 'global' }
+          ]
+        },
+        order: [['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
         ]
-      },
-      order:[['createdAt','DESC']],
-      include:[{
-      model: DealImage,
-      attributes: ['dealImage','id']
-      },
-      {model:User,attributes:['nick','curLocation3'],paranoid:false},
-    ]
-    });
+      });
+    } else if (req.params.range === "loc2"){
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc2: req.params.region },
+            { loc2: 'global' }
+          ]
+        },
+        order: [['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+
+    } else if (req.params.range === "loc3") {
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc3: req.params.region },
+            { loc3: 'global' }
+          ]
+        },
+        order: [['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+
+    }
     for(i=0;i<allDeal.length;i++){
       var toSetStatus=allDeal[i];
       toSetStatus['mystatus'] = "user";
@@ -190,19 +226,12 @@ router.post('/create', verifyToken, async (req, res, next) => {
       dealPlace : place,
       currentMember : 1, // 내가 얼마나 가져갈지 선택지를 줘야할듯
       userId : user.id,
-      region:region
+      loc1: user.curLocation1,
+      loc2: user.curLocation2,
+      loc3: user.curLocation3,
     })
-    console.log("image link is added");
-    console.log("deal id is " + deal.id);
     await group.update({ dealId : deal.id }); // 업데이트
     logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
-    // const dealEnd = new Date(deal.dealDate);
-    // const dealDeadLine = new Date();
-    // dealDeadLine.setDate(dealEnd.getDate() - 3);
-    // schedule.scheduleJob(dealDeadLine, async() => {
-    //   await deal.update({isDealDone : true});
-    // })
-    // logger.info(`dealId ${deal.id} 의 Deal의 모집 마감 시간이 ${dealDeadLine}으로 스케줄 되었습니다.`);
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);
