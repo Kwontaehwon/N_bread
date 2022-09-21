@@ -365,6 +365,29 @@
         "responses": {}
       }
     },
+    "/deals/all/{region}": {
+      "get": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "지역 전체 거래 GET(삭제예정)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/deals/create": {
       "post": {
         "tags": [

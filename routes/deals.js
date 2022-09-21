@@ -197,6 +197,71 @@ router.get('/all/:range/:region', async (req, res, next) => {
 
 })
 
+router.get('/all/:region', async (req, res, next) => {
+  // #swagger.summary = '지역 전체 거래 GET(삭제예정)'
+  try {
+    var token = req.headers.authorization;
+    console.log(`token is ${token}`)
+    allDeal = await Deal.findAll({
+      where: {
+        [Op.or]: [
+          { loc3: req.params.region },
+          { loc3: 'global' }
+        ]
+      },
+      order: [['createdAt', 'DESC']],
+      include: [{
+        model: DealImage,
+        attributes: ['dealImage', 'id']
+      },
+      { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+      ]
+    });
+  
+    for (i = 0; i < allDeal.length; i++) {
+      var toSetStatus = allDeal[i];
+      toSetStatus['mystatus'] = "user";
+      var dDate = new Date(toSetStatus['dealDate']);
+      dDate.setHours(dDate.getHours() + 9);
+      toSetStatus['dealDate'] = dDate;
+      if (toSetStatus['dealDate'] < new Date(Date.now())) {
+        if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "거래완료";
+        else toSetStatus['status'] = "모집실패";
+      }
+      else {
+        if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "모집완료";
+        else toSetStatus['status'] = "모집중";
+      }
+    }
+
+    if (token != undefined) {
+      //mystatus 처리->"제안자" "참여자" ""
+      var decodedValue = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+      for (i = 0; i < allDeal.length; i++) {
+        var toSetStatus = allDeal[i];
+        if (toSetStatus['userId'] === decodedValue.id) {
+          toSetStatus['mystatus'] = "제안자"
+        } else {
+          var groupMember = [];
+          var group = await Group.findAll({ where: { dealId: toSetStatus['id'] } });
+          for (j = 0; j < group.length; j++) {
+            groupMember.push(group[j]['userId']);
+          }
+          if (groupMember.includes(decodedValue.id)) {
+            toSetStatus['mystatus'] = "참여자"
+          }
+        }
+      }
+    }
+    var testres = { "capsule": allDeal }
+    return jsonResponse(res, 200, "전체 글 리스트", true, testres);
+  } catch (error) {
+    logger.error(`[홈 전체 글 리스트] GET /deals/all/:region`);
+    jsonResponse(res, 500, "[홈 전체 글 리스트] GET /deals/all/:region", false);
+  }
+
+})
+
 
 // 거래 생성하기
 router.post('/create', verifyToken, async (req, res, next) => {
