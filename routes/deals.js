@@ -248,13 +248,18 @@ router.get('/all/:region', async (req, res, next) => {
     console.log(`After Region : ${region}`);
     if(region === '서초구' || region === '강남구'){
       console.log(`THIS REGION IS ${region}`)
-      allDeal = await Deal.findAll({
+      const afterDeal = await Deal.findAll({
         where: {
-          [Op.or]: [
-            { loc2: '강남구' },
-            { loc2: '서초구' },
-            { loc2: 'global' }
-          ]
+          [Op.and] : [
+            {
+              [Op.or]: [
+                { loc2: '강남구' },
+                { loc2: '서초구' },
+                { loc2: 'global' }
+              ]
+            },
+            { dealDate : {[Op.gt] : Date.now()}}
+          ],
         },
         order: [[Sequelize.fn('FIELD', Sequelize.col('loc2'), region), 'DESC'], ['loc2', 'DESC'], ['createdAt', 'DESC']],
         include: [{
@@ -264,6 +269,32 @@ router.get('/all/:region', async (req, res, next) => {
         { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
         ]
       });
+      const beforeDeal = await Deal.findAll({
+        where: {
+          [Op.and] : [
+            {
+              [Op.or]: [
+                { loc2: '강남구' },
+                { loc2: '서초구' },
+                { loc2: 'global' }
+              ]
+            },
+            { dealDate : {[Op.lt] : Date.now()}}
+          ],
+        },
+        order: [[Sequelize.fn('FIELD', Sequelize.col('loc2'), region), 'DESC'], ['loc2', 'DESC'], ['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+      allDeal = [
+        ...afterDeal,
+        ...beforeDeal
+      ]
+      console.log("ALL DEAL IS CREATED");
     }
     else if (region === undefined) {
       logger.info(`서초, 광진, 강남, 관악 이외 : ${req.params.region} 사용자가 홈 거래를 불러왔습니다.`);
@@ -318,7 +349,7 @@ router.get('/all/:region', async (req, res, next) => {
     }
 
     if (token != undefined) {
-      //mystatus 처리->"제안자" "참여자" ""
+      //mystatus 처리-> "제안자" "참여자" ""
       var decodedValue = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
       for (i = 0; i < allDeal.length; i++) {
         var toSetStatus = allDeal[i];
