@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 module.exports = class Deal extends Sequelize.Model {
   static init(sequelize) { 
     return super.init({ //이미지,링크, written 처리,status처리
-      loc1: {
+      loc3: {
         type: Sequelize.STRING(),
         allowNull: false,
       },
@@ -52,11 +52,11 @@ module.exports = class Deal extends Sequelize.Model {
         allowNull: false,
         defaultValue:"모집중"
       },
-      loc2: {
+      loc1: {
         type: Sequelize.STRING(),
         allowNull: true,
       },
-      loc3: {
+      loc2: {
         type: Sequelize.STRING(),
         allowNull: true,
       },
