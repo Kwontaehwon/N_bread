@@ -298,12 +298,17 @@ router.get('/all/:region', async (req, res, next) => {
     }
     else if (region === undefined) {
       logger.info(`서초, 광진, 강남, 관악 이외 : ${req.params.region} 사용자가 홈 거래를 불러왔습니다.`);
-      allDeal = await Deal.findAll({
+      const afterDeal = await Deal.findAll({
         where: {
-          [Op.or]: [
-            { loc3: req.params.region },
-            { loc3: 'global' }
-          ]
+          [Op.and] : [
+            {
+              [Op.or]: [
+                { loc3: req.params.region },
+                { loc3: 'global' }
+              ]
+            },
+            { dealDate : {[Op.gt] : Date.now()}}
+          ],
         },
         order: [['loc3', 'DESC'], ['createdAt', 'DESC']],
         include: [{
@@ -313,15 +318,44 @@ router.get('/all/:region', async (req, res, next) => {
         { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
         ]
       });
+      const beforeDeal = await Deal.findAll({
+        where: {
+          [Op.and] : [
+            {
+              [Op.or]: [
+                { loc3: req.params.region },
+                { loc3: 'global' }
+              ]
+            },
+            { dealDate : {[Op.lt] : Date.now()}}
+          ],
+        },
+        order: [['loc3', 'DESC'], ['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+      allDeal = [
+        ...afterDeal,
+        ...beforeDeal
+      ]
     }
     else{
       logger.info(`${region} 홈 모든 거래 info`);
-      allDeal = await Deal.findAll({
+      const afterDeal = await Deal.findAll({
         where: {
-          [Op.or]: [
-            { loc2: region },
-            { loc2: 'global' }
-          ]
+          [Op.and] : [
+            {
+              [Op.or]: [
+                { loc2: region },
+                { loc2: 'global' }
+              ]
+            },
+            { dealDate : {[Op.gt] : Date.now()}}
+          ],
         },
         order: [['loc2', 'DESC'], ['createdAt', 'DESC']],
         include: [{
@@ -331,6 +365,30 @@ router.get('/all/:region', async (req, res, next) => {
         { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
         ]
       });
+      const beforeDeal = await Deal.findAll({
+        where: {
+          [Op.and] : [
+            {
+              [Op.or]: [
+                { loc2: region },
+            { loc2: 'global' }
+              ]
+            },
+            { dealDate : {[Op.lt] : Date.now()}}
+          ],
+        },
+        order: [['loc2', 'DESC'], ['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+      allDeal = [
+        ...afterDeal,
+        ...beforeDeal
+      ]
     }
     for (i = 0; i < allDeal.length; i++) {
       var toSetStatus = allDeal[i];
