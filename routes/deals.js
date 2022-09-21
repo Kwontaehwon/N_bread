@@ -222,6 +222,12 @@ router.get('/all/:range/:region', async (req, res, next) => {
 
 router.get('/all/:region', async (req, res, next) => {
   // #swagger.summary = '지역 전체 거래 GET(삭제예정)'
+  const gangnam = ['압구정동', '신사동', '청담동', '논현동', '삼성동', '역삼동', '대치동', '도곡동', '개포동', '일원동', '수서동', '자곡동', '율현동', '세곡동'];
+  const seocho = ['서초동', '반포동', '방배동', '잠원동', '내곡동', '양재동', '우면동', '신원동', '염곡동', '원지동'];
+  const guanak = ['남현동', '봉천동', '신림동'];
+  const guangjin = ['중곡동', '군자동', '능동', '화양동', '자양동', '구의동', '광장동'];
+  
+
   try {
     var token = req.headers.authorization;
     console.log(`token is ${token}`)
@@ -559,7 +565,6 @@ router.post('/:dealId/endRecruit', verifyToken, async(req, res, next) => {
 //deals Table의 loc1, loc2, loc3을 채우기 위함
 router.post('/admin/fillLocation', async (req, res, next) => {
   // #swagger.summary = '관리자 : deals Table loc1,2,3'
-  // #swagger.deprecated = true
   try {
     const deal=await Deal.findAll();
     for(i=0;i<deal.length;i++){
