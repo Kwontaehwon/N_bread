@@ -119,21 +119,44 @@ router.get('/all/:range/:region', async (req, res, next) => {
         ]
       });
     } else if (req.params.range === "loc2"){
-      allDeal = await Deal.findAll({
-        where: {
-          [Op.or]: [
-            { loc2: req.params.region },
-            { loc2: 'global' }
+      if(req.params.region==="강남구"||req.params.region==="서초구"){
+        allDeal = await Deal.findAll({
+          where: {
+            [Op.or]: [
+              { loc2: '강남구' },
+              { loc2: '서초구' },
+              { loc2: 'global' }
+            ]
+          },
+          order: [['createdAt', 'DESC']],
+          include: [{
+            model: DealImage,
+            attributes: ['dealImage', 'id']
+          },
+          { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
           ]
-        },
-        order: [['createdAt', 'DESC']],
-        include: [{
-          model: DealImage,
-          attributes: ['dealImage', 'id']
-        },
-        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
-        ]
-      });
+        });
+
+      }
+      else{
+        allDeal = await Deal.findAll({
+          where: {
+            [Op.or]: [
+              { loc2: req.params.region },
+              { loc2: 'global' }
+            ]
+          },
+          order: [['createdAt', 'DESC']],
+          include: [{
+            model: DealImage,
+            attributes: ['dealImage', 'id']
+          },
+          { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+          ]
+        });
+
+      }
+      
 
     } else if (req.params.range === "loc3") {
       allDeal = await Deal.findAll({

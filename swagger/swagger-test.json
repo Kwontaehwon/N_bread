@@ -840,6 +840,66 @@
         }
       }
     },
+    "/users/location/{latitude}/{longitude}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "네이버 Reverse Geocoding으로 현 위치 획득",
+        "description": "",
+        "parameters": [
+          {
+            "name": "latitude",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "longitude",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/users/location/{userId}/{loc1}/{loc2}/{loc3}": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "네이버 Reverse Geocoding으로 현 위치 저장",
+        "description": "",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "loc1",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "loc2",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "loc3",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/comments/{dealId}": {
       "post": {
         "tags": [
