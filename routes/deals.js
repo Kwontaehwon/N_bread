@@ -96,27 +96,63 @@ router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
 
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
-router.get('/all/:region', async (req, res, next) => {
+router.get('/all/:range/:region', async (req, res, next) => {
   // #swagger.summary = '지역 전체 거래 GET'
   try{
     var token = req.headers.authorization;
     console.log(`token is ${token}`)
-    
-    const allDeal = await Deal.findAll({ 
-      where: {
-        [Op.or]: [
-          { region: req.params.region },
-          { region: 'global' }
+    var allDeal;
+    if(req.params.range==="loc1"){
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { region: req.params.region },
+            { loc1: 'global' }
+          ]
+        },
+        order: [['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
         ]
-      },
-      order:[['createdAt','DESC']],
-      include:[{
-      model: DealImage,
-      attributes: ['dealImage','id']
-      },
-      {model:User,attributes:['nick','curLocation3'],paranoid:false},
-    ]
-    });
+      });
+    } else if (req.params.range === "loc2"){
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc2: req.params.region },
+            { loc2: 'global' }
+          ]
+        },
+        order: [['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+
+    } else if (req.params.range === "loc3") {
+      allDeal = await Deal.findAll({
+        where: {
+          [Op.or]: [
+            { loc3: req.params.region },
+            { loc3: 'global' }
+          ]
+        },
+        order: [['createdAt', 'DESC']],
+        include: [{
+          model: DealImage,
+          attributes: ['dealImage', 'id']
+        },
+        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+        ]
+      });
+
+    }
     for(i=0;i<allDeal.length;i++){
       var toSetStatus=allDeal[i];
       toSetStatus['mystatus'] = "user";
