@@ -106,7 +106,7 @@ router.get('/all/:range/:region', async (req, res, next) => {
       allDeal = await Deal.findAll({
         where: {
           [Op.or]: [
-            { region: req.params.region },
+            { loc1: req.params.region },
             { loc1: 'global' }
           ]
         },
