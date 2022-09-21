@@ -12,7 +12,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../models');
-const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick,checkUserNick, postReportUser,isSetNickname, putKakaoUserNick } = require('../controllers/user');
+const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick, checkUserNick, postReportUser, isSetNickname, putKakaoUserNick, getLocationByNaverMapsApi, setLocationByNaverMapsApi} = require('../controllers/user');
 
 
 const router = express.Router();
@@ -43,6 +43,13 @@ router.post('/report/:userId', verifyToken, postReportUser);
 
 //회원가입 완료 여부
 router.get('/check/:userId', isSetNickname);
+
+//reverse geocoding을 통해 위치 가져오기
+router.get('/location/:latitude/:longitude', getLocationByNaverMapsApi);
+
+//reverse geocoding을 통해 가져온 위치 db에 저장
+router.post('/location/:userId/:loc1/:loc2/:loc3', setLocationByNaverMapsApi);
+
 
 
 // router.delete('/:userId', async (req, res, next) => {
