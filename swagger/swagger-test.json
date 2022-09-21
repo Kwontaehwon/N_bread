@@ -627,8 +627,7 @@
         "summary": "관리자 : deals Table loc1,2,3",
         "description": "",
         "parameters": [],
-        "responses": {},
-        "deprecated": true
+        "responses": {}
       }
     },
     "/users/deals/{userId}": {
