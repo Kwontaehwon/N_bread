@@ -120,6 +120,9 @@ router.get('/all/:region', async (req, res, next) => {
     for(i=0;i<allDeal.length;i++){
       var toSetStatus=allDeal[i];
       toSetStatus['mystatus'] = "user";
+      var dDate = new Date(toSetStatus['dealDate']);
+      dDate.setHours(dDate.getHours() + 9);
+      toSetStatus['dealDate'] = dDate;
       if (toSetStatus['dealDate'] < new Date(Date.now())){
         if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="거래완료";
         else toSetStatus['status']="모집실패";
