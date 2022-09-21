@@ -2,9 +2,9 @@
 
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.renameColumn('deals', 'region', 'loc1');
+    await queryInterface.renameColumn('deals', 'region', 'loc3');
+    await queryInterface.addColumn('deals', 'loc1', { type: Sequelize.STRING() });
     await queryInterface.addColumn('deals', 'loc2', { type: Sequelize.STRING() });
-    await queryInterface.addColumn('deals', 'loc3', { type: Sequelize.STRING() });
   },
 
   async down (queryInterface, Sequelize) {
