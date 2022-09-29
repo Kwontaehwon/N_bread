@@ -8,6 +8,8 @@ const schedule = require('node-schedule');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk'); 
+const admin = require("firebase-admin");
+
 
 
 const { User, Group, Deal,Comment,Reply, DealImage, DealReport } = require('../models');
@@ -745,5 +747,26 @@ router.post('/admin/fillLocation', async (req, res, next) => {
 //   }
 // })
 
+router.get('/n/push', async (req, res, next) => {
+  console.log(`admin : ${admin}`);
+  let target_token = `d8rDkzgz4UxMiQKz0m1lHh:APA91bFNLhhUNCDIZqYDqoY5PMOFYuRZ52vPylEE4PAKL450Ibst2ilEoC-egvWD6MnJDhknZIyGS5HPKQGlF3SQJ3THkknbdFx_kWgU5xBBdBdHQMM1miQcPb2rH05B2uWeM1IulQRp`;
+  	//target_token은 푸시 메시지를 받을 디바이스의 토큰값입니다
+
+  let message = {
+    data: {
+      title: '첫 타이틀',
+      body: '데이터가 바디',
+      style: '굳굳',
+    },
+    token: target_token,
+  }
+  await admin.messaging().sendMulticast({
+    tokens: [target_token],
+    notification: {
+      title: "N빵 메세지",
+      body: "광진구, 여기 저기가 오픈했어오ㅛ!",
+    },
+  });
+})
 
 module.exports = router;
