@@ -180,7 +180,7 @@ router.get('/all/:range/:region', async (req, res, next) => {
       var toSetStatus=allDeal[i];
       toSetStatus['mystatus'] = "user";
       var dDate = new Date(toSetStatus['dealDate']);
-      dDate.setHours(dDate.getHours() + 9);
+      dDate.setHours(dDate.getHours());
       toSetStatus['dealDate'] = dDate;
       if (toSetStatus['dealDate'] < new Date(Date.now())){
         if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="거래완료";
