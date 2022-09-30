@@ -180,7 +180,7 @@ router.get('/all/:range/:region', async (req, res, next) => {
       var toSetStatus=allDeal[i];
       toSetStatus['mystatus'] = "user";
       var dDate = new Date(toSetStatus['dealDate']);
-      dDate.setHours(dDate.getHours());
+      dDate.setHours(dDate.getHours()+9);
       toSetStatus['dealDate'] = dDate;
       if (toSetStatus['dealDate'] < new Date(Date.now())){
         if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="거래완료";
@@ -394,7 +394,7 @@ router.get('/all/:region', async (req, res, next) => {
       var toSetStatus = allDeal[i];
       toSetStatus['mystatus'] = "user";
       var dDate = new Date(toSetStatus['dealDate']);
-      dDate.setHours(dDate.getHours()); //2.0.1업데이트 시 +9해주기
+      dDate.setHours(dDate.getHours()+9); //2.0.1업데이트 시 +9해주기
       toSetStatus['dealDate'] = dDate;
       if (toSetStatus['dealDate'] < new Date(Date.now())) {
         if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status'] = "거래완료";
