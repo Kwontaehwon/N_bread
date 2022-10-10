@@ -377,7 +377,7 @@ const deletelocation=async (req,res,next)=>{
     var decodedValue = jwt.verify(token, process.env.JWT_SECRET);
     const user=await User.findOne({where:{id:decodedValue.id}});
     if(!user){
-      logger.info(`DELETE users/location/:dong | userId : ${decodedValue.id}는 회원가입을 완료하지 않은 회원입니다.`);
+      logger.info(`DELETE users/location/:dong | userId : ${decodedValue.id}는 회원이 아닙니다.`);
       return jsonResponse(res, 404, "[동 삭제 api] userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
     }
     const dong=req.params.dong;
@@ -401,9 +401,31 @@ const deletelocation=async (req,res,next)=>{
     }
   }catch(error){
     logger.error(error);
-    return jsonResponse(res, 500, "[동네 삭제] GET users/location/:dong 서버 에러", false, error) // #swagger.responses[500]
+    return jsonResponse(res, 500, "[동 삭제] DELETE users/location/:dong 서버 에러", false, error) // #swagger.responses[500]
   }
 
+}
+
+const addLocation=async(req,res,next)=>{
+  // #swagger.summary = '동 추가하기'
+  try {
+    const {loc1, loc2, loc3} = req.body;
+    var token = req.headers.authorization;
+    var decodedValue = jwt.verify(token,process.env.JWT_SECRET);
+    const user = await User.findOne({ where: { id: decodedValue.id } });
+    if (!user) {
+      logger.info(`POST users/location | userId : ${decodedValue.id}는 회원이 아닙니다.`);
+      return jsonResponse(res, 404, "[동 추가 api] userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
+    }
+    await user.update({curLocationA:loc1,curLocationB:loc2,curLocationC:loc3});
+    logger.info(`POST users/location | userId : ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`);
+    return jsonResponse(res, 200,`[동 추가 api] ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,true,null);
+
+  } catch (error) {
+    logger.error(error);
+    return jsonResponse(res, 500, "[동 추가] POST users/location 서버 에러", false, error) // #swagger.responses[500]
+    
+  }
 }
 
 exports.getUser = getUser;
@@ -417,3 +439,4 @@ exports.isSetNickname=isSetNickname;
 exports.getLocationByNaverMapsApi = getLocationByNaverMapsApi;
 exports.setLocationByNaverMapsApi = setLocationByNaverMapsApi;
 exports.deletelocation = deletelocation;
+exports.addLocation=addLocation;

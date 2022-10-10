@@ -703,6 +703,46 @@
         ],
         "responses": {},
         "deprecated": true
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "동 추가하기",
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "loc1": {
+                  "example": "any"
+                },
+                "loc2": {
+                  "example": "any"
+                },
+                "loc3": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
       }
     },
     "/users/{userId}": {
@@ -911,7 +951,7 @@
         "responses": {}
       }
     },
-    "/userslocation/{dong}": {
+    "/users/location/{dong}": {
       "delete": {
         "tags": [
           "Users"
@@ -934,6 +974,12 @@
         "responses": {
           "404": {
             "description": "Not Found"
+          },
+          "405": {
+            "description": "Method Not Allowed"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
