@@ -495,6 +495,21 @@ router.get('/:dealId', async (req, res, next) => {
       logger.info(`dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`);
       return jsonResponse(res, 404, `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`, false, null);
     }
+    else{
+      var decodedValue = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+      if(deal.userId===decodedValue.id){
+        deal.mystatus="제안자";
+      } else {
+        var groupMember = [];
+        var group = await Group.findAll({ where: { dealId: deal.id } });
+        for (j = 0; j < group.length; j++) {
+          groupMember.push(group[j]['userId']);
+        }
+        if (groupMember.includes(decodedValue.id)) {
+          deal.mystatus = "참여자"
+        }
+      }
+    }
     logger.info(`dealId : ${req.params.dealId} 에 대한 거래정보를 반환합니다.`);
     
     return jsonResponse(res, 200, `dealId ${deal.id} 의 거래 정보`, true, deal);
