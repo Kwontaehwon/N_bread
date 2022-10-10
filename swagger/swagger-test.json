@@ -916,6 +916,33 @@
         "responses": {}
       }
     },
+    "/userslocation/{dong}": {
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "동 삭제하기",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dong",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/comments/{dealId}": {
       "post": {
         "tags": [

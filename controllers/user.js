@@ -1,5 +1,5 @@
 const { User, Group, Deal, DealImage, UserReport } = require('../models');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
 const logger = require('../config/winston');
@@ -10,6 +10,8 @@ const { RDS } = require('aws-sdk');
 const { resourceLimits } = require('worker_threads');
 const exp = require('constants');
 const { json } = require('body-parser');
+const { JsonWebTokenError } = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 
 
 function jsonResponse(res, code, message, isSuccess, result){
@@ -368,6 +370,42 @@ const isSetNickname = async (req, res, next) => {
   }
 }
 
+const deletelocation=async (req,res,next)=>{
+  // #swagger.summary = '동 삭제하기'
+  try{
+    var token = req.headers.authorization;
+    var decodedValue = jwt.verify(token, process.env.JWT_SECRET);
+    const user=await User.findOne({where:{id:decodedValue.id}});
+    if(!user){
+      logger.info(`DELETE users/location/:dong | userId : ${decodedValue.id}는 회원가입을 완료하지 않은 회원입니다.`);
+      return jsonResponse(res, 404, "[동 삭제 api] userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
+    }
+    const dong=req.params.dong;
+    if(user.curLocationC===dong){
+      await user.update({curLocationA:null,curLocationB:null,curLocationC:null});
+      logger.info(`DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`);
+      return jsonResponse(res,200,"[동 삭제 api] 동네 삭제에 성공하였습니다.",true,null);
+    }else if(user.curLocation3===dong){
+      if(user.curLocationC===null){
+        logger.info(`DELETE users/location/:dong | userId : ${decodedValue.id}에서 동네가 하나만 있습니다.`);
+        return jsonResponse(res, 405, "[동 삭제 api] 동네가 하나만 있을 경우 지울 수 없습니다.", false, null) // #swagger.responses[405]
+      }
+      await user.update({curLocation1:user.curLocationA,curLocation2:user.curLocationB,curLocation3:user.curLocationC});
+      await user.update({ curLocationA: null, curLocationB: null, curLocationC: null });
+      logger.info(`DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`);
+      return jsonResponse(res, 200, "[동 삭제 api] 동네 삭제에 성공하였습니다.", true, null);
+
+    }else{
+      logger.info(`DELETE users/location/:dong | userId : ${decodedValue.id}에서 일치하는 동네가 없습니다.`);
+      return jsonResponse(res, 404, "[동 삭제 api] 일치하는 동네가 없습니다.", false, null) // #swagger.responses[404]
+    }
+  }catch(error){
+    logger.error(error);
+    return jsonResponse(res, 500, "[동네 삭제] GET users/location/:dong 서버 에러", false, error) // #swagger.responses[500]
+  }
+
+}
+
 exports.getUser = getUser;
 exports.getMypageDeals = getMypageDeals;
 exports.getNaverGeoLocation = getNaverGeoLocation;
@@ -378,3 +416,4 @@ exports.postReportUser = postReportUser;
 exports.isSetNickname=isSetNickname;
 exports.getLocationByNaverMapsApi = getLocationByNaverMapsApi;
 exports.setLocationByNaverMapsApi = setLocationByNaverMapsApi;
+exports.deletelocation = deletelocation;
