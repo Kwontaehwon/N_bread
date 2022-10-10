@@ -481,12 +481,22 @@ router.post('/create', verifyToken, async (req, res, next) => {
 router.get('/:dealId', async (req, res, next) => {
   // #swagger.summary = '거래 세부정보 GET'
   try{
-    const deal = await Deal.findOne({ where : {id : req.params.dealId}});
+    const deal = await Deal.findOne({
+      where: { id: req.params.dealId },
+      order: [['createdAt', 'DESC']],
+      include: [{
+        model: DealImage,
+        attributes: ['dealImage', 'id']
+      },
+      { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
+      ]
+    });
     if(!deal){
       logger.info(`dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`);
       return jsonResponse(res, 404, `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`, false, null);
     }
     logger.info(`dealId : ${req.params.dealId} 에 대한 거래정보를 반환합니다.`);
+    
     return jsonResponse(res, 200, `dealId ${deal.id} 의 거래 정보`, true, deal);
   }
   catch (error){
