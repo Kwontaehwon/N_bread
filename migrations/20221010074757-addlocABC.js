@@ -2,20 +2,15 @@
 
 module.exports = {
   async up (queryInterface, Sequelize) {
-    /**
-     * Add altering commands here.
-     *
-     * Example:
-     * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-     */
+    await queryInterface.addColumn('users', 'curLocationA', { type: Sequelize.STRING() });
+    await queryInterface.addColumn('users', 'curLocationB', { type: Sequelize.STRING() });
+    await queryInterface.addColumn('users', 'curLocationC', { type: Sequelize.STRING() });
   },
 
   async down (queryInterface, Sequelize) {
-    /**
-     * Add reverting commands here.
-     *
-     * Example:
-     * await queryInterface.dropTable('users');
-     */
+    await queryInterface.removeColumn('users', 'curLocationA');
+    await queryInterface.removeColumn('users', 'curLocationB');
+    await queryInterface.removeColumn('users', 'curLocationC');
+    
   }
 };

@@ -51,7 +51,7 @@ router.get('/location/:latitude/:longitude', getLocationByNaverMapsApi);
 router.post('/location/:userId/:loc1/:loc2/:loc3', setLocationByNaverMapsApi);
 
 //위치를 인자로 받아 동을 지워주는 api
-router.delete('location/:dong',verifyToken,deletelocation);
+router.delete('/location/:dong',verifyToken,deletelocation);
 
 
 
