@@ -352,7 +352,7 @@ const isSetNickname = async (req, res, next) => {
         provider: user.provider,
         deletedAt: user.deletedAt,
         setNickname : false,
-      }
+      }  
       if(user.nick!=null){
         logger.info(`GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료한 회원입니다.`);
         result.setNickname=true;
