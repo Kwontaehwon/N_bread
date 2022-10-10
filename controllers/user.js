@@ -1,5 +1,5 @@
 const { User, Group, Deal, DealImage, UserReport } = require('../models');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
 const logger = require('../config/winston');
@@ -10,6 +10,7 @@ const { RDS } = require('aws-sdk');
 const { resourceLimits } = require('worker_threads');
 const exp = require('constants');
 const { json } = require('body-parser');
+const { JsonWebTokenError } = require('jsonwebtoken');
 
 
 function jsonResponse(res, code, message, isSuccess, result){
@@ -368,6 +369,24 @@ const isSetNickname = async (req, res, next) => {
   }
 }
 
+const deletelocation=async (req,res,next)=>{
+  // #swagger.summary = '동 삭제하기'
+  try{
+    var token = req.headers.authorization;
+    var decodedValue = jwt.verify(token, process.env.JWT_SECRET);
+    const user=user.findOne({where:{id:decodedValue.id}});
+    if(!user){
+      return jsonResponse(res, 404, "userId에 해당되는 유저가 없습니다.", false, null) // #swagger.responses[404]
+    }
+    const dong=req.params.dong;
+
+    
+  }catch(error){
+
+  }
+
+}
+
 exports.getUser = getUser;
 exports.getMypageDeals = getMypageDeals;
 exports.getNaverGeoLocation = getNaverGeoLocation;
@@ -378,3 +397,4 @@ exports.postReportUser = postReportUser;
 exports.isSetNickname=isSetNickname;
 exports.getLocationByNaverMapsApi = getLocationByNaverMapsApi;
 exports.setLocationByNaverMapsApi = setLocationByNaverMapsApi;
+exports.deletelocation=deletelocation;

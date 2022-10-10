@@ -12,7 +12,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../models');
-const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick, checkUserNick, postReportUser, isSetNickname, putKakaoUserNick, getLocationByNaverMapsApi, setLocationByNaverMapsApi} = require('../controllers/user');
+const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick, checkUserNick, postReportUser, isSetNickname, putKakaoUserNick, getLocationByNaverMapsApi, setLocationByNaverMapsApi,deletelocation} = require('../controllers/user');
 
 
 const router = express.Router();
@@ -49,6 +49,9 @@ router.get('/location/:latitude/:longitude', getLocationByNaverMapsApi);
 
 //reverse geocoding을 통해 가져온 위치 db에 저장
 router.post('/location/:userId/:loc1/:loc2/:loc3', setLocationByNaverMapsApi);
+
+//위치를 인자로 받아 동을 지워주는 api
+router.delete('location/:dong',verifyToken,deletelocation);
 
 
 
