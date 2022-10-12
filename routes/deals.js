@@ -509,6 +509,7 @@ router.get('/:dealId', verifyToken, async (req, res, next) => {
       return jsonResponse(res, 404, `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`, false, null);
     }
     else{
+      deal.mystatus="user";
       if(deal.userId===req.decoded.id){
         deal.mystatus="제안자";
       } else {
