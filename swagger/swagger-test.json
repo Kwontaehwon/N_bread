@@ -635,6 +635,16 @@
         "responses": {}
       }
     },
+    "/deals/n/push": {
+      "get": {
+        "tags": [
+          "Deals"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
     "/users/deals/{userId}": {
       "get": {
         "tags": [

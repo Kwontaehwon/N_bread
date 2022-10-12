@@ -12,6 +12,8 @@ const bodyParser = require('body-parser');
 // const { swaggerUi, specs } = require('./swagger/swagger');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger/swagger-test.json');
+const admin = require("firebase-admin");
+let serviceAccount = require("./config/firebase-admin.json");
 
 dotenv.config();
 const indexRouter = require('./routes');
@@ -26,6 +28,11 @@ const passportConfig = require('./passport');
 const logger = require('./config/winston');
 
 const app = express();
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 
 passportConfig();
 app.set('port', process.env.PORT || 5005);

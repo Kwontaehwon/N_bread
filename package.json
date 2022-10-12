@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app",
-    "prestart" : "node swagger/swagger.js",
+    "prestart": "node swagger/swagger.js",
     "test": "jest"
   },
   "author": "Kwon TaeHyun",
@@ -24,6 +24,7 @@
     "express-rate-limit": "^6.4.0",
     "express-session": "^1.17.1",
     "externalip": "^1.0.2",
+    "firebase-admin": "^11.0.1",
     "jsonwebtoken": "^8.5.1",
     "loader": "^2.1.1",
     "morgan": "^1.10.0",

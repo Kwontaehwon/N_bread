@@ -8,6 +8,8 @@ const schedule = require('node-schedule');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk'); 
+const admin = require("firebase-admin");
+
 
 
 const { User, Group, Deal,Comment,Reply, DealImage, DealReport } = require('../models');
@@ -468,7 +470,15 @@ router.post('/create', verifyToken, async (req, res, next) => {
       loc3: user.curLocation3,
     })
     await group.update({ dealId : deal.id }); // 업데이트
-    logger.info(`userId : ${deal.id} 거래가 생성되었습니다.`);
+    const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
+    // logger.info(fcmTokenJson);
+    if(Object.keys(fcmTokenJson.data).length !== 0){
+      const fcmToken = fcmTokenJson.data.Item.fcmToken;
+      logger.info(`fcmToken : ${fcmToken}`);
+      const fcmTopicName = `dealFcmTopic` + deal.id;
+      await admin.messaging().subscribeToTopic(fcmToken, fcmTopicName);
+    }
+    logger.info(`dealId : ${deal.id} 거래가 생성되었습니다.`);
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
     logger.error(error);
@@ -616,13 +626,31 @@ router.post('/:dealId/join/:userId', verifyToken, async (req, res, next) => {
     if(stock <= 0){
       logger.log(stock);
       return jsonResponse(res, 400, `구매 가능한 수량 ${stock} 내의 수를 입력해야 합니다.`, false, null);
-    }
+    }    
     const group = await Group.create({
       amount: 1,
       userId : req.params.userId,
       dealId : req.params.dealId,
     })
     await deal.update({currentMember : deal.currentMember + 1});
+    const fcmTopicName = `dealFcmTopic` + deal.id;
+    // 그룹에 있는 모든 유저들에게
+    const message = {
+      notification: {
+        title: `N빵 신규 참여 알림`,
+        body: `${user.nick}님이 N빵에 참여하여 인원이 ${deal.currentMember} / ${deal.totalMember} 가 되었습니다!`,
+      },
+      topic : fcmTopicName
+    }
+    await admin.messaging().send(message);
+
+    const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
+    if(Object.keys(fcmTokenJson.data).length !== 0){
+      const fcmToken = fcmTokenJson.data.Item.fcmToken;
+      logger.info(`fcmToken : ${fcmToken}`);
+      await admin.messaging().subscribeToTopic(fcmToken, fcmTopicName);
+    }
+
     return jsonResponse(res, 200, `거래 참여가 완료되었습니다.`, true, {deal : deal, group : group});
   }catch (error) {
     logger.error(error);
@@ -770,5 +798,29 @@ router.post('/admin/fillLocation', async (req, res, next) => {
 //   }
 // })
 
+router.get('/n/push', async (req, res, next) => {
+  // const target_token = `edqf9KMJh0mnjqWUF-vVtz:APA91bGCR8zNPcmyfNTSfzfeGXR0255JXrKI4g4NIFAqxRc7-Qi0kENI4LLPNte9Hj6Z9KJGmvrlEa3rSX9L-MyoA7-JAPEWWtSLhrrJYfrAuylJ7NcqQ_eyiPVP05mQq_2ADI0a8oFZ`;
+  // const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/51`);
+  // console.log(fcmTokenJson.data.Item.fcmToken);
+  // const fcmToken = fcmTokenJson.data.Item.fcmToken;
+  // await admin.messaging().sendMulticast({
+  //   tokens: [fcmToken],
+  //   notification: {
+  //     title: "거래 참여",
+  //     body: "모든 참여자에게 알림.",
+  //   },
+  // });
+
+  const topicName = "nameTest";
+  const message = {
+    notification: {
+      title: "Topic 테스트",
+      body: `${topicName} 입니다 fcmfcm`,
+    },
+    topic : topicName
+  }
+  logger.info(topicName);
+  await admin.messaging().send(message);
+})
 
 module.exports = router;
