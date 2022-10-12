@@ -1,0 +1,26 @@
+name: deploy
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  AUTO_DEPLOY:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run scripts in server
+        uses: appleboy/ssh-action@master
+        with:
+          password: ${{ secrets.PASSWORD }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER_NAME }}
+          port: 22
+          script: |
+            cd N_bread_Server/
+            git fetch
+            git pull
+            pm2 stop 2
+            pm2 start 2

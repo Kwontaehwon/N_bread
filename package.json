@@ -24,7 +24,7 @@
     "express-rate-limit": "^6.4.0",
     "express-session": "^1.17.1",
     "externalip": "^1.0.2",
-    "firebase-admin": "^11.0.1",
+    "firebase-admin": "^11.1.0",
     "jsonwebtoken": "^8.5.1",
     "loader": "^2.1.1",
     "morgan": "^1.10.0",
