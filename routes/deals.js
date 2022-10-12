@@ -184,7 +184,12 @@ router.get('/all/:range/:region', async (req, res, next) => {
       var dDate = new Date(toSetStatus['dealDate']);
       dDate.setHours(dDate.getHours()+9);
       toSetStatus['dealDate'] = dDate;
-      if (toSetStatus['dealDate'] < new Date(Date.now())){
+      const nowDate =  new Date(Date.now());
+      nowDate.setHours(nowDate.getHours() + 9);
+	    console.log(toSetStatus['dealDate']);
+            console.log(nowDate);
+            console.log(toSetStatus['dealDate'] < nowDate);
+      if (toSetStatus['dealDate'] < nowDate){
         if (toSetStatus['currentMember'] === toSetStatus['totalMember']) toSetStatus['status']="거래완료";
         else toSetStatus['status']="모집실패";
       }
@@ -618,7 +623,7 @@ router.post('/:dealId/join/:userId', verifyToken, async (req, res, next) => {
     if(isJoin){
       return jsonResponse(res, 403, `userId : ${req.params.userId} 는 이미 거래에 참여했습니다.`, false, null); // 추가 구매 수량?
     }
-    const expireDate = deal.dealDate.setDate(deal.dealDate.getDate() - 3);
+    const expireDate = deal.dealDate.setDate(deal.dealDate.getDate());
     if(expireDate < Date.now()){
       return jsonResponse(res, 401, `거래 모집 시간이 지났습니다.`, false, null);
     }
