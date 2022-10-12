@@ -630,7 +630,7 @@
         "responses": {}
       }
     },
-    "/deals/noti/push_send": {
+    "/deals/n/push": {
       "get": {
         "tags": [
           "Deals"
