@@ -98,7 +98,7 @@ router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
 
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
-router.get('/all/:range/:region', async (req, res, next) => {
+router.get('/all/:range/:region', verifyToken, async (req, res, next) => {
   // #swagger.summary = '지역 전체 거래 GET'
   try{
     var token = req.headers.authorization;
@@ -196,10 +196,9 @@ router.get('/all/:range/:region', async (req, res, next) => {
   
     if (token != undefined) {
       //mystatus 처리->"제안자" "참여자" ""
-      var decodedValue=jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
       for (i = 0; i < allDeal.length; i++) {
         var toSetStatus = allDeal[i];
-        if (toSetStatus['userId']===decodedValue.id) {
+        if (toSetStatus['userId']===req.decoded.id) {
           toSetStatus['mystatus']="제안자"
         }else{ 
           var groupMember = [];
@@ -207,7 +206,7 @@ router.get('/all/:range/:region', async (req, res, next) => {
           for(j=0;j<group.length;j++){
             groupMember.push(group[j]['userId']);
           }
-          if(groupMember.includes(decodedValue.id)){
+          if(groupMember.includes(req.decoded.id)){
             toSetStatus['mystatus']="참여자"
           }
         }
@@ -222,7 +221,7 @@ router.get('/all/:range/:region', async (req, res, next) => {
 
 })
 
-router.get('/all/:region', async (req, res, next) => {
+router.get('/all/:region', verifyToken, async (req, res, next) => {
   // #swagger.summary = '지역 전체 거래 GET(삭제예정)'
   const gangnam = ['압구정동', '신사동', '청담동', '논현동', '삼성동', '역삼동', '대치동', '도곡동', '개포동', '일원동', '수서동', '자곡동', '율현동', '세곡동'];
   const seocho = ['서초동', '반포동', '방배동', '잠원동', '내곡동', '양재동', '우면동', '신원동', '염곡동', '원지동'];
@@ -410,10 +409,9 @@ router.get('/all/:region', async (req, res, next) => {
 
     if (token != undefined) {
       //mystatus 처리-> "제안자" "참여자" ""
-      var decodedValue = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
       for (i = 0; i < allDeal.length; i++) {
         var toSetStatus = allDeal[i];
-        if (toSetStatus['userId'] === decodedValue.id) {
+        if (toSetStatus['userId'] === req.decoded.id) {
           toSetStatus['mystatus'] = "제안자"
         } else {
           var groupMember = [];
@@ -421,7 +419,7 @@ router.get('/all/:region', async (req, res, next) => {
           for (j = 0; j < group.length; j++) {
             groupMember.push(group[j]['userId']);
           }
-          if (groupMember.includes(decodedValue.id)) {
+          if (groupMember.includes(req.decoded.id)) {
             toSetStatus['mystatus'] = "참여자"
           }
         }
@@ -488,7 +486,7 @@ router.post('/create', verifyToken, async (req, res, next) => {
 
 
 // 거래 세부정보
-router.get('/:dealId', async (req, res, next) => {
+router.get('/:dealId', verifyToken, async (req, res, next) => {
   // #swagger.summary = '거래 세부정보 GET'
   try{
     const deal = await Deal.findOne({
@@ -506,8 +504,7 @@ router.get('/:dealId', async (req, res, next) => {
       return jsonResponse(res, 404, `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`, false, null);
     }
     else{
-      var decodedValue = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
-      if(deal.userId===decodedValue.id){
+      if(deal.userId===req.decoded.id){
         deal.mystatus="제안자";
       } else {
         var groupMember = [];
@@ -515,7 +512,7 @@ router.get('/:dealId', async (req, res, next) => {
         for (j = 0; j < group.length; j++) {
           groupMember.push(group[j]['userId']);
         }
-        if (groupMember.includes(decodedValue.id)) {
+        if (groupMember.includes(req.decoded.id)) {
           deal.mystatus = "참여자"
         }
       }
