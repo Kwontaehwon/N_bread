@@ -39,6 +39,24 @@ router.post('/:dealId', verifyToken, async (req, res) => {
             dealId : req.params.dealId
         }) 
         console.log(req.params.dealId);
+        const deal = await Deal.findOne({ where : { id : req.params.dealId}});
+        if(deal.userId != user.id){
+            const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
+            if(Object.keys(fcmTokenJson.data).length !== 0){
+                const fcmToken = fcmTokenJson.data.Item.fcmToken;
+                await admin.messaging().sendMulticast({
+                    tokens: [fcmToken],
+                    notification: {
+                      title: "N빵에 새로운 댓글이 달렸어요",
+                      body: content,
+                    },
+                    data: {
+                      type : "deal",
+                      dealId : `${deal.id}`
+                    }
+                });
+            }
+        }
         jsonResponse(res, 200, "댓글 작성에 성공하였습니다.", true);
     } catch(err){
         jsonResponse(res, 500, "[댓글 생성] POST comments/:dealId 서버 에러", false);
@@ -58,6 +76,26 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
             dealId: req.params.dealId,
             parentId:req.body.parentId,
         })
+        const parentComment = await Comment.findOne({where : { id : parentId }});
+        const relatedUser = await Reply.findAll(
+            {where : { parentId : parentId}}, 
+            {attributes : [[Sequelize.fn('DISTINCT', Sequelize.col('userId')) ,'userId'],]})
+        console.log(`relatedUser : ${relatedUser}`);
+        const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
+        if(Object.keys(fcmTokenJson.data).length !== 0){
+            const fcmToken = fcmTokenJson.data.Item.fcmToken;
+            await admin.messaging().sendMulticast({
+                tokens: [fcmToken],
+                notification: {
+                    title: "N빵에 새로운 댓글이 달렸어요",
+                    body: content,
+                },
+                data: {
+                    type : "deal",
+                    dealId : `${deal.id}`
+                }
+            });
+        }
         console.log(req.params.dealId); 
         jsonResponse(res, 200, "답글 작성에 성공하였습니다.", true);
     }
@@ -70,7 +108,7 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
 
 router.delete('/:commentId', verifyToken, async (req, res) => {
     // #swagger.summary = '댓글 삭제'
-    try{
+    try{ 
         const user = await User.findOne({ where: { id: req.decoded.id } });
         const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
         if(comment===null){

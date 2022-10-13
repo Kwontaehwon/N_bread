@@ -642,6 +642,10 @@ router.post('/:dealId/join/:userId', verifyToken, async (req, res, next) => {
         title: `N빵 신규 참여 알림`,
         body: `${user.nick}님이 N빵에 참여하여 인원이 ${deal.currentMember} / ${deal.totalMember} 가 되었습니다!`,
       },
+      data : {
+        type : 'deal',
+        dealId : `${deal.id}`
+      },
       topic : fcmTopicName
     }
     await admin.messaging().send(message);
@@ -800,29 +804,25 @@ router.post('/admin/fillLocation', async (req, res, next) => {
 //   }
 // })
 
-router.get('/n/push', async (req, res, next) => {
-  // const target_token = `edqf9KMJh0mnjqWUF-vVtz:APA91bGCR8zNPcmyfNTSfzfeGXR0255JXrKI4g4NIFAqxRc7-Qi0kENI4LLPNte9Hj6Z9KJGmvrlEa3rSX9L-MyoA7-JAPEWWtSLhrrJYfrAuylJ7NcqQ_eyiPVP05mQq_2ADI0a8oFZ`;
-  // const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/51`);
-  // console.log(fcmTokenJson.data.Item.fcmToken);
-  // const fcmToken = fcmTokenJson.data.Item.fcmToken;
-  // await admin.messaging().sendMulticast({
-  //   tokens: [fcmToken],
-  //   notification: {
-  //     title: "거래 참여",
-  //     body: "모든 참여자에게 알림.",
-  //   },
-  // });
-
-  const topicName = "nameTest";
-  const message = {
-    notification: {
-      title: "Topic 테스트",
-      body: `${topicName} 입니다 fcmfcm`,
-    },
-    topic : topicName
+router.post('/fcmPush/:fcmToken', async (req, res, next) => {
+  try{
+    await admin.messaging().sendMulticast({
+      tokens: [req.params.fcmToken],
+      notification: {
+        title: "FCM 테스트",
+        body: "POSTMAN API 테스트",
+      },
+      data: {
+        type : "deal",
+        dealId : "256"
+      }
+    });
+    return res.status(200).send();
   }
-  logger.info(topicName);
-  await admin.messaging().send(message);
+  catch (error){
+    console.log(error);
+  }
+
 })
 
 module.exports = router;
