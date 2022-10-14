@@ -11,7 +11,7 @@ const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const logger = require('../config/winston');
 
 const router = express.Router();
@@ -41,6 +41,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
         console.log(req.params.dealId);
         const deal = await Deal.findOne({ where : { id : req.params.dealId}});
         if(deal.userId != user.id){
+            logger.info(`거래 제안자 id : ${deal.userId} 에게 새로운 댓글 (${req.body.content}) 알림을 보냅니다. `)
             const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
             if(Object.keys(fcmTokenJson.data).length !== 0){
                 const fcmToken = fcmTokenJson.data.Item.fcmToken;
@@ -48,7 +49,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
                     tokens: [fcmToken],
                     notification: {
                       title: "N빵에 새로운 댓글이 달렸어요",
-                      body: content,
+                      body: req.body.content,
                     },
                     data: {
                       type : "deal",
@@ -76,9 +77,9 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
             dealId: req.params.dealId,
             parentId:req.body.parentId,
         })
-        const parentComment = await Comment.findOne({where : { id : parentId }});
+        const parentComment = await Comment.findOne({where : { id : req.body.parentId }});
         const relatedUser = await Reply.findAll(
-            {where : { parentId : parentId}}, 
+            {where : { parentId : req.body.parentId }}, 
             {attributes : [[Sequelize.fn('DISTINCT', Sequelize.col('userId')) ,'userId'],]})
         console.log(`relatedUser : ${relatedUser}`);
         const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
