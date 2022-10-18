@@ -9,8 +9,7 @@ const Reply = require('./reply');
 const DealImage = require('./dealImage');
 const DealReport = require('./dealReport');
 const UserReport = require('./userReport');
-
-
+const Event = require('./event');
 
 const db = {};
 const sequelize = new Sequelize(
@@ -26,6 +25,7 @@ db.Reply = Reply;
 db.DealImage=DealImage;
 db.DealReport=DealReport;
 db.UserReport = UserReport;
+db.Event = Event;
 
 Deal.init(sequelize);
 User.init(sequelize);
@@ -35,6 +35,7 @@ Reply.init(sequelize);
 DealImage.init(sequelize);
 DealReport.init(sequelize);
 UserReport.init(sequelize);
+Event.init(sequelize);
 
 Deal.associate(db);
 User.associate(db);
@@ -44,5 +45,6 @@ Reply.associate(db);
 DealImage.associate(db);
 DealReport.associate(db);
 UserReport.associate(db);
+Event.associate(db);
 
 module.exports = db;
