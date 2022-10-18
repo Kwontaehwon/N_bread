@@ -107,7 +107,7 @@ router.post('/img/:eventId', upload.single('img'), async (req, res, next) => {
         const eventId = req.params.eventId;
         console.log(file);
         console.log(`location : ${orignalUrl}`)
-        const event = await Event.findOne({Where : {id : eventId }});
+        const event = await Event.findOne({where : {id : eventId }});
         if (event == null){
             logger.info(`POST events/img/:eventId 의 eventId : ${eventId} 에 해당하는 event를 찾을 수 없습니다.`);
             return jsonResponse(res, 404, `POST events/img/:eventId 의 eventId : ${eventId} 에 해당하는 event를 찾을 수 없습니다.`,false);
