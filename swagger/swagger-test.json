@@ -1205,13 +1205,20 @@
         "responses": {}
       }
     },
-    "/events/popup": {
+    "/events/popup/{recentId}": {
       "get": {
         "tags": [
           "Events"
         ],
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "recentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {}
       }
     },
