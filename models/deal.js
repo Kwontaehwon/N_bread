@@ -60,6 +60,11 @@ module.exports = class Deal extends Sequelize.Model {
         type: Sequelize.STRING(),
         allowNull: true,
       },
+      isCertificated : {
+        type: Sequelize.BOOLEAN(),
+        allowNull : false,
+        defaultValue : false
+      }
     }, { // 글 삭제 여부(추가?) ||  작성시간(timestamp?), 현재모집인원(수정 필요), 
       sequelize,
       timestamps: true,
