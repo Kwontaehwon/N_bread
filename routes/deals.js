@@ -220,8 +220,8 @@ router.get('/all/:range/:region', verifyToken, async (req, res, next) => {
     var testres={"capsule":allDeal} 
     return jsonResponse(res, 200, "전체 글 리스트", true, testres);
   } catch(error){
-    logger.error(`[홈 전체 글 리스트] GET /deals/all/:region`);
-    jsonResponse(res, 500, "[홈 전체 글 리스트] GET /deals/all/:region", false); 
+    logger.error(`[홈 전체 글 리스트] GET /deals/all/:region ${error}`);
+    jsonResponse(res, 500, `[홈 전체 글 리스트] GET /deals/all/:region`, false); 
   }
 
 })

@@ -490,7 +490,7 @@
                 "dealDate": {
                   "example": "any"
                 },
-                "dealPlace": {
+                "place": {
                   "example": "any"
                 },
                 "currentMember": {
