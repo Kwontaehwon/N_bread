@@ -14,15 +14,17 @@ function jsonResponse(res, code, message, isSuccess, result) {
 
 
 
-router.get('/getmsg', async (req, res, next) => {
+router.get('/send', async (req, res, next) => {
+    const {title, text} = req.body;
     try {
         Slack.sendMessage(
             {
                 color: Slack.Colors.success,
-                title: '테스트 메시지 전송 success'
+                title: title,
+                text: text,
             }
         );
-        jsonResponse(res, 200, "슬랙에 메시지 보내기 성공", true);
+        jsonResponse(res, 200, "슬랙에 메시지 전송을 완료하였습니다.", true);
         
     }
     catch (error) {
