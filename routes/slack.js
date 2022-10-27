@@ -14,7 +14,7 @@ function jsonResponse(res, code, message, isSuccess, result) {
 
 
 
-router.get('/send', async (req, res, next) => {
+router.post('/send', async (req, res, next) => {
     const {title, text} = req.body;
     try {
         Slack.sendMessage(
