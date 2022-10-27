@@ -16,6 +16,7 @@ const qs = require('qs');
 const { serveWithOptions } = require('swagger-ui-express');
 const { urlencoded } = require('body-parser');
 const { session } = require('passport');
+const { Slack } = require('../class/slack');
 
 const router = express.Router();
 
@@ -124,6 +125,7 @@ router.get('/kakao/callback', passport.authenticate('kakao', {
 //로그인 시 회원번호, email을 받아 db에 저장
 router.post('/kakaosdk/signup/',async(req,res,next)=>{
   // #swagger.summary = '카카오 SDK 로그인 api'
+  
   const { kakaoNumber , email }=req.body;
   console.log('kakaosdk signup');
   try{
@@ -152,6 +154,14 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         console.log(getToken.data);
         console.log(getToken.data['result']['accessToken']);
         jsonResponse(res, 300, "[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, { "accessToken": getToken.data['result']['accessToken'] })
+        const user = await User.findOne({ where: { kakaoNumber: kakaoNumber } });
+        Slack.sendMessage(
+          {
+            color: Slack.Colors.success,
+            title:'[회원가입]',
+            text: `[kakao] ${user.id}번 유저가 회원가입하였습니다.`,
+          }
+        );
       } catch (error) {
         logger.error(error);
         return jsonResponse(res, 500, "[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.", false, null);
@@ -267,7 +277,14 @@ router.post(
     logger.info(`[애플로그인] ${req.user.id} 의 nick : ${req.user.nick} `);
     if(req.user.nick == null){ 
       logger.info(`[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.`);
-      return jsonResponse(res, 300, "[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, null );
+      Slack.sendMessage(
+        {
+          color: Slack.Colors.success,
+          title: '[회원가입]',
+          text: `[apple] ${req.user.id}번 유저가 회원가입하였습니다.`,
+        }
+      );
+      return jsonResponse(res, 300, "[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.", true, null);
     }
     else{
       logger.info(`[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.`);
