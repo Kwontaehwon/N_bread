@@ -39,7 +39,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
             dealId : req.params.dealId
         }) 
         console.log(req.params.dealId);
-        jsonResponse(res, 200, "댓글 작성에 성공하였습니다.", true);
+        jsonResponse(res, 200, "댓글 작성에 성공하였습니다.", true, comment);
     } catch(err){
         jsonResponse(res, 500, "[댓글 생성] POST comments/:dealId 서버 에러", false);
         logger.error(err);
@@ -52,14 +52,14 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
         const user = await User.findOne({ where: { id: req.decoded.id } });
         //const comment = await Comment.findOne({ where: { dealId: req.params.dealId } });
         console.log(req.body);
-        await Reply.create({
+        const reply = await Reply.create({
             userId: user.id,
             content: req.body.content,
             dealId: req.params.dealId,
             parentId:req.body.parentId,
         })
         console.log(req.params.dealId); 
-        jsonResponse(res, 200, "답글 작성에 성공하였습니다.", true);
+        jsonResponse(res, 200, "답글 작성에 성공하였습니다.", true, reply);
     }
      catch (err) {
         jsonResponse(res, 500, "[대댓글 생성] POST /comments/reply/:dealId 서버 에러", false);
@@ -73,7 +73,7 @@ router.delete('/:commentId', verifyToken, async (req, res) => {
     try{
         const user = await User.findOne({ where: { id: req.decoded.id } });
         const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
-        if(comment===null){
+        if(comment===null){npm
             jsonResponse(res, 404, "해당 댓글을 찾을 수 없습니다.", false);
             res.end();
         }

@@ -146,7 +146,6 @@ router.post('/kakaosdk/signup/',async(req,res,next)=>{
         logger.info(`[카카오SDK 회원가입] 처음 SDK를 이용해 로그인 한 유저입니다. DB에 email, 회원번호 저장을 완료하였습니다.`)
       }
       //token
-      logger
       const url = 'https://www.chocobread.shop/auth/kakaosdk/createToken/' + kakaoNumber;
       try {
         const getToken = await axios.get(url);
