@@ -1270,6 +1270,16 @@
         ],
         "responses": {}
       }
+    },
+    "/slack/getmsg": {
+      "get": {
+        "tags": [
+          "Slack"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
     }
   }
 }
