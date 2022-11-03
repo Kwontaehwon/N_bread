@@ -29,7 +29,41 @@ function jsonResponse(res, code, message, isSuccess, result) {
 
 router.use(express.json());
 
-
+router.post('/:dealId', verifyToken, async (req, res) => {
+    // #swagger.summary = '댓글 생성'
+    const user = await User.findOne({ where: { id: req.decoded.id } });
+    try{
+        const comment = await Comment.create({
+            userId : user.id,
+            content : req.body.content,
+            dealId : req.params.dealId
+        }) 
+        console.log(req.params.dealId);
+        const deal = await Deal.findOne({ where : { id : req.params.dealId}});
+        if(deal.userId != user.id){
+            logger.info(`거래 제안자 id : ${deal.userId} 에게 새로운 댓글 (${req.body.content}) 알림을 보냅니다. `);
+            const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
+            if(Object.keys(fcmTokenJson.data).length !== 0){
+                const fcmToken = fcmTokenJson.data.Item.fcmToken;
+                await admin.messaging().sendMulticast({
+                    tokens: [fcmToken],
+                    notification: {
+                      title: "N빵에 새로운 댓글이 달렸어요",
+                      body: req.body.content,
+                    },
+                    data: {
+                      type : "deal",
+                      dealId : `${deal.id}`
+                    }
+                });
+            }
+        }
+        jsonResponse(res, 200, "댓글 작성에 성공하였습니다.", true);
+    } catch(err){
+        jsonResponse(res, 500, "[댓글 생성] POST comments/:dealId 서버 에러", false);
+        logger.error(err);
+    }
+})
 
 router.post('/reply/:dealId', verifyToken, async (req, res) => {
     // #swagger.summary = '대댓글 생성'
