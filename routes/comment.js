@@ -42,7 +42,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
         const deal = await Deal.findOne({ where : { id : req.params.dealId}});
         if(deal.userId != user.id){
             logger.info(`거래 제안자 id : ${deal.userId} 에게 새로운 댓글 (${req.body.content}) 알림을 보냅니다. `);
-            const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
+            const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${deal.userId}`); // ${user.id}
             if(Object.keys(fcmTokenJson.data).length !== 0){
                 const fcmToken = fcmTokenJson.data.Item.fcmToken;
                 await admin.messaging().sendMulticast({
@@ -84,8 +84,9 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
         let fcmTokenList = [];
         if(parentComment.userId != user.id) await getAndStoreToken(fcmTokenList, parentComment.userId);
         for(let targetId of result){
-            if(targetId == user.id) continue;
-            await getAndStoreToken(fcmTokenList, targetId);
+	    console.log(`targetId ${targetId.userId}`);
+            if(targetId.userId == user.id) continue;
+            await getAndStoreToken(fcmTokenList, targetId.userId);
         }
         console.log(`fcmTokenList : ${fcmTokenList}`);
         if(fcmTokenList.length > 0){
@@ -102,7 +103,7 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
                 }
             });
         }
-        jsonResponse(res, 200, "답글 작성에 성공하였습니다.", true);
+        jsonResponse(res, 200, "답글 작성에 성공하였습니다.", true, reply);
     }
      catch (err) {
         jsonResponse(res, 500, "[대댓글 생성] POST /comments/reply/:dealId 서버 에러", false);
