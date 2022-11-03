@@ -630,14 +630,25 @@
         "responses": {}
       }
     },
-    "/deals/n/push": {
-      "get": {
+    "/deals/fcmPush/{fcmToken}": {
+      "post": {
         "tags": [
           "Deals"
         ],
         "description": "",
-        "parameters": [],
-        "responses": {}
+        "parameters": [
+          {
+            "name": "fcmToken",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/users/deals/{userId}": {
