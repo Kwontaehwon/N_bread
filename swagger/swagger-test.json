@@ -490,7 +490,7 @@
                 "dealDate": {
                   "example": "any"
                 },
-                "dealPlace": {
+                "place": {
                   "example": "any"
                 },
                 "currentMember": {
@@ -1203,6 +1203,92 @@
             }
           }
         ],
+        "responses": {}
+      }
+    },
+    "/events/": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "description": "",
+        "parameters": [],
+        "responses": {}
+      }
+    },
+    "/events/popup/{recentId}": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "recentId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/events/create": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "any"
+                },
+                "type": {
+                  "example": "any"
+                },
+                "target": {
+                  "example": "any"
+                },
+                "eventStatus": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/events/img/{eventId}": {
+      "post": {
+        "tags": [
+          "Events"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/slack/getmsg": {
+      "get": {
+        "tags": [
+          "Slack"
+        ],
+        "description": "",
+        "parameters": [],
         "responses": {}
       }
     }
