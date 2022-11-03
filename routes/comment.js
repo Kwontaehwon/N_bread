@@ -42,7 +42,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
         console.log(req.params.dealId);
         const deal = await Deal.findOne({ where : { id : req.params.dealId}});
         if(deal.userId != user.id){
-            logger.info(`거래 제안자 id : ${deal.userId} 에게 새로운 댓글 (${req.body.content}) 알림을 보냅니다. `)
+            logger.info(`거래 제안자 id : ${deal.userId} 에게 새로운 댓글 (${req.body.content}) 알림을 보냅니다. `);
             const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
             if(Object.keys(fcmTokenJson.data).length !== 0){
                 const fcmToken = fcmTokenJson.data.Item.fcmToken;
