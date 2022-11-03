@@ -13,6 +13,7 @@ const { response } = require('express');
 const { resolve } = require('path');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../config/winston');
+const admin = require("firebase-admin");
 
 const router = express.Router();
 
@@ -70,34 +71,41 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
     try{
         const user = await User.findOne({ where: { id: req.decoded.id } });
         //const comment = await Comment.findOne({ where: { dealId: req.params.dealId } });
-        console.log(req.body);
-        await Reply.create({
+        if(user == null){
+            return jsonResponse(res, 404, `userId ${req.decoded.id} 에 해당하는 유저를 찾을 수 없습니다. `, false, null);
+        }
+        const reply = await Reply.create({
             userId: user.id,
             content: req.body.content,
             dealId: req.params.dealId,
             parentId:req.body.parentId,
         })
         const parentComment = await Comment.findOne({where : { id : req.body.parentId }});
-        const relatedUser = await Reply.findAll(
-            {where : { parentId : req.body.parentId }}, 
-            {attributes : [[Sequelize.fn('DISTINCT', Sequelize.col('userId')) ,'userId'],]})
-        console.log(`relatedUser : ${relatedUser}`);
-        const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`); // ${user.id}
-        if(Object.keys(fcmTokenJson.data).length !== 0){
-            const fcmToken = fcmTokenJson.data.Item.fcmToken;
+        const [result, meta] = await sequelize.query(`SELECT DISTINCT userId FROM replies WHERE parentId = ${req.body.parentId}`);
+        let fcmTokenList = [];
+        for(let targetId of result){
+            if(targetId == user.id) continue;
+            const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${targetId}`); // ${user.id}
+            if(Object.keys(fcmTokenJson.data).length !== 0){
+                const fcmToken = fcmTokenJson.data.Item.fcmToken;
+                fcmTokenList.push(fcmToken);
+            }
+        }
+        console.log(`fcmTokenList : ${fcmTokenList}`);
+        if(fcmTokenList.length > 0){
+            const content = reply.content;
             await admin.messaging().sendMulticast({
-                tokens: [fcmToken],
+                tokens: fcmTokenList,
                 notification: {
-                    title: "N빵에 새로운 댓글이 달렸어요",
+                    title: "N빵에 새로운 대댓글이 달렸어요",
                     body: content,
                 },
                 data: {
                     type : "deal",
-                    dealId : `${deal.id}`
+                    dealId : `${reply.dealId}`
                 }
             });
         }
-        console.log(req.params.dealId); 
         jsonResponse(res, 200, "답글 작성에 성공하였습니다.", true);
     }
      catch (err) {
