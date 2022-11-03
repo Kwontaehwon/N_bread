@@ -58,7 +58,7 @@ router.post('/:dealId', verifyToken, async (req, res) => {
                 });
             }
         }
-        jsonResponse(res, 200, "댓글 작성에 성공하였습니다.", true);
+        jsonResponse(res, 200, "댓글 작성에 성공하였습니다.", true, comment);
     } catch(err){
         jsonResponse(res, 500, "[댓글 생성] POST comments/:dealId 서버 에러", false);
         logger.error(err);
