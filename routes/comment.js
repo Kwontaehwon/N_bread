@@ -83,13 +83,10 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
         const parentComment = await Comment.findOne({where : { id : req.body.parentId }});
         const [result, meta] = await sequelize.query(`SELECT DISTINCT userId FROM replies WHERE parentId = ${req.body.parentId}`);
         let fcmTokenList = [];
+        if(parentComment.userId != user.id) await getAndStoreToken(fcmTokenList, parentComment.userId);
         for(let targetId of result){
             if(targetId == user.id) continue;
-            const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${targetId}`); // ${user.id}
-            if(Object.keys(fcmTokenJson.data).length !== 0){
-                const fcmToken = fcmTokenJson.data.Item.fcmToken;
-                fcmTokenList.push(fcmToken);
-            }
+            await getAndStoreToken(fcmTokenList, targetId);
         }
         console.log(`fcmTokenList : ${fcmTokenList}`);
         if(fcmTokenList.length > 0){
@@ -113,7 +110,17 @@ router.post('/reply/:dealId', verifyToken, async (req, res) => {
         logger.error(err);
     }
 
+    async function getAndStoreToken(fcmTokenList, userId) {
+        const fcmTokenJson = await axios.get(`https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`); // ${user.id}
+        if (Object.keys(fcmTokenJson.data).length !== 0) {
+            const fcmToken = fcmTokenJson.data.Item.fcmToken;
+            fcmTokenList.push(fcmToken);
+        }
+    }
 })
+
+
+
 
 router.delete('/:commentId', verifyToken, async (req, res) => {
     // #swagger.summary = '댓글 삭제'
