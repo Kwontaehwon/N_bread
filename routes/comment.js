@@ -126,7 +126,7 @@ router.delete('/:commentId', verifyToken, async (req, res) => {
     try{ 
         const user = await User.findOne({ where: { id: req.decoded.id } });
         const comment = await Comment.findOne({ where: { id: parseInt(req.params.commentId), deletedAt: { [Op.eq]: null } } });
-        if(comment===null){
+        if(comment===null){npm
             jsonResponse(res, 404, "해당 댓글을 찾을 수 없습니다.", false);
             res.end();
         }

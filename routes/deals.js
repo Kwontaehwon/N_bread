@@ -220,8 +220,8 @@ router.get('/all/:range/:region', verifyToken, async (req, res, next) => {
     var testres={"capsule":allDeal} 
     return jsonResponse(res, 200, "전체 글 리스트", true, testres);
   } catch(error){
-    logger.error(`[홈 전체 글 리스트] GET /deals/all/:region`);
-    jsonResponse(res, 500, "[홈 전체 글 리스트] GET /deals/all/:region", false); 
+    logger.error(`[홈 전체 글 리스트] GET /deals/all/:region ${error}`);
+    jsonResponse(res, 500, `[홈 전체 글 리스트] GET /deals/all/:region`, false); 
   }
 
 })
@@ -509,6 +509,7 @@ router.get('/:dealId', verifyToken, async (req, res, next) => {
       return jsonResponse(res, 404, `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`, false, null);
     }
     else{
+      deal.mystatus="user";
       if(deal.userId===req.decoded.id){
         deal.mystatus="제안자";
       } else {
@@ -536,7 +537,7 @@ router.get('/:dealId', verifyToken, async (req, res, next) => {
 // 거래 수정하기
 router.put('/:dealId', verifyToken, async(req, res, next) => {
   // #swagger.summary = '거래 수정'
-  const { title, content, totalPrice, personalPrice, totalMember, dealDate, dealPlace, 
+  const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, 
     currentMember} = req.body;
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
@@ -560,7 +561,7 @@ router.put('/:dealId', verifyToken, async(req, res, next) => {
         personalPrice : personalPrice,
         totalMember : totalMember,
         dealDate : new Date(dealDate), // 날짜 변환
-        dealPlace : dealPlace,
+        dealPlace : place,
         currentMember : 1, // 내가 얼마나 가져갈지 선택지를 줘야할듯 -> MVP에서는 일단 안주는걸로.
         userId : req.params.userId,
     })
