@@ -99,6 +99,9 @@ const getMypageDeals = async (req, res, next) => {
           //mystatus처리
           for (i = 0; i < deal.length; i++) {
             var toSetStatus = deal[i];
+		  var dDate=new Date(toSetStatus['dealDate']);
+		  dDate.setHours(dDate.getHours()+9);
+		  toSetStatus['dealDate']=dDate;
             toSetStatus['mystatus'] = "user";
 
             if (toSetStatus['dealDate'] < new Date(Date.now())) {
