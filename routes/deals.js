@@ -523,9 +523,35 @@ router.get('/:dealId', verifyToken, async (req, res, next) => {
         }
       }
     }
+    const returnDeal = deal;
+    returnDeal['mystatus'] = "user";
+    var dDate = new Date(returnDeal['dealDate']);
+    dDate.setHours(dDate.getHours()+9);
+    returnDeal['dealDate'] = dDate;
+    const nowDate =  new Date(Date.now());
+    nowDate.setHours(nowDate.getHours() + 9);
+    if (returnDeal['dealDate'] < nowDate){
+      if (returnDeal['currentMember'] === returnDeal['totalMember']) returnDeal['status']="거래완료";
+      else returnDeal['status']="모집실패";
+    }
+    else{
+      if (returnDeal['currentMember'] === returnDeal['totalMember']) returnDeal['status'] = "모집완료";
+      else returnDeal['status'] = "모집중";
+    } 
+    if (returnDeal['userId']===req.decoded.id) {
+      returnDeal['mystatus']="제안자"
+    }else{ 
+      var groupMember = [];
+      var group = await Group.findAll({where:{dealId:returnDeal['id']}});
+      for(j=0;j<group.length;j++){
+        groupMember.push(group[j]['userId']);
+      }
+      if(groupMember.includes(req.decoded.id)){
+        returnDeal['mystatus']="참여자"
+      }
+    }
     logger.info(`dealId : ${req.params.dealId} 에 대한 거래정보를 반환합니다.`);
-    
-    return jsonResponse(res, 200, `dealId ${deal.id} 의 거래 정보`, true, deal);
+    return jsonResponse(res, 200, `dealId ${deal.id} 의 거래 정보`, true, returnDeal);
   }
   catch (error){
     logger.error(error);
@@ -810,12 +836,12 @@ router.post('/fcmPush/:fcmToken', async (req, res, next) => {
     await admin.messaging().sendMulticast({
       tokens: [req.params.fcmToken],
       notification: {
-        title: "FCM 테스트",
-        body: "POSTMAN API 테스트",
+        title: "내일 함박스테이크 N빵 잊지 않으셨죠?",
+        body: "내일(11/14) 오후 3시 화양동 주민센터 세부약속을 N빵에서 채팅 혹은 댓글로 잡아봐요!",
       },
       data: {
         type : "deal",
-        dealId : "256"
+        dealId : "289"
       }
     });
     return res.status(200).send();
