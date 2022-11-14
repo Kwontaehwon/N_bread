@@ -12,7 +12,7 @@ const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
-const { Op, Sequelize } = require('sequelize');
+const { Op, Sequelize, where } = require('sequelize');
 const logger = require('../config/winston');
 const admin = require("firebase-admin");
 const { env } = require('process');
@@ -33,8 +33,14 @@ function jsonResponse(res, code, message, isSuccess, result) {
 router.use(express.json());
 
 // GET price/:productName
-router.get('/:productName',async (req, res) => {
-    const text = "투쿨포스쿨 프로타주 펜슬 섀도우 1+1 나눠서 같이 사요!";
+router.get('/:dealId',async (req, res) => {
+
+    //상품명 추출
+    const deal = await Deal.findOne({where:{id:req.params.dealId},paranoid:false});
+    if(!deal){
+        jsonResponse(res,404,`${req.params.dealId}에 해당하는 거래를 찾을 수 없습니다`,false,null);
+    }
+    const text = deal.title;
     var answer = "";
     var endOfI = 0;
     
@@ -58,30 +64,35 @@ router.get('/:productName',async (req, res) => {
             answer+=result[result.length-1][0];
         }
         console.log(`answer is ${answer}`)
+        try {
+            const productName = answer;
+            const client_id = env.NAVER_DEVELOPER_CLIENTID;
+            const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
+            var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName) + "&sort=asc&display=4"; // JSON 결과
+
+            console.log(url);
+            var options = {
+                url: url,
+                headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
+            };
+            request.get(options, function (error, response, body) {
+                console.log(`response is ${body}`)
+                console.log(JSON.parse(body)['items']);
+                if (!error && response.statusCode == 200) {
+                    res.writeHead(200, { 'Content-Type': 'text/json;charset=utf-8' });
+                    res.end(body);
+                } else {
+                    res.status(response.statusCode).end();
+                    console.log('error = ' + response.statusCode);
+                }
+            });
+        } catch (error) {
+            logger.error(error);
+            return jsonResponse(res, 500, "[Lowest Price] price/:productName 서버 에러", false, result)
+        }
      });
     
     // #swagger.summary = '네이버 최저가 api로 검색'
-    try {
-        const productName = req.params.productName;
-        const client_id = env.NAVER_DEVELOPER_CLIENTID;
-        const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
-        var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName)+"&sort=asc"; // JSON 결과
-        var options = {
-            url: url,
-            headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
-        };
-        request.get(options, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                res.writeHead(200, { 'Content-Type': 'text/json;charset=utf-8' });
-                res.end(body);
-            } else {
-                res.status(response.statusCode).end();
-                console.log('error = ' + response.statusCode);
-            }
-        });
-    } catch (error) {
-        logger.error(error);
-        return jsonResponse(res, 500, "[Lowest Price] price/:productName 서버 에러", false, result)
-    }
+    
 });
 module.exports = router;

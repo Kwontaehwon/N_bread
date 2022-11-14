@@ -1308,7 +1308,7 @@
         "responses": {}
       }
     },
-    "/price/{productName}": {
+    "/price/{dealId}": {
       "get": {
         "tags": [
           "Slack"
@@ -1317,7 +1317,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "productName",
+            "name": "dealId",
             "in": "path",
             "required": true,
             "type": "string"
