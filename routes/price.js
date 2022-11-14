@@ -76,11 +76,15 @@ router.get('/:dealId',async (req, res) => {
                 headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
             };
             request.get(options, function (error, response, body) {
-                console.log(`response is ${body}`)
-                console.log(JSON.parse(body)['items']);
                 if (!error && response.statusCode == 200) {
-                    res.writeHead(200, { 'Content-Type': 'text/json;charset=utf-8' });
-                    res.end(body);
+                    // res.writeHead(200, { 'Content-Type': 'text/json;charset=utf-8' });
+                    // res.end(body);
+                    var item = JSON.parse(body)['items'];
+                    //console.log(item);
+                    for (i = 0; i < item.length;i++){
+                        item[i]['lprice'] = parseInt(item[i]['lprice']) +3000;
+                    }
+                    console.log(item);
                 } else {
                     res.status(response.statusCode).end();
                     console.log('error = ' + response.statusCode);
