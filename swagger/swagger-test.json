@@ -1282,13 +1282,47 @@
         "responses": {}
       }
     },
-    "/slack/getmsg": {
-      "get": {
+    "/slack/send": {
+      "post": {
         "tags": [
           "Slack"
         ],
         "description": "",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "any"
+                },
+                "text": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/price/{productName}": {
+      "get": {
+        "tags": [
+          "Slack"
+        ],
+        "summary": "네이버 최저가 api로 검색",
+        "description": "",
+        "parameters": [
+          {
+            "name": "productName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {}
       }
     }

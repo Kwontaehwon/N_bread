@@ -23,6 +23,7 @@ const userRouter = require('./routes/user');
 const commentRouter = require('./routes/comment');
 const eventRouter = require('./routes/event');
 const slackRouter = require('./routes/slack');
+const priceRouter = require('./routes/price');
 
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
@@ -95,6 +96,10 @@ app.use(
   '/slack',
   // #swagger.tags = ['Slack']
   slackRouter);
+app.use(
+  '/price',
+  // #swagger.tags = ['Slack']
+  priceRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use((req, res, next) => {
