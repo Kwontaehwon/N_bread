@@ -34,6 +34,11 @@ router.use(express.json());
 
 // GET price/:productName
 router.get('/:dealId',async (req, res) => {
+    var jsonArray = new Array();
+    var testDataToAdd = '{"title": "테스트에요","link": "", "image": "", "lprice": 1000,"hprice": "","mallName":"위메프","productId": "28870807266","productType": "3","brand": "투쿨포스쿨","maker": "스완","category1": "화장품/미용","category2": "색조메이크업","category3": "아이섀도","category4": ""}';
+    jsonArray.push(JSON.parse(testDataToAdd));
+    testDataToAdd=JSON.parse(testDataToAdd);
+
 
     //상품명 추출
     const deal = await Deal.findOne({where:{id:req.params.dealId},paranoid:false});
@@ -83,8 +88,11 @@ router.get('/:dealId',async (req, res) => {
                     //console.log(item);
                     for (i = 0; i < item.length;i++){
                         item[i]['lprice'] = parseInt(item[i]['lprice']) +3000;
+                        jsonArray.push(item[i]);
                     }
-                    console.log(item);
+                    
+                    //console.log(testDataToAdd.concat(item));
+                    return jsonResponse(res, 200, "성공", true, jsonArray);
                 } else {
                     res.status(response.statusCode).end();
                     console.log('error = ' + response.statusCode);
