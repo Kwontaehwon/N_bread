@@ -83,5 +83,6 @@ module.exports = class Deal extends Sequelize.Model {
     db.Deal.hasMany(db.Comment, { foreignKey: { name: 'dealId', sourceKey: 'id' }, onDelete: 'CASCADE'});
     db.Deal.hasMany(db.DealImage,{foreignKey:{name:'dealId',sourceKey:'id'}});
     db.Deal.hasMany(db.DealReport, {foreignKey : 'dealId', sourceKey : 'id' });
+    db.Deal.hasMany(db.Price, { foreignKey: 'dealId', sourceKey: 'id' }); 
   }
 };
