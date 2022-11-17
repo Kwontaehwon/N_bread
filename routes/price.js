@@ -35,7 +35,7 @@ router.use(express.json());
 // GET price/:productName
 router.get('/:dealId',async (req, res) => {
     var jsonArray = new Array();
-    var testDataToAdd = '{"title": "테스트에요","link": "", "image": "", "lprice": 1000,"hprice": "","mallName":"위메프","productId": "28870807266","productType": "3","brand": "투쿨포스쿨","maker": "스완","category1": "화장품/미용","category2": "색조메이크업","category3": "아이섀도","category4": ""}';
+    var testDataToAdd = '{"title": "동원 참치","link": "", "image": "https://nbreadimg.s3.ap-northeast-2.amazonaws.com/original/1666612240288_KakaoTalk_Photo_2022-10-24-20-27-21.jpeg", "lprice": 5000,"hprice": "","mallName":"N빵","productId": "28870807266","productType": "3","brand": "동원","maker": "동원","category1": "식품","category2": "통조림/캔","category3": "참치/연어","category4": ""}';
     jsonArray.push(JSON.parse(testDataToAdd));
     testDataToAdd=JSON.parse(testDataToAdd);
 
@@ -73,7 +73,7 @@ router.get('/:dealId',async (req, res) => {
             const productName = answer;
             const client_id = env.NAVER_DEVELOPER_CLIENTID;
             const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
-            var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName) + "&sort=asc&display=4"; // JSON 결과
+            var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI("동원 참치캔 1개") + "&sort=asc&display=4"; // JSON 결과
 
             console.log(url);
             var options = {
