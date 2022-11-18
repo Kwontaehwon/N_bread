@@ -3,10 +3,63 @@ const Sequelize = require('sequelize');
 module.exports = class Price extends Sequelize.Model {
     static init(sequelize) {
         return super.init({
-            lPrice: { //snsType 
-                type: Sequelize.JSON(),
-                allowNull: false,
+            title : {
+                type : Sequelize.STRING(),
+                allowNull : false
             },
+            link: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            image: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            lPrice: {
+                type: Sequelize.INTEGER,
+                allowNull: true
+            },
+            hPrice: { //snsType 
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
+            mallName: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            productId: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            productType: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            brand: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            maker: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            category1: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            category2: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            category3: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+            category4: {
+                type: Sequelize.STRING(),
+                allowNull: true
+            },
+
         }, {
             sequelize,
             timestamps: true,
