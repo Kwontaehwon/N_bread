@@ -7,12 +7,12 @@ require('dotenv').config();
 const mecab = require('mecab-ya');
 
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
-const { User, Group, Deal, Comment, Reply, sequelize, Price } = require('../models');
+const { User, Group, Deal, Comment, Reply, sequelize, Price, DealImage } = require('../models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
-const { Op, Sequelize, where } = require('sequelize');
+const { Op } = require("sequelize");
 const logger = require('../config/winston');
 const admin = require("firebase-admin");
 const { env } = require('process');
@@ -32,9 +32,14 @@ function jsonResponse(res, code, message, isSuccess, result) {
 
 router.use(express.json());
 
-// GET price/:productName
-router.get('/:dealId',async (req, res) => {
+// POST price/:productName
+router.post('/:dealId',async (req, res) => {
     const deal = await Deal.findOne({ where: { id: req.params.dealId }, paranoid: false });
+    const dealImage = await DealImage.findOne({ where: { dealId: req.params.dealId }, paranoid: false });
+    var imageLink = "";
+    if(dealImage){
+        imageLink = dealImage.dealImage;
+    }
     if (!deal) {
         jsonResponse(res, 404, `${req.params.dealId}에 해당하는 거래를 찾을 수 없습니다`, false, null);
     }
@@ -44,12 +49,8 @@ router.get('/:dealId',async (req, res) => {
 
 
     var jsonArray = new Array();
-    var testDataToAdd = '{"title": "동원 참치","link": "", "image": "https://nbreadimg.s3.ap-northeast-2.amazonaws.com/original/1666612240288_KakaoTalk_Photo_2022-10-24-20-27-21.jpeg", "lprice": 5000,"hprice": "","mallName":"N빵","productId": "28870807266","productType": "3","brand": "동원","maker": "동원","category1": "식품","category2": "통조림/캔","category3": "참치/연어","category4": ""}';
-    jsonArray.push(JSON.parse(testDataToAdd));
-    testDataToAdd=JSON.parse(testDataToAdd);
-
-    testDataToAdd['title'] = "참치에요"
-    console.log(testDataToAdd);
+    
+    // var testDataToAdd = '{"title": "동원 참치","link": "", "image": "https://nbreadimg.s3.ap-northeast-2.amazonaws.com/original/1666612240288_KakaoTalk_Photo_2022-10-24-20-27-21.jpeg", "lprice": 5000,"hprice": "","mallName":"N빵","productId": "28870807266","productType": "3","brand": "동원","maker": "동원","category1": "식품","category2": "통조림/캔","category3": "참치/연어","category4": ""}';
     //var title2 = "버터 총2개씩같이 사요 14g이에요"
     var title2 = "버츠비 모이스춰라이징 립밤 1+1"
 
@@ -80,6 +81,8 @@ router.get('/:dealId',async (req, res) => {
         unitPrice = totalPrice / numToDivide
     }
     console.log(`unitPrice is ${unitPrice}`);
+    var priceToSave = unitPrice;
+    
     //단위 가격을 추출하지 못했을 경우 : g 추출 시도
     var gramToAdd = " ";
     if(!unitPrice){
@@ -89,11 +92,20 @@ router.get('/:dealId',async (req, res) => {
         if (unitG) {
             gramToAdd += unitG[0];
         }
+        priceToSave = deal.totalPrice;
     }else{
         gramToAdd+="1개"
     }
-       
-    
+    const isDealExist = await Price.findOne({ where: { dealId: req.params.dealId} });
+    if(!isDealExist){
+        await Price.create({
+            dealId: req.params.dealId,
+            title: deal.title,
+            image: imageLink,
+            lPrice: priceToSave,
+            mallName: "N빵",
+        })
+    }
     //상품명 추출
     //const text = deal.title;
     const text ="가쓰오 후리가케 같이 사실분";
@@ -121,6 +133,7 @@ router.get('/:dealId',async (req, res) => {
         console.log(`answer is ${answer}`)
         try {
             const productName = answer+gramToAdd;
+            console.log(`productName is ${productName}`);
             const client_id = env.NAVER_DEVELOPER_CLIENTID;
             const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
             var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName)+"&sort=asc&display=4"; // JSON 결과
@@ -133,7 +146,7 @@ router.get('/:dealId',async (req, res) => {
             request.get(options, async(error, response, body) => {
                 if (!error && response.statusCode == 200) {
                     var item = JSON.parse(body)['items'];
-                    const existDeal = await Price.findOne({where:{dealId:req.params.dealId}});
+                    const existDeal = await Price.findOne({where:{dealId:req.params.dealId,mallName:{[Op.not]:'N빵'}}});
                     if(!existDeal){
                         for (i = 0; i < item.length; i++) {
                             await Price.create({
@@ -141,7 +154,7 @@ router.get('/:dealId',async (req, res) => {
                                 title: item[i]["title"],
                                 link: item[i]["link"],
                                 image: item[i]["image"],
-                                lPrice: item[i]["lprice"],
+                                lPrice:(item[i]["lprice"]*1)+3000,
                                 hPrice: item[i]["hprice"],
                                 mallName: item[i]["mallName"],
                                 productId: item[i]["productId"],
@@ -158,11 +171,10 @@ router.get('/:dealId',async (req, res) => {
                     }
                     
                     for (i = 0; i < item.length;i++){
+                        item[i].lprice = item[i].lprice*1+3000;
                         jsonArray.push(item[i]);
                     }
-
-                    console.log(`type of jsonArray is ${typeof(jsonArray)}`);
-                    return jsonResponse(res, 200, "성공", true, jsonArray);
+                    return jsonResponse(res, 200, "", true, jsonArray);
                 } else {
                     res.status(response.statusCode).end();
                     console.log('error = ' + response.statusCode);
@@ -177,4 +189,12 @@ router.get('/:dealId',async (req, res) => {
     // #swagger.summary = '네이버 최저가 api로 검색'
     
 });
+
+router.get('/:dealId',async(req,res)=>{
+    const priceInfo = await Price.findAll({where:{dealId:req.params.dealId}});
+    if(!priceInfo){
+        jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
+    }
+    jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
+})
 module.exports = router;

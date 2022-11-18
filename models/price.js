@@ -16,7 +16,7 @@ module.exports = class Price extends Sequelize.Model {
                 allowNull: true
             },
             lPrice: {
-                type: Sequelize.STRING(),
+                type: Sequelize.INTEGER,
                 allowNull: true
             },
             hPrice: { 
