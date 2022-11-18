@@ -34,86 +34,83 @@ router.use(express.json());
 
 // POST price/:productName
 router.post('/:dealId',async (req, res) => {
-    const deal = await Deal.findOne({ where: { id: req.params.dealId }, paranoid: false });
-    const dealImage = await DealImage.findOne({ where: { dealId: req.params.dealId }, paranoid: false });
-    var imageLink = "";
-    if(dealImage){
-        imageLink = dealImage.dealImage;
-    }
-    if (!deal) {
-        jsonResponse(res, 404, `${req.params.dealId}에 해당하는 거래를 찾을 수 없습니다`, false, null);
-    }
-
-    const totalPrice = deal.totalPrice;
-    const particlePrice = deal.presoanlPrice;
-
-
-    var jsonArray = new Array();
-    
-    // var testDataToAdd = '{"title": "동원 참치","link": "", "image": "https://nbreadimg.s3.ap-northeast-2.amazonaws.com/original/1666612240288_KakaoTalk_Photo_2022-10-24-20-27-21.jpeg", "lprice": 5000,"hprice": "","mallName":"N빵","productId": "28870807266","productType": "3","brand": "동원","maker": "동원","category1": "식품","category2": "통조림/캔","category3": "참치/연어","category4": ""}';
-    //var title2 = "버터 총2개씩같이 사요 14g이에요"
-    var title2 = "버츠비 모이스춰라이징 립밤 1+1"
-
-
-    title2=title2.replace(/\s/g,"");
-    var total = title2.match(/\총\d?\d?\d?\d/);
-    var partial = title2.match(/\d?\d?\d\개씩/);
-    var onePlus = title2.includes('1+1');
-    var twoPlus = title2.includes('2+1') || title2.includes('1+2');
-    
-    var unitPrice = 0;
-
-    if(total){
-        total = total[0].replace("총", "");
-        total *= 1;
-        unitPrice = totalPrice/total
-    }else if(partial){
-        console.log("개당 가격");
-        partial = partial[0].replace("개씩", "");
-        partial *= 1;
-        unitPrice = particlePrice / partial;
-        
-    }else if(onePlus){
-        numToDivide = 2;
-        unitPrice = totalPrice / numToDivide
-    }else if(twoPlus){
-        numToDivide = 3;
-        unitPrice = totalPrice / numToDivide
-    }
-    console.log(`unitPrice is ${unitPrice}`);
-    var priceToSave = unitPrice;
-    
-    //단위 가격을 추출하지 못했을 경우 : g 추출 시도
-    var gramToAdd = " ";
-    if(!unitPrice){
-        var unitG = title2.match(/\d?\d?\d?\d\K?\k?\g/);
-        console.log(`gramToAdd is ${unitG}`);
-        
-        if (unitG) {
-            gramToAdd += unitG[0];
+    try{
+        const deal = await Deal.findOne({ where: { id: req.params.dealId }, paranoid: false });
+        const dealImage = await DealImage.findOne({ where: { dealId: req.params.dealId }, paranoid: false });
+        var imageLink = "";
+        if (dealImage) {
+            imageLink = dealImage.dealImage;
         }
-        priceToSave = deal.totalPrice;
-    }else{
-        gramToAdd+="1개"
-    }
-    const isDealExist = await Price.findOne({ where: { dealId: req.params.dealId} });
-    if(!isDealExist){
-        await Price.create({
-            dealId: req.params.dealId,
-            title: deal.title,
-            image: imageLink,
-            lPrice: priceToSave,
-            mallName: "N빵",
-        })
+        if (!deal) {
+            jsonResponse(res, 404, `${req.params.dealId}에 해당하는 거래를 찾을 수 없습니다`, false, null);
+        }
+
+        const totalPrice = deal.totalPrice;
+        const particlePrice = deal.presoanlPrice;
+        var jsonArray = new Array();
+        var title2 = deal.title;
+
+
+        title2 = title2.replace(/\s/g, "");
+        var total = title2.match(/\총\d?\d?\d?\d/);
+        var partial = title2.match(/\d?\d?\d\개씩/);
+        var onePlus = title2.includes('1+1');
+        var twoPlus = title2.includes('2+1') || title2.includes('1+2');
+
+        var unitPrice = 0;
+
+        if (total) {
+            total = total[0].replace("총", "");
+            total *= 1;
+            unitPrice = totalPrice / total
+        } else if (partial) {
+            partial = partial[0].replace("개씩", "");
+            partial *= 1;
+            unitPrice = particlePrice / partial;
+
+        } else if (onePlus) {
+            numToDivide = 2;
+            unitPrice = totalPrice / numToDivide
+        } else if (twoPlus) {
+            numToDivide = 3;
+            unitPrice = totalPrice / numToDivide
+        }
+        var priceToSave = unitPrice;
+
+        //단위 가격을 추출하지 못했을 경우 : g 추출 시도
+        var gramToAdd = " ";
+        if (!unitPrice) {
+            var unitG = title2.match(/\d?\d?\d?\d\K?\k?\g/);
+            if (unitG) {
+                gramToAdd += unitG[0];
+            }
+            priceToSave = deal.totalPrice;
+        } else {
+            gramToAdd += "1개"
+        }
+        const isDealExist = await Price.findOne({ where: { dealId: req.params.dealId } });
+        if (!isDealExist) {
+            await Price.create({
+                dealId: req.params.dealId,
+                title: deal.title,
+                image: imageLink,
+                lPrice: priceToSave,
+                mallName: "N빵",
+            })
+        }
+
+        logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
+        
+
+    }catch(e){
+        jsonResponse(e,500,"[최저가 저장] 단위가격 추출 중 오류가 발생하였습니다.",false,null);
     }
     //상품명 추출
     //const text = deal.title;
-    const text ="가쓰오 후리가케 같이 사실분";
+    const text = title2;
     var answer = "";
     var endOfI = 0;
-    
     mecab.pos(text, function (err, result) {
-        console.log(result)
         for(i=0;i<result.length-1;i++){
             if (result[i][1] == 'SL' || result[i][1] == 'NNG' || result[i][1]=='NNP'){
                 if (result[i+1][1] == 'SL' || result[i+1][1] == 'NNG' || result[i+1][1] == 'NNP'){
@@ -127,18 +124,15 @@ router.post('/:dealId',async (req, res) => {
             }
         }
         if (endOfI=result.length-2&&(result[result.length-1][1] == 'SL' || result[result.length-1][1] == 'NNG' || result[result.length-1][1] == 'NNP')){
-            console.log(`result[result.length-1][0] is ${result[result.length-1][0]}`);
             answer+=result[result.length-1][0];
         }
-        console.log(`answer is ${answer}`)
+        logger.info(`추출된 상품명은 ${answer}입니다.`)
         try {
             const productName = answer+gramToAdd;
-            console.log(`productName is ${productName}`);
+            logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
             const client_id = env.NAVER_DEVELOPER_CLIENTID;
             const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
             var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName)+"&sort=asc&display=4"; // JSON 결과
-
-            console.log(url);
             var options = {
                 url: url,
                 headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
@@ -166,7 +160,6 @@ router.post('/:dealId',async (req, res) => {
                                 category3: item[i]["category3"],
                                 category4: item[i]["category4"],
                             })
-                            console.log(item[i]["lprice"]);
                         }
                     }
                     
@@ -174,10 +167,12 @@ router.post('/:dealId',async (req, res) => {
                         item[i].lprice = item[i].lprice*1+3000;
                         jsonArray.push(item[i]);
                     }
+                    if(item.length===0){
+                        return jsonResponse(res, 201,`네이버 쇼핑 검색 결과가 없습니다. 검색어는 ${productName}입니다.`,false,null)
+                    }
                     return jsonResponse(res, 200, "", true, jsonArray);
                 } else {
-                    res.status(response.statusCode).end();
-                    console.log('error = ' + response.statusCode);
+                    return jsonResponse(res, 400, `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`, false, null)
                 }
             });
         } catch (error) {
@@ -186,14 +181,19 @@ router.post('/:dealId',async (req, res) => {
         }
      });
     
-    // #swagger.summary = '네이버 최저가 api로 검색'
-    
 });
-
+// GET price/:dealId
 router.get('/:dealId',async(req,res)=>{
-    const priceInfo = await Price.findAll({where:{dealId:req.params.dealId}});
-    if(!priceInfo){
-        jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
+    console.log("최저가 조회 api 추출");
+    var priceInfo = await Price.findAll({where:{dealId:req.params.dealId}});
+    console.log(priceInfo.length);
+    if(priceInfo.length===0){
+        console.log("dealId가"+req.params.dealId);
+        const link = 'http://127.0.0.1:5005/price/';
+        //const link = 'https://www.chocobread.shop/price/' 
+        await axios.post(link+req.params.dealId);
+        priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+        //jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
     }
     jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
 })

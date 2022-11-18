@@ -1309,11 +1309,25 @@
       }
     },
     "/price/{dealId}": {
+      "post": {
+        "tags": [
+          "Slack"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {}
+      },
       "get": {
         "tags": [
           "Slack"
         ],
-        "summary": "네이버 최저가 api로 검색",
         "description": "",
         "parameters": [
           {
