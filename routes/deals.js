@@ -17,6 +17,7 @@ const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../config/winston');
 const { timeLog } = require('console');
+const { link } = require('fs');
 
 
 const router = express.Router();
@@ -564,7 +565,7 @@ router.get('/:dealId', verifyToken, async (req, res, next) => {
 router.put('/:dealId', verifyToken, async(req, res, next) => {
   // #swagger.summary = '거래 수정'
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, 
-    currentMember} = req.body;
+    currentMember, link} = req.body;
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
     if(!deal){
@@ -581,6 +582,7 @@ router.put('/:dealId', verifyToken, async(req, res, next) => {
       return jsonResponse(res, 400, `참여자가 ${groups.length -1}명 있으므로 거래를 수정 할 수 없습니다.`, false, null);
     }
     await deal.update({
+        link : link,
         title : title,
         content : content,
         totalPrice : totalPrice,
@@ -836,12 +838,12 @@ router.post('/fcmPush/:fcmToken', async (req, res, next) => {
     await admin.messaging().sendMulticast({
       tokens: [req.params.fcmToken],
       notification: {
-        title: "내일 함박스테이크 N빵 잊지 않으셨죠?",
-        body: "내일(11/14) 오후 3시 화양동 주민센터 세부약속을 N빵에서 채팅 혹은 댓글로 잡아봐요!",
+        title: "딱 맞는 상품이 N빵에 올라왔어요!",
+        body: "젤라 인텐션 레깅스 1+1 같이사요! / 11/18(금) 오후 9시 서울대입구역",
       },
       data: {
         type : "deal",
-        dealId : "289"
+        dealId : "347"
       }
     });
     return res.status(200).send();
