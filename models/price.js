@@ -16,11 +16,11 @@ module.exports = class Price extends Sequelize.Model {
                 allowNull: true
             },
             lPrice: {
-                type: Sequelize.INTEGER,
+                type: Sequelize.STRING(),
                 allowNull: true
             },
-            hPrice: { //snsType 
-                type: Sequelize.INTEGER,
+            hPrice: { 
+                type: Sequelize.STRING(),
                 allowNull: true,
             },
             mallName: {
