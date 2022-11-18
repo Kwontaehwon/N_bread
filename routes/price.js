@@ -7,7 +7,7 @@ require('dotenv').config();
 const mecab = require('mecab-ya');
 
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
-const { User, Group, Deal, Comment, Reply, sequelize } = require('../models');
+const { User, Group, Deal, Comment, Reply, sequelize, Price } = require('../models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
@@ -73,25 +73,36 @@ router.get('/:dealId',async (req, res) => {
             const productName = answer;
             const client_id = env.NAVER_DEVELOPER_CLIENTID;
             const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
-            var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI("동원 참치캔 1개") + "&sort=asc&display=4"; // JSON 결과
+            var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI("신라면")+"&sort=asc&display=4"; // JSON 결과
 
             console.log(url);
             var options = {
                 url: url,
                 headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
             };
-            request.get(options, function (error, response, body) {
+            request.get(options, async(error, response, body) => {
                 if (!error && response.statusCode == 200) {
-                    // res.writeHead(200, { 'Content-Type': 'text/json;charset=utf-8' });
-                    // res.end(body);
                     var item = JSON.parse(body)['items'];
-                    //console.log(item);
-                    for (i = 0; i < item.length;i++){
-                        item[i]['lprice'] = parseInt(item[i]['lprice']) +3000;
-                        jsonArray.push(item[i]);
+                    const existDeal = await Price.findOne({where:{dealId:req.params.dealId}});
+                    if(!existDeal){
+                        for (i = 0; i < item.length; i++) {
+                            await Price.create({
+                                dealId: req.params.dealId,
+                                title: item[i]["title"],
+                                link: item[i]["link"],
+                            })
+                        }
                     }
                     
-                    //console.log(testDataToAdd.concat(item));
+                    for (i = 0; i < item.length;i++){
+                        jsonArray.push(item[i]);
+                    }
+
+                    console.log(`type of jsonArray is ${typeof(jsonArray)}`);
+                    // await Price.create({
+                    //     dealId:req.params.dealId,
+                    //     lprice : JSON.parse(JSON.stringify(jsonArray))
+                    // });
                     return jsonResponse(res, 200, "성공", true, jsonArray);
                 } else {
                     res.status(response.statusCode).end();
