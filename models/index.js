@@ -10,6 +10,7 @@ const DealImage = require('./dealImage');
 const DealReport = require('./dealReport');
 const UserReport = require('./userReport');
 const Event = require('./event');
+const Price = require('./price');
 
 const db = {};
 const sequelize = new Sequelize(
@@ -26,6 +27,7 @@ db.DealImage=DealImage;
 db.DealReport=DealReport;
 db.UserReport = UserReport;
 db.Event = Event;
+db.Price = Price;
 
 Deal.init(sequelize);
 User.init(sequelize);
@@ -36,6 +38,7 @@ DealImage.init(sequelize);
 DealReport.init(sequelize);
 UserReport.init(sequelize);
 Event.init(sequelize);
+Price.init(sequelize);
 
 Deal.associate(db);
 User.associate(db);
@@ -46,5 +49,6 @@ DealImage.associate(db);
 DealReport.associate(db);
 UserReport.associate(db);
 Event.associate(db);
+Price.associate(db);
 
 module.exports = db;
