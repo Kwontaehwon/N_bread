@@ -189,8 +189,8 @@ router.get('/:dealId',async(req,res)=>{
     console.log(priceInfo.length);
     if(priceInfo.length===0){
         console.log("dealId가"+req.params.dealId);
-        const link = 'http://127.0.0.1:5005/price/';
-        //const link = 'https://www.chocobread.shop/price/' 
+        //const link = 'http://127.0.0.1:5005/price/';
+        const link = 'https://www.chocobread.shop/price/' 
         await axios.post(link+req.params.dealId);
         priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
         //jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
