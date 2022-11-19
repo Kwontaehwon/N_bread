@@ -17,6 +17,7 @@ const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../config/winston');
 const { timeLog } = require('console');
+const { link } = require('fs');
 
 
 const router = express.Router();
@@ -523,9 +524,35 @@ router.get('/:dealId', verifyToken, async (req, res, next) => {
         }
       }
     }
+    const returnDeal = deal;
+    returnDeal['mystatus'] = "user";
+    var dDate = new Date(returnDeal['dealDate']);
+    dDate.setHours(dDate.getHours()+9);
+    returnDeal['dealDate'] = dDate;
+    const nowDate =  new Date(Date.now());
+    nowDate.setHours(nowDate.getHours() + 9);
+    if (returnDeal['dealDate'] < nowDate){
+      if (returnDeal['currentMember'] === returnDeal['totalMember']) returnDeal['status']="거래완료";
+      else returnDeal['status']="모집실패";
+    }
+    else{
+      if (returnDeal['currentMember'] === returnDeal['totalMember']) returnDeal['status'] = "모집완료";
+      else returnDeal['status'] = "모집중";
+    } 
+    if (returnDeal['userId']===req.decoded.id) {
+      returnDeal['mystatus']="제안자"
+    }else{ 
+      var groupMember = [];
+      var group = await Group.findAll({where:{dealId:returnDeal['id']}});
+      for(j=0;j<group.length;j++){
+        groupMember.push(group[j]['userId']);
+      }
+      if(groupMember.includes(req.decoded.id)){
+        returnDeal['mystatus']="참여자"
+      }
+    }
     logger.info(`dealId : ${req.params.dealId} 에 대한 거래정보를 반환합니다.`);
-    
-    return jsonResponse(res, 200, `dealId ${deal.id} 의 거래 정보`, true, deal);
+    return jsonResponse(res, 200, `dealId ${deal.id} 의 거래 정보`, true, returnDeal);
   }
   catch (error){
     logger.error(error);
@@ -538,7 +565,7 @@ router.get('/:dealId', verifyToken, async (req, res, next) => {
 router.put('/:dealId', verifyToken, async(req, res, next) => {
   // #swagger.summary = '거래 수정'
   const { title, content, totalPrice, personalPrice, totalMember, dealDate, place, 
-    currentMember} = req.body;
+    currentMember, link} = req.body;
   try{
     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
     if(!deal){
@@ -555,6 +582,7 @@ router.put('/:dealId', verifyToken, async(req, res, next) => {
       return jsonResponse(res, 400, `참여자가 ${groups.length -1}명 있으므로 거래를 수정 할 수 없습니다.`, false, null);
     }
     await deal.update({
+        link : link,
         title : title,
         content : content,
         totalPrice : totalPrice,
@@ -810,12 +838,12 @@ router.post('/fcmPush/:fcmToken', async (req, res, next) => {
     await admin.messaging().sendMulticast({
       tokens: [req.params.fcmToken],
       notification: {
-        title: "FCM 테스트",
-        body: "POSTMAN API 테스트",
+        title: "딱 맞는 상품이 N빵에 올라왔어요!",
+        body: "젤라 인텐션 레깅스 1+1 같이사요! / 11/18(금) 오후 9시 서울대입구역",
       },
       data: {
         type : "deal",
-        dealId : "256"
+        dealId : "347"
       }
     });
     return res.status(200).send();

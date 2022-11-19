@@ -1331,10 +1331,19 @@
         "description": "",
         "parameters": [
           {
-            "name": "dealId",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "example": "any"
+                },
+                "text": {
+                  "example": "any"
+                }
+              }
+            }
           }
         ],
         "responses": {}
