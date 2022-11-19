@@ -49,6 +49,7 @@ router.post('/:dealId',async (req, res) => {
         const particlePrice = deal.presoanlPrice;
         var jsonArray = new Array();
         var title2 = deal.title;
+        var title =deal.title;
 
 
         title2 = title2.replace(/\s/g, "");
@@ -107,7 +108,8 @@ router.post('/:dealId',async (req, res) => {
     }
     //상품명 추출
     //const text = deal.title;
-    const text = title2;
+    logger.info(`[최저가 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
+    const text = title;
     var answer = "";
     var endOfI = 0;
     mecab.pos(text, function (err, result) {
@@ -129,6 +131,7 @@ router.post('/:dealId',async (req, res) => {
         logger.info(`추출된 상품명은 ${answer}입니다.`)
         try {
             const productName = answer+gramToAdd;
+            //const productName = "";
             logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
             const client_id = env.NAVER_DEVELOPER_CLIENTID;
             const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
@@ -189,12 +192,18 @@ router.get('/:dealId',async(req,res)=>{
     console.log(priceInfo.length);
     if(priceInfo.length===0){
         console.log("dealId가"+req.params.dealId);
-        //const link = 'http://127.0.0.1:5005/price/';
-        const link = 'https://www.chocobread.shop/price/' 
-        await axios.post(link+req.params.dealId);
+        const link = 'http://127.0.0.1:5005/price/';
+        //const link = 'https://www.chocobread.shop/price/' 
+        await axios.post(link+req.params.dealId).catch(async function(error){
+            if(error.response){
+                logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
+                priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+            }
+        })
+         
         priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
         //jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
     }
     jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
 })
-module.exports = router;
+module.exports = router; 
