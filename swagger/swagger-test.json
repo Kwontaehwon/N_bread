@@ -495,6 +495,9 @@
                 },
                 "currentMember": {
                   "example": "any"
+                },
+                "link": {
+                  "example": "any"
                 }
               }
             }
@@ -1331,19 +1334,10 @@
         "description": "",
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "example": "any"
-                },
-                "text": {
-                  "example": "any"
-                }
-              }
-            }
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {}

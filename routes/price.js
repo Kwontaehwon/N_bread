@@ -37,7 +37,7 @@ router.post('/:dealId',async (req, res) => {
     try{
         const deal = await Deal.findOne({ where: { id: req.params.dealId }, paranoid: false });
         const dealImage = await DealImage.findOne({ where: { dealId: req.params.dealId }, paranoid: false });
-        var imageLink = "";
+        var imageLink = "https://nbreadimg.s3.ap-northeast-2.amazonaws.com/original/1668848067518__N%EB%B9%B5%20%EB%A1%9C%EA%B3%A0-001%20%282%29.png";
         if (dealImage) {
             imageLink = dealImage.dealImage;
         }
