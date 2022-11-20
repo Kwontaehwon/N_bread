@@ -104,7 +104,7 @@ router.post('/:dealId',async (req, res) => {
         
 
     }catch(e){
-        jsonResponse(e,500,"[최저가 저장] 단위가격 추출 중 오류가 발생하였습니다.",false,null);
+        jsonResponse(res,401,"[최저가 저장] 단위가격 추출 중 오류가 발생하였습니다.",false,e);
     }
     //상품명 추출
     //const text = deal.title;
@@ -113,22 +113,30 @@ router.post('/:dealId',async (req, res) => {
     var answer = "";
     var endOfI = 0;
     mecab.pos(text, function (err, result) {
-        for(i=0;i<result.length-1;i++){
-            if (result[i][1] == 'SL' || result[i][1] == 'NNG' || result[i][1]=='NNP'){
-                if (result[i+1][1] == 'SL' || result[i+1][1] == 'NNG' || result[i+1][1] == 'NNP'){
-                    answer+=result[i][0];
-                    answer+=" ";
-                }else{
-                    endOfI = i;
-                    answer+=result[endOfI][0];
-                    break;
+        try {
+            logger.info(`mecab result is ${result}`);
+            logger.info(`mecab result is ${result.length}`);
+            for (i = 0; i < result.length - 1; i++) {
+                if (result[i][1] == 'SL' || result[i][1] == 'NNG' || result[i][1] == 'NNP') {
+                    if (result[i + 1][1] == 'SL' || result[i + 1][1] == 'NNG' || result[i + 1][1] == 'NNP') {
+                        answer += result[i][0];
+                        answer += " ";
+                    } else {
+                        endOfI = i;
+                        answer += result[endOfI][0];
+                        break;
+                    }
                 }
             }
+            if (endOfI = result.length - 2 && (result[result.length - 1][1] == 'SL' || result[result.length - 1][1] == 'NNG' || result[result.length - 1][1] == 'NNP')) {
+                answer += result[result.length - 1][0];
+            }
+            logger.info(`추출된 상품명은 ${answer}입니다.`)
+        } catch (error) {
+            logger.info(`상품명 추출 중 오류가 발생하였습니다.`);
+            return jsonResponse(res, 402, `${title}에서 상품명 추출 중 오류가 발생하였습니다.`, false, error)
         }
-        if (endOfI=result.length-2&&(result[result.length-1][1] == 'SL' || result[result.length-1][1] == 'NNG' || result[result.length-1][1] == 'NNP')){
-            answer+=result[result.length-1][0];
-        }
-        logger.info(`추출된 상품명은 ${answer}입니다.`)
+        
         try {
             const productName = answer+gramToAdd;
             //const productName = "";
@@ -171,11 +179,11 @@ router.post('/:dealId',async (req, res) => {
                         jsonArray.push(item[i]);
                     }
                     if(item.length===0){
-                        return jsonResponse(res, 201,`네이버 쇼핑 검색 결과가 없습니다. 검색어는 ${productName}입니다.`,false,null)
+                        return jsonResponse(res, 403,`네이버 쇼핑 검색 결과가 없습니다. 검색어는 ${productName}입니다.`,false,null)
                     }
                     return jsonResponse(res, 200, "", true, jsonArray);
                 } else {
-                    return jsonResponse(res, 400, `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`, false, null)
+                    return jsonResponse(res, 404, `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`, false, null)
                 }
             });
         } catch (error) {
@@ -195,6 +203,20 @@ router.get('/:dealId',async(req,res)=>{
         const link = 'http://127.0.0.1:5005/price/';
         //const link = 'https://www.chocobread.shop/price/' 
         await axios.post(link+req.params.dealId).catch(async function(error){
+            priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+            if (error.response.status == 401) {
+                logger.info(`${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다.`);
+                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+            } else if (error.response.status == 402) {
+                logger.info(`${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다.`);
+                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+            } else if (error.response.status == 403) {
+                logger.info(`${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다.`);
+                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+            } else if (error.response.status == 404) {
+                logger.info(`${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`);
+                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+            }
             if(error.response){
                 logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
                 priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
@@ -204,6 +226,9 @@ router.get('/:dealId',async(req,res)=>{
         priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
         //jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
     }
-    jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
+    else {
+        jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
+    }
+    
 })
 module.exports = router; 
