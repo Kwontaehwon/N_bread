@@ -5,6 +5,7 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 const mecab = require('mecab-ya');
+const spawn = require('child_process').spawn;
 
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { User, Group, Deal, Comment, Reply, sequelize, Price, DealImage } = require('../models');
@@ -34,6 +35,19 @@ router.use(express.json());
 
 // POST price/:productName
 router.post('/:dealId',async (req, res) => {
+    //python test
+    const result_01 =await spawn('python3', ['./routes/getTopic.py',"출력해주세요"],);
+
+    result_01.stdout.on('data', (result) => {
+        console.log('python test')
+        console.log(result.toString());
+    });
+
+    result_01.stderr.on('data', (result) => {
+        console.log('python test')
+        console.log(result.toString());
+    });
+
     try{
         const deal = await Deal.findOne({ where: { id: req.params.dealId }, paranoid: false });
         const dealImage = await DealImage.findOne({ where: { dealId: req.params.dealId }, paranoid: false });
@@ -112,6 +126,12 @@ router.post('/:dealId',async (req, res) => {
     const text = title;
     var answer = "";
     var endOfI = 0;
+    var testword = "진라면 40봉지 20봉지씩 소분하실 분!!"
+    mecab.pos(testword,function(err,result){
+        console.log('mecab result isssss ');
+        console.log(result.length);
+    })
+
     mecab.pos(text, function (err, result) {
         try {
             logger.info(`mecab result is ${result}`);
