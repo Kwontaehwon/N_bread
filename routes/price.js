@@ -200,22 +200,22 @@ router.get('/:dealId',async(req,res)=>{
     console.log(priceInfo.length);
     if(priceInfo.length===0){
         console.log("dealId가"+req.params.dealId);
-        const link = 'http://127.0.0.1:5005/price/';
-        //const link = 'https://www.chocobread.shop/price/' 
+        //const link = 'http://127.0.0.1:5005/price/';
+        const link = 'https://www.chocobread.shop/price/' 
         await axios.post(link+req.params.dealId).catch(async function(error){
             priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
             if (error.response.status == 401) {
                 logger.info(`${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다.`);
-                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 401, `[최저가 조회] : ${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             } else if (error.response.status == 402) {
                 logger.info(`${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다.`);
-                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 402, `[최저가 조회] : ${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             } else if (error.response.status == 403) {
                 logger.info(`${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다.`);
-                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 403, `[최저가 조회] : ${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             } else if (error.response.status == 404) {
                 logger.info(`${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`);
-                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 404, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             }
             if(error.response){
                 logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
