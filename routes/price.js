@@ -88,7 +88,7 @@ router.post('/:dealId',async (req, res) => {
             if (unitG) {
                 gramToAdd += unitG[0];
             }
-            priceToSave = deal.totalPrice;
+            priceToSave = deal.presoanlPrice;
         } else {
             gramToAdd += "1개"
         }
