@@ -221,11 +221,12 @@ router.get('/:dealId',async(req,res)=>{
             if(error.response){
                 logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
                 priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+                jsonResponse(res, error.response.status, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회 중 오류가 발생하였습니다.`, true, priceInfo)
             }
         })
          
         priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
-        //jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
+        jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
     }
     else {
         jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
