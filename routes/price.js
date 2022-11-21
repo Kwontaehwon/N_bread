@@ -132,7 +132,7 @@ router.post('/:dealId',async (req, res) => {
                     logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
                     const client_id = env.NAVER_DEVELOPER_CLIENTID;
                     const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
-                    var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName) + "&sort=asc&display=4"; // JSON 결과
+                    var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName) + "&display=4"; // JSON 결과
                     var options = {
                         url: url,
                         headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
