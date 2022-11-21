@@ -318,6 +318,36 @@
         "responses": {}
       }
     },
+    "/deals/{dealId}/img/coupang": {
+      "post": {
+        "tags": [
+          "Deals"
+        ],
+        "summary": "쿠팡 썸네일 이미지 업로드",
+        "description": "",
+        "parameters": [
+          {
+            "name": "dealId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
     "/deals/{dealId}/img": {
       "post": {
         "tags": [
@@ -494,6 +524,9 @@
                   "example": "any"
                 },
                 "currentMember": {
+                  "example": "any"
+                },
+                "link": {
                   "example": "any"
                 }
               }
