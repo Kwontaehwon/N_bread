@@ -107,11 +107,11 @@ router.post('/:dealId',async (req, res) => {
         
 
     }catch(e){
-        jsonResponse(res,401,"[최저가 저장] 단위가격 추출 중 오류가 발생하였습니다.",false,e);
+        jsonResponse(res,401,"[가격비교 저장] 단위가격 추출 중 오류가 발생하였습니다.",false,e);
     }
     //상품명 추출
     //const text = deal.title;
-    logger.info(`[최저가 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
+    logger.info(`[가격비교 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
     const text = title;
     
     var answer = "";
@@ -167,15 +167,43 @@ router.post('/:dealId',async (req, res) => {
                                 jsonArray.push(item[i]);
                             }
                             if (item.length === 0) {
+                                await Slack.sendMessage(
+                                    {
+                                        color: Slack.Colors.danger,
+                                        title: '[네이버 쇼핑 검색 결과 없음]',
+                                        text: `${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색한 결과가 없습니다.`,
+                                    }
+                                );
                                 return jsonResponse(res, 403, `네이버 쇼핑 검색 결과가 없습니다. 검색어는 ${productName}입니다.`, false, null)
                             }
+                            await Slack.sendMessage(
+                                {
+                                    color: Slack.Colors.success,
+                                    title: '[가격비교 api 결과 조회 성공]',
+                                    text: `${deal.id}번 거래 : ${deal.title}에서 추출한 검색어 \"${productName}\"으로 가격 비교 조회에 성공하였습니다.`,
+                                }
+                            );
                             return jsonResponse(res, 200, "", true, jsonArray);
                         } else {
+                            await Slack.sendMessage(
+                                {
+                                    color: Slack.Colors.danger,
+                                    title: '[네이버 쇼핑 api 에러]',
+                                    text: `네이버 쇼핑 api에서 에러가 발생했습니다. ${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색하였습니다.`,
+                                }
+                            );
                             return jsonResponse(res, 404, `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`, false, null)
                         }
                     });
                 } catch (error) {
                     logger.error(error);
+                    await Slack.sendMessage(
+                        {
+                            color: Slack.Colors.danger,
+                            title: '[서버 에러]',
+                            text: `가격비교 추출 api에서 서버 에러가 발생했습니다. ${deal.id}번 거래 : ${deal.title}에서 가격비교 조회를 시도하였습니다.`,
+                        }
+                    );
                     return jsonResponse(res, 500, "[Lowest Price] price/:productName 서버 에러", false, result)
                 }
             });
@@ -183,15 +211,22 @@ router.post('/:dealId',async (req, res) => {
             
             await Slack.sendMessage(
                 {
-                    color: Slack.Colors.success,
-                    title: '[최저가 검색어 추출 실패]',
-                    text: `${deal.title}에서 최저가 검색어 추출에 실패하였습니다.`,
+                    color: Slack.Colors.danger,
+                    title: '[가격비교 api 검색어 추출 실패]',
+                    text: `${deal.id}번 거래 : ${deal.title}에서 가격비교 검색어 추출에 실패하였습니다.`,
                 }
             );
             return jsonResponse(res, 405, "[Lowest Price] price/:productName 검색어 추출에 실패하였습니다.", false, result)
             
         } catch (error) {
             logger.info(`상품명 추출 중 오류가 발생하였습니다.`);
+            await Slack.sendMessage(
+                {
+                    color: Slack.Colors.danger,
+                    title: '[가격비교 api 상품명 추출 에러]',
+                    text: `가격비교 api에서 상품명 추출 중 에러가 발생했습니다. ${deal.id}번 거래 : ${deal.title}에서 가격비교 조회를 시도하였습니다.`,
+                }
+            );
             return jsonResponse(res, 402, `${title}에서 상품명 추출 중 오류가 발생하였습니다.`, false, error)
         }
         
@@ -200,7 +235,7 @@ router.post('/:dealId',async (req, res) => {
 });
 // GET price/:dealId
 router.get('/:dealId',async(req,res)=>{
-    console.log("최저가 조회 api 추출");
+    console.log("가격비교 결과 조회 api 추출");
     var priceInfo = await Price.findAll({where:{dealId:req.params.dealId}});
     console.log(priceInfo.length);
     if(priceInfo.length===0){
