@@ -6,6 +6,7 @@ const axios = require('axios');
 require('dotenv').config();
 const mecab = require('mecab-ya');
 const spawn = require('child_process').spawn;
+const { Slack } = require('../class/slack2');
 
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { User, Group, Deal, Comment, Reply, sequelize, Price, DealImage } = require('../models');
@@ -36,12 +37,10 @@ router.use(express.json());
 // POST price/:productName
 router.post('/:dealId',async (req, res) => {
     //python test
-   
-
+    const deal = await Deal.findOne({ where: { id: req.params.dealId }, paranoid: false });
+    const dealImage = await DealImage.findOne({ where: { dealId: req.params.dealId }, paranoid: false });
+    var imageLink = "https://nbreadimg.s3.ap-northeast-2.amazonaws.com/original/1668848067518__N%EB%B9%B5%20%EB%A1%9C%EA%B3%A0-001%20%282%29.png";
     try{
-        const deal = await Deal.findOne({ where: { id: req.params.dealId }, paranoid: false });
-        const dealImage = await DealImage.findOne({ where: { dealId: req.params.dealId }, paranoid: false });
-        var imageLink = "https://nbreadimg.s3.ap-northeast-2.amazonaws.com/original/1668848067518__N%EB%B9%B5%20%EB%A1%9C%EA%B3%A0-001%20%282%29.png";
         if (dealImage) {
             imageLink = dealImage.dealImage;
         }
@@ -180,11 +179,16 @@ router.post('/:dealId',async (req, res) => {
                     return jsonResponse(res, 500, "[Lowest Price] price/:productName 서버 에러", false, result)
                 }
             });
-
-            await result_01.stderr.on('data', (result) => {
-                console.log('python test')
-                console.log(result.toString());
-            });
+            
+            
+            await Slack.sendMessage(
+                {
+                    color: Slack.Colors.success,
+                    title: '[최저가 검색어 추출 실패]',
+                    text: `${deal.title}에서 최저가 검색어 추출에 실패하였습니다.`,
+                }
+            );
+            return jsonResponse(res, 405, "[Lowest Price] price/:productName 검색어 추출에 실패하였습니다.", false, result)
             
         } catch (error) {
             logger.info(`상품명 추출 중 오류가 발생하였습니다.`);
