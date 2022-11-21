@@ -216,7 +216,7 @@ router.post('/:dealId',async (req, res) => {
                     text: `${deal.id}번 거래 : ${deal.title}에서 가격비교 검색어 추출에 실패하였습니다.`,
                 }
             );
-            return jsonResponse(res, 405, "[Lowest Price] price/:productName 검색어 추출에 실패하였습니다.", false, result)
+            return jsonResponse(res, 405, "[Lowest Price] price/:productName 검색어 추출에 실패하였습니다.", false, null)
             
         } catch (error) {
             logger.info(`상품명 추출 중 오류가 발생하였습니다.`);
@@ -257,14 +257,20 @@ router.get('/:dealId',async(req,res)=>{
                 logger.info(`${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`);
                 jsonResponse(res, 404, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             }
-            if(error.response){
+            else if (error.response.status == 405) {
+                logger.info(`${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`);
+                jsonResponse(res, 405, `[최저가 조회] : ${req.params.dealId}번 거래의 검색어 추출을 실패하였습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+            }else{
                 logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
                 priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+                jsonResponse(res, error.response.status, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             }
+            // if(error.response){
+            //     logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
+            //     priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+            //     jsonResponse(res, error.response.status, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+            // }
         })
-         
-        priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
-        //jsonResponse(res,404,`[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보가 없습니다.`,false,null);
     }
     else {
         jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
