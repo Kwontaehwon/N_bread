@@ -264,6 +264,7 @@ router.get('/:dealId',async(req,res)=>{
                 logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
                 priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
                 jsonResponse(res, error.response.status, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+
             }
             // if(error.response){
             //     logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);

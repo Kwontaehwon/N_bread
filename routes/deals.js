@@ -58,6 +58,32 @@ const upload = multer({
   limits : {fileSize : 100 * 1024 * 1024} // 이미지 최대 size 5MB
 })
 
+router.post('/:dealId/img/coupang', async (req, res)=>{
+// #swagger.summary = '쿠팡 썸네일 이미지 업로드'
+  try{
+    const {url} = req.body;
+    const dealId = parseInt(req.params.dealId);
+    if(Number.isNaN(dealId)){
+      logger.info(`[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang 에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`);
+      return jsonResponse(res, 400, `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang 에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`, false); 
+    }
+    const targetDeal = await Deal.findOne({where : {id : dealId}});
+    if(targetDeal === null){
+      logger.info(`[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`);
+      return jsonResponse(res, 404, `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`, false); 
+    }
+    const coupangImage = await DealImage.create({
+      dealImage: url,
+      dealId: dealId,
+    })
+    logger.info(`dealId : ${dealId}에 dealImageId : ${coupangImage.id} 가 생성되었습니다.`);
+    return jsonResponse(res, 200, `dealId : ${dealId}에 쿠팡 썸네일 이미지가 생성되었습니다.`, true, null);
+  } catch(error){
+    logger.error(`[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang ${error}`);
+    jsonResponse(res, 500, "[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang", false); 
+  }
+})
+
 router.post('/:dealId/img', upload.array('img'),  async (req,res)=>{
   // #swagger.summary = 'S3 이미지(Array) 업로드'
   try{
