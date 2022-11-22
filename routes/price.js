@@ -88,7 +88,7 @@ router.post('/:dealId',async (req, res) => {
             if (unitG) {
                 gramToAdd += unitG[0];
             }
-            priceToSave = deal.presoanlPrice;
+            priceToSave = deal.personalPrice;
         } else {
             gramToAdd += "1개"
         }
@@ -124,100 +124,76 @@ router.post('/:dealId',async (req, res) => {
                 answer = result.toString();
                 logger.info(`추출된 상품명은 ${answer}입니다.`)
 
-                //상품명 기반 검색 시작
-                try {
-                    const productName = answer + gramToAdd;
-                    //const productName = "";
-                    logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
-                    const client_id = env.NAVER_DEVELOPER_CLIENTID;
-                    const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
-                    var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName) + "&display=4"; // JSON 결과
-                    var options = {
-                        url: url,
-                        headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
-                    };
-                    request.get(options, async (error, response, body) => {
-                        if (!error && response.statusCode == 200) {
-                            var item = JSON.parse(body)['items'];
-                            const existDeal = await Price.findOne({ where: { dealId: req.params.dealId, mallName: { [Op.not]: 'N빵' } } });
-                            if (!existDeal) {
-                                for (i = 0; i < item.length; i++) {
-                                    await Price.create({
-                                        dealId: req.params.dealId,
-                                        title: item[i]["title"],
-                                        link: item[i]["link"],
-                                        image: item[i]["image"],
-                                        lPrice: (item[i]["lprice"] * 1) + 3000,
-                                        hPrice: item[i]["hprice"],
-                                        mallName: item[i]["mallName"],
-                                        productId: item[i]["productId"],
-                                        productType: item[i]["productType"],
-                                        brand: item[i]["brand"],
-                                        maker: item[i]["maker"],
-                                        category1: item[i]["category1"],
-                                        category2: item[i]["category2"],
-                                        category3: item[i]["category3"],
-                                        category4: item[i]["category4"],
-                                    })
-                                }
-                            }
-
+                const productName = answer + gramToAdd;
+                //const productName = "";
+                logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
+                const client_id = env.NAVER_DEVELOPER_CLIENTID;
+                const client_secret = env.NAVER_DEVELOPER_CLIENTSECRET;
+                var url = 'https://openapi.naver.com/v1/search/shop.json?query=' + encodeURI(productName) + "&display=4"; // JSON 결과
+                var options = {
+                    url: url,
+                    headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
+                };
+                request.get(options, async (error, response, body) => {
+                    if (!error && response.statusCode == 200) {
+                        var item = JSON.parse(body)['items'];
+                        const existDeal = await Price.findOne({ where: { dealId: req.params.dealId, mallName: { [Op.not]: 'N빵' } } });
+                        if (!existDeal) {
                             for (i = 0; i < item.length; i++) {
-                                item[i].lprice = item[i].lprice * 1 + 3000;
-                                jsonArray.push(item[i]);
+                                await Price.create({
+                                    dealId: req.params.dealId,
+                                    title: item[i]["title"],
+                                    link: item[i]["link"],
+                                    image: item[i]["image"],
+                                    lPrice: (item[i]["lprice"] * 1) + 3000,
+                                    hPrice: item[i]["hprice"],
+                                    mallName: item[i]["mallName"],
+                                    productId: item[i]["productId"],
+                                    productType: item[i]["productType"],
+                                    brand: item[i]["brand"],
+                                    maker: item[i]["maker"],
+                                    category1: item[i]["category1"],
+                                    category2: item[i]["category2"],
+                                    category3: item[i]["category3"],
+                                    category4: item[i]["category4"],
+                                })
                             }
-                            if (item.length === 0) {
-                                await Slack.sendMessage(
-                                    {
-                                        color: Slack.Colors.danger,
-                                        title: '[네이버 쇼핑 검색 결과 없음]',
-                                        text: `${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색한 결과가 없습니다.`,
-                                    }
-                                );
-                                return jsonResponse(res, 403, `네이버 쇼핑 검색 결과가 없습니다. 검색어는 ${productName}입니다.`, false, null)
-                            }
-                            await Slack.sendMessage(
-                                {
-                                    color: Slack.Colors.success,
-                                    title: '[가격비교 api 결과 조회 성공]',
-                                    text: `${deal.id}번 거래 : ${deal.title}에서 추출한 검색어 \"${productName}\"으로 가격 비교 조회에 성공하였습니다.`,
-                                }
-                            );
-                            return jsonResponse(res, 200, "", true, jsonArray);
-                        } else {
+                        }
+
+                        for (i = 0; i < item.length; i++) {
+                            item[i].lprice = item[i].lprice * 1 + 3000;
+                            jsonArray.push(item[i]);
+                        }
+                        if (item.length === 0) {
                             await Slack.sendMessage(
                                 {
                                     color: Slack.Colors.danger,
-                                    title: '[네이버 쇼핑 api 에러]',
-                                    text: `네이버 쇼핑 api에서 에러가 발생했습니다. ${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색하였습니다.`,
+                                    title: '[네이버 쇼핑 검색 결과 없음]',
+                                    text: `${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색한 결과가 없습니다.`,
                                 }
                             );
-                            return jsonResponse(res, 404, `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`, false, null)
+                            return jsonResponse(res, 403, `네이버 쇼핑 검색 결과가 없습니다. 검색어는 ${productName}입니다.`, false, null)
                         }
-                    });
-                } catch (error) {
-                    logger.error(error);
-                    await Slack.sendMessage(
-                        {
-                            color: Slack.Colors.danger,
-                            title: '[서버 에러]',
-                            text: `가격비교 추출 api에서 서버 에러가 발생했습니다. ${deal.id}번 거래 : ${deal.title}에서 가격비교 조회를 시도하였습니다.`,
-                        }
-                    );
-                    return jsonResponse(res, 500, "[Lowest Price] price/:productName 서버 에러", false, result)
-                }
-            });
-            
-            
-            await Slack.sendMessage(
-                {
-                    color: Slack.Colors.danger,
-                    title: '[가격비교 api 검색어 추출 실패]',
-                    text: `${deal.id}번 거래 : ${deal.title}에서 가격비교 검색어 추출에 실패하였습니다.`,
-                }
-            );
-            return jsonResponse(res, 405, "[Lowest Price] price/:productName 검색어 추출에 실패하였습니다.", false, null)
-            
+                        await Slack.sendMessage(
+                            {
+                                color: Slack.Colors.success,
+                                title: '[가격비교 api 결과 조회 성공]',
+                                text: `${deal.id}번 거래 : ${deal.title}에서 추출한 검색어 \"${productName}\"으로 가격 비교 조회에 성공하였습니다.`,
+                            }
+                        );
+                        return jsonResponse(res, 200, "", true, jsonArray);
+                    } else {
+                        await Slack.sendMessage(
+                            {
+                                color: Slack.Colors.danger,
+                                title: '[네이버 쇼핑 api 에러]',
+                                text: `네이버 쇼핑 api에서 에러가 발생했습니다. ${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색하였습니다.`,
+                            }
+                        );
+                        return jsonResponse(res, 404, `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`, false, null)
+                    }
+                });
+            }); 
         } catch (error) {
             logger.info(`상품명 추출 중 오류가 발생하였습니다.`);
             await Slack.sendMessage(
@@ -229,9 +205,6 @@ router.post('/:dealId',async (req, res) => {
             );
             return jsonResponse(res, 402, `${title}에서 상품명 추출 중 오류가 발생하였습니다.`, false, error)
         }
-        
-        
-    
 });
 // GET price/:dealId
 router.get('/:dealId',async(req,res)=>{
