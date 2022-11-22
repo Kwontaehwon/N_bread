@@ -49,7 +49,7 @@ router.post('/:dealId',async (req, res) => {
         }
 
         const totalPrice = deal.totalPrice;
-        const particlePrice = deal.presoanlPrice;
+        const particlePrice = deal.personalPrice;
         var jsonArray = new Array();
         var title2 = deal.title;
         var title =deal.title;
