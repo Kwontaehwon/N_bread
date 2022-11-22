@@ -215,10 +215,11 @@ router.get('/:dealId',async(req,res)=>{
         console.log("dealId가"+req.params.dealId);
         //const link = 'http://127.0.0.1:5005/price/';
         const link = 'https://www.chocobread.shop/price/' 
-        await axios.post(link+req.params.dealId).then(response=>{
-            logger.info(`GET 가격 비교 api에서 response : ${response}`)
-            jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`,true,response)
-        }).catch(async function(error){
+        await axios.post(link + req.params.dealId).then(async (Response) => {
+            if (Response.data['status']['code'] === 200) {
+                priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
+            }}).catch(async function(error){
             priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
             if (error.response.status == 401) {
                 logger.info(`${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다.`);
