@@ -4,7 +4,6 @@ const url = require('url');
 const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
-const mecab = require('mecab-ya');
 const spawn = require('child_process').spawn;
 const { Slack } = require('../class/slack2');
 
