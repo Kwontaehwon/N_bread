@@ -19,6 +19,7 @@ const logger = require('../config/winston');
 const admin = require("firebase-admin");
 const { env } = require('process');
 var request = require('request');
+const { error } = require('console');
 
 const router = express.Router();
 
@@ -117,13 +118,17 @@ router.post('/:dealId',async (req, res) => {
     var answer = "";
         try {
             const result_01 = await spawn('python3', ['./routes/getTopic.py', title],);
-
+            
             await result_01.stdout.on('data', async (result) => {
+                console.log('spawn in')
                 console.log(result)
                 console.log(result.toString());
                 answer = result.toString();
+                if(answer==="오류발생"){
+                    logger.info(`Mecab에러 발생`)
+                    answer="";
+                }
                 logger.info(`추출된 상품명은 ${answer}입니다.`)
-
                 const productName = answer + gramToAdd;
                 //const productName = "";
                 logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
@@ -140,10 +145,18 @@ router.post('/:dealId',async (req, res) => {
                         const existDeal = await Price.findOne({ where: { dealId: req.params.dealId, mallName: { [Op.not]: 'N빵' } } });
                         if (!existDeal) {
                             for (i = 0; i < item.length; i++) {
+                                mobileLink =item[i]['link'].toString();
+                                mob = mobileLink.split('id=');
+                                processedTitle = item[i]['title'].toString();
+                                console.log(processedTitle)
+                                processedTitle = processedTitle.replaceAll('<b>','');
+                                console.log(processedTitle);
+                                processedTitle = processedTitle.replaceAll('</b>','');
+                                console.log(processedTitle);
                                 await Price.create({
                                     dealId: req.params.dealId,
-                                    title: item[i]["title"],
-                                    link: item[i]["link"],
+                                    title: processedTitle,
+                                    link: 'https://msearch.shopping.naver.com/product/'+mob[1],
                                     image: item[i]["image"],
                                     lPrice: (item[i]["lprice"] * 1) + 3000,
                                     hPrice: item[i]["hprice"],
@@ -193,9 +206,10 @@ router.post('/:dealId',async (req, res) => {
                         return jsonResponse(res, 404, `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`, false, null)
                     }
                 });
-            }); 
-        } catch (error) {
+            })
+        } catch (e) {
             logger.info(`상품명 추출 중 오류가 발생하였습니다.`);
+            logger.info(e);
             await Slack.sendMessage(
                 {
                     color: Slack.Colors.danger,
@@ -203,7 +217,7 @@ router.post('/:dealId',async (req, res) => {
                     text: `가격비교 api에서 상품명 추출 중 에러가 발생했습니다. ${deal.id}번 거래 : ${deal.title}에서 가격비교 조회를 시도하였습니다.`,
                 }
             );
-            return jsonResponse(res, 402, `${title}에서 상품명 추출 중 오류가 발생하였습니다.`, false, error)
+            return jsonResponse(res, 402, `${title}에서 상품명 추출 중 오류가 발생하였습니다.`, false, e)
         }
 });
 // GET price/:dealId
@@ -215,43 +229,37 @@ router.get('/:dealId',async(req,res)=>{
         console.log("dealId가"+req.params.dealId);
         //const link = 'http://127.0.0.1:5005/price/';
         const link = 'https://www.chocobread.shop/price/' 
-        await axios.post(link + req.params.dealId).then(async (Response) => {
-            if (Response.data['status']['code'] === 200) {
-                priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
-                jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
-            }}).catch(async function(error){
+        await axios.post(link + req.params.dealId).then(async (response) => {
+            logger.info(`${req.params.dealId}번 거래의 단위가격 조회에 성공하였습니다.`);
+            jsonResponse(res, 200, `[가격 정보 조회] : ${req.params.dealId}번 거래의 가격 정보 정보 조회에 성공했습니다.`, true, response.data)
+            }).catch(async function(error){ 
             priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
             if (error.response.status == 401) {
                 logger.info(`${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다.`);
-                jsonResponse(res, 401, `[최저가 조회] : ${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 401, `[가격 정보 조회] : ${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             } else if (error.response.status == 402) {
                 logger.info(`${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다.`);
-                jsonResponse(res, 402, `[최저가 조회] : ${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 402, `[가격 정보 조회] : ${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             } else if (error.response.status == 403) {
                 logger.info(`${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다.`);
-                jsonResponse(res, 403, `[최저가 조회] : ${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 403, `[가격 정보 조회] : ${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             } else if (error.response.status == 404) {
                 logger.info(`${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`);
-                jsonResponse(res, 404, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 404, `[가격 정보 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             }
             else if (error.response.status == 405) {
                 logger.info(`${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`);
-                jsonResponse(res, 405, `[최저가 조회] : ${req.params.dealId}번 거래의 검색어 추출을 실패하였습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, 405, `[가격 정보 조회] : ${req.params.dealId}번 거래의 검색어 추출을 실패하였습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
             }else{
-                logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
+                logger.info(`가격 정보조회 중${error.response.status}번 에러가 발생했습니다.`);
                 priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
-                jsonResponse(res, error.response.status, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
+                jsonResponse(res, error.response.status, `[가격 정보 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
 
             }
-            // if(error.response){
-            //     logger.info(`최저가조회 중${error.response.status}번 에러가 발생했습니다.`);
-            //     priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
-            //     jsonResponse(res, error.response.status, `[최저가 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`, true, priceInfo)
-            // }
-        }).then
+        })
     }
     else {
-        jsonResponse(res, 200, `[최저가 조회] : ${req.params.dealId}번 거래의 최저가 정보 조회에 성공했습니다.`, true, priceInfo)
+        jsonResponse(res, 200, `[가격 정보 조회] : ${req.params.dealId}번 거래의 가격 정보 정보 조회에 성공했습니다.`, true, priceInfo)
     }
     
 })
