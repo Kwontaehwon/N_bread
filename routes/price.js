@@ -139,7 +139,7 @@ router.post('/:dealId',async (req, res) => {
                     url: url,
                     headers: { 'X-Naver-Client-Id': client_id, 'X-Naver-Client-Secret': client_secret }
                 };
-                request.get(options, async (error, response, body) => {
+                await request.get(options, async (error, response, body) => {
                     if (!error && response.statusCode == 200) {
                         var item = JSON.parse(body)['items'];
                         const existDeal = await Price.findOne({ where: { dealId: req.params.dealId, mallName: { [Op.not]: 'N빵' } } });
@@ -231,7 +231,8 @@ router.get('/:dealId',async(req,res)=>{
         const link = 'https://www.chocobread.shop/price/' 
         await axios.post(link + req.params.dealId).then(async (response) => {
             logger.info(`${req.params.dealId}번 거래의 단위가격 조회에 성공하였습니다.`);
-            jsonResponse(res, 200, `[가격 정보 조회] : ${req.params.dealId}번 거래의 가격 정보 정보 조회에 성공했습니다.`, true, response.data)
+		priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
+            jsonResponse(res, 200, `[가격 정보 조회] : ${req.params.dealId}번 거래의 가격 정보 정보 조회에 성공했습니다.`, true, priceInfo)
             }).catch(async function(error){ 
             priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
             if (error.response.status == 401) {
