@@ -19,6 +19,7 @@ const logger = require('../config/winston');
 const admin = require("firebase-admin");
 const { env } = require('process');
 var request = require('request');
+const { error } = require('console');
 
 const router = express.Router();
 
@@ -117,6 +118,10 @@ router.post('/:dealId',async (req, res) => {
     var answer = "";
         try {
             const result_01 = await spawn('python3', ['./routes/getTopic.py', title],);
+            result_01.stderr.on('data', function (data) {
+                console.log(data.toString());
+                throw error;
+            });
 
             await result_01.stdout.on('data', async (result) => {
                 console.log(result)
@@ -140,10 +145,18 @@ router.post('/:dealId',async (req, res) => {
                         const existDeal = await Price.findOne({ where: { dealId: req.params.dealId, mallName: { [Op.not]: 'N빵' } } });
                         if (!existDeal) {
                             for (i = 0; i < item.length; i++) {
+                                mobileLink =item[i]['link'].toString();
+                                mob = mobileLink.split('id=');
+                                processedTitle = item[i]['title'].toString();
+                                console.log(processedTitle)
+                                processedTitle = processedTitle.replaceAll('<b>','');
+                                console.log(processedTitle);
+                                processedTitle = processedTitle.replaceAll('</b>','');
+                                console.log(processedTitle);
                                 await Price.create({
                                     dealId: req.params.dealId,
-                                    title: item[i]["title"],
-                                    link: item[i]["link"],
+                                    title: processedTitle,
+                                    link: 'https://msearch.shopping.naver.com/product/'+mob[1],
                                     image: item[i]["image"],
                                     lPrice: (item[i]["lprice"] * 1) + 3000,
                                     hPrice: item[i]["hprice"],
