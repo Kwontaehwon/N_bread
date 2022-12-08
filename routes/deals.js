@@ -510,21 +510,22 @@ router.post('/create', verifyToken, async (req, res, next) => {
       const fcmTopicName = `dealFcmTopic` + deal.id;
       await admin.messaging().subscribeToTopic(fcmToken, fcmTopicName);
     }
-    const categoryNLPLink = "http://3.35.167.210/category/";
-    const categoryRespnose = await axios.get(categoryNLPLink + encodeURIComponent(deal.title));
-    let categoryReturnList = [];
-    let formatedString = "처리 결과 : \n\n";
-    for (let categoryData of categoryRespnose.data){
-      formatedString = formatedString + `[${categoryData["BIG"]} - ${categoryData["SMALL"]}] : ${ categoryData["prob"]}]\n`
-      categoryReturnList.push(formatedString);
-    }
-    Slack.sendMessage(
-      {
-          color: Slack.Colors.info,
-          title: `[${deal.title}] 카테고리 NLP 처리 완료`,
-          text: formatedString
-      }
-  );
+
+    //const categoryNLPLink = "http://3.35.167.210/category/";
+    //const categoryRespnose = await axios.get(categoryNLPLink + encodeURIComponent(deal.title));
+    //let categoryReturnList = [];
+    //let formatedString = "처리 결과 : \n\n";
+    //for (let categoryData of categoryRespnose.data){
+      //formatedString = formatedString + `[${categoryData["BIG"]} - ${categoryData["SMALL"]}] : ${ categoryData["prob"]}]\n`
+      //categoryReturnList.push(formatedString);
+   // }
+   // Slack.sendMessage(
+     // {
+       //   color: Slack.Colors.info,
+        //  title: `[${deal.title}] 카테고리 NLP 처리 완료`,
+          //text: formatedString
+     // }
+ // );
     logger.info(`dealId : ${deal.id} 거래가 생성되었습니다.`);
     return jsonResponse(res, 200, "거래가 생성되었습니다", true, deal);
   } catch (error) {
