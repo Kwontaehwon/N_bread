@@ -6,7 +6,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 const { isLoggedIn, isNotLoggedIn ,verifyToken} = require('./middlewares');
-const { User, Group, Deal,Comment,Reply, sequelize } = require('../models');
+const { User, Group, Deal,Comment,Reply, sequelize } = require('../config/database/models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');

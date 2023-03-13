@@ -1,6 +1,6 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const { User, Domain } = require('../models');
+const { User, Domain } = require('../config/database/models');
 const { isLoggedIn, verifyToken } = require('./middlewares');
 const net = require('net');
 const externalip = require('externalip');

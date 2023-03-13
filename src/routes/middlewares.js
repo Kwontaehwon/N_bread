@@ -1,6 +1,6 @@
 const logger = require('../config/winston');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+const { User } = require('../config/database/models');
 
 function jsonResponse(res, code, message, isSuccess) {
   res.status(code).json({
