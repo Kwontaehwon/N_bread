@@ -4,3 +4,4 @@ logs/
 config/config.json
 config/firebase-admin.json
 passport/AuthKey_689F483NJ3.p8
+dist
