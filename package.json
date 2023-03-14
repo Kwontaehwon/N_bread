@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app",
-    "prestart": "node swagger/swagger.js",
+    "prestart": "node src/config/swagger/swagger.js",
     "test": "jest"
   },
   "author": "Kwon TaeHyun",

@@ -9,9 +9,8 @@ const dotenv = require("dotenv");
 const https = require("https");
 const fs = require("fs");
 const bodyParser = require("body-parser");
-// const { swaggerUi, specs } = require('./swagger/swagger');
 const swaggerUi = require("swagger-ui-express");
-const swaggerFile = require("./swagger/swagger-test.json");
+const swaggerFile = require("./src/config/swagger/swagger-test.json");
 const admin = require("firebase-admin");
 let serviceAccount = require("./src/config/firebase-admin.json");
 
@@ -26,7 +25,7 @@ const slackRouter = require("./src/routes/slack");
 const priceRouter = require("./src/routes/price");
 
 const { sequelize } = require("./src/config/database/models");
-const passportConfig = require("./passport");
+const passportConfig = require("./src/config/passport");
 
 const logger = require("./src/config/winston");
 
