@@ -4,7 +4,7 @@
   "description": "ChocoBread - N-Bread",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app",
+    "start": "nodemon src/app",
     "prestart": "node src/config/swagger/swagger.js",
     "test": "jest",
     "build": "tsc"

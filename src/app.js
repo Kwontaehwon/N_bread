@@ -10,24 +10,24 @@ const https = require("https");
 const fs = require("fs");
 const bodyParser = require("body-parser");
 const swaggerUi = require("swagger-ui-express");
-const swaggerFile = require("./src/config/swagger/swagger-test.json");
+const swaggerFile = require("./config/swagger/swagger.json");
 const admin = require("firebase-admin");
-let serviceAccount = require("./src/config/firebase-admin.json");
+let serviceAccount = require("./config/firebase-admin.json");
 
 dotenv.config();
-const indexRouter = require("./src/routes/index");
-const dealRouter = require("./src/routes/deals");
-const authRouter = require("./src/routes/auth");
-const userRouter = require("./src/routes/user");
-const commentRouter = require("./src/routes/comment");
-const eventRouter = require("./src/routes/event");
-const slackRouter = require("./src/routes/slack");
-const priceRouter = require("./src/routes/price");
+const indexRouter = require("./routes/index");
+const dealRouter = require("./routes/deals");
+const authRouter = require("./routes/auth");
+const userRouter = require("./routes/user");
+const commentRouter = require("./routes/comment");
+const eventRouter = require("./routes/event");
+const slackRouter = require("./routes/slack");
+const priceRouter = require("./routes/price");
 
-const { sequelize } = require("./src/config/database/models");
-const passportConfig = require("./src/config/passport");
+const { sequelize } = require("./config/database/models");
+const passportConfig = require("./config/passport");
 
-const logger = require("./src/config/winston");
+const logger = require("./config/winston");
 
 const app = express();
 
