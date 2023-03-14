@@ -11,7 +11,7 @@ const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
-const sequelize = require('../config/database/models');
+const sequelize = require('../database/models');
 const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick, checkUserNick, postReportUser, isSetNickname, putKakaoUserNick, getLocationByNaverMapsApi, setLocationByNaverMapsApi, deletelocation, addLocation} = require('../controllers/user');
 
 

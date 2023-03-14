@@ -56,7 +56,7 @@ const options = {
 };
 
 const outputFile = './src/config/swagger/swagger-test.json';
-const endpointsFiles = ['../app.js'];
+const endpointsFiles = ['../../app.js'];
 
 swaggerAutogen()(outputFile, endpointsFiles, options);
 

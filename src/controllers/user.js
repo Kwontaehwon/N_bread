@@ -1,9 +1,9 @@
-const { User, Group, Deal, DealImage, UserReport } = require('../config/database/models');
+const { User, Group, Deal, DealImage, UserReport } = require('../database/models');
 const { Op, where } = require('sequelize');
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
 const logger = require('../config/winston');
-const sequelize = require('../config/database/models');
+const sequelize = require('../database/models');
 const requestIp = require('request-ip');
 const { env } = require('process');
 const { RDS } = require('aws-sdk');

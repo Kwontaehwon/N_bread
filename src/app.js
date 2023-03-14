@@ -24,7 +24,7 @@ const eventRouter = require("./routes/event");
 const slackRouter = require("./routes/slack");
 const priceRouter = require("./routes/price");
 
-const { sequelize } = require("./config/database/models");
+const { sequelize } = require("./database/models");
 const passportConfig = require("./config/passport");
 
 const logger = require("./config/winston");
