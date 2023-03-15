@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../config/winston');
-const Event  = require('../models/event');
+const Event  = require('../database/models/event');
 const { Op, Sequelize } = require('sequelize');
 const multer = require('multer');
 const multerS3 = require('multer-s3');

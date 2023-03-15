@@ -2,7 +2,7 @@ const passport = require('passport');
 const KakaoStrategy = require('passport-kakao').Strategy;
 
 const Op = require('sequelize');
-const User = require('../models/user');
+const User = require('../../database/models/user');
 
 module.exports = () => {
   passport.use(new KakaoStrategy({

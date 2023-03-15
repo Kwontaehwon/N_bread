@@ -14,7 +14,7 @@ const {Slack} = require('../class/slack');
 
 
 
-const { User, Group, Deal,Comment,Reply, DealImage, DealReport } = require('../models');
+const { User, Group, Deal,Comment,Reply, DealImage, DealReport } = require('../database/models');
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../config/winston');

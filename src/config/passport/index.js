@@ -4,7 +4,7 @@ const kakao = require('./kakaoStrategy');
 const naver = require('./naverStrategy');
 const apple = require('./appleStrategy');
 
-const User = require('../models/user');
+const User = require('../../database/models/user');
 
 module.exports = () => {
   passport.serializeUser((user, done) => {

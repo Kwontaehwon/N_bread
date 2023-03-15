@@ -8,7 +8,7 @@ const spawn = require('child_process').spawn;
 const { Slack } = require('../class/slack2');
 
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
-const { User, Group, Deal, Comment, Reply, sequelize, Price, DealImage } = require('../models');
+const { User, Group, Deal, Comment, Reply, sequelize, Price, DealImage } = require('../database/models');
 const { json } = require('body-parser');
 const { any, reject } = require('bluebird');
 const { response } = require('express');
