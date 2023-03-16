@@ -3,5 +3,5 @@ node_modules/
 logs/
 /src/config/config.json
 /src/config/firebase-admin.json
-/src/config/passport/AuthKey_689F483NJ3.p8
+AuthKey_689F483NJ3.p8
 dist
