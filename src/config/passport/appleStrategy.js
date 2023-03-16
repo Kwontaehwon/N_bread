@@ -13,7 +13,7 @@ module.exports = () => {
           clientID: process.env.APPLE_CLIENT_ID,
           teamID: process.env.APPLE_TEAM_ID,
           keyID: process.env.APPLE_KEY_ID,
-          key : fs.readFileSync(path.join(__dirname, 'AuthKey_689F483NJ3.p8')),
+          key : fs.readFileSync(path.join(__dirname, '../../../AuthKey_689F483NJ3.p8')),
           callbackURL: "https://chocobread.shop/auth/apple/callback",
           scope: ['name', 'email'],
           passReqToCallback : true
