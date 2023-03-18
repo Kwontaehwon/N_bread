@@ -1,3 +1,5 @@
+import { dealImageUpload } from '../middlewares/upload';
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -5,12 +7,10 @@ const url = require('url');
 const axios = require('axios');
 const passport = require('passport');
 const schedule = require('node-schedule');
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const AWS = require('aws-sdk');
 const admin = require('firebase-admin');
 const { Slack } = require('../class/slack');
 const config = require('../config');
+const { upload } = require('../middlewares/upload');
 
 const {
   User,
@@ -26,36 +26,8 @@ const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../config/winston');
 const { timeLog } = require('console');
 const { link } = require('fs');
-const { util } = require('../modules/');
+const { util } = require('../modules');
 const dealRouter = express.Router();
-
-AWS.config.update({
-  region: 'ap-northeast-2',
-  accessKeyId: config.s3AccessKeyID,
-  secretAccessKey: config.s3SecretAccessKey,
-});
-
-const s3 = new AWS.S3();
-
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: 'nbreadimg',
-    key: async (req, file, cb) => {
-      const dealImages = await DealImage.findAll({
-        where: { dealId: req.params.dealId },
-      });
-      console.log(dealImages);
-      if (dealImages.length > 0) {
-        for (let dealImage of dealImages) {
-          await dealImage.destroy(); // 그냥 삭제하는 것이 맞는가? 거래 수정됬을 때 어떻게 수정하면 좋을까?
-        }
-      }
-      cb(null, `original/${Date.now()}_${file.originalname}`);
-    },
-  }),
-  limits: { fileSize: 100 * 1024 * 1024 }, // 이미지 최대 size 5MB
-});
 
 dealRouter.post('/:dealId/img/coupang', async (req, res) => {
   // #swagger.summary = '쿠팡 썸네일 이미지 업로드'
@@ -112,69 +84,73 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
   }
 });
 
-dealRouter.post('/:dealId/img', upload.array('img'), async (req, res) => {
-  // #swagger.summary = 'S3 이미지(Array) 업로드'
-  try {
-    const dealId = parseInt(req.params.dealId);
-    if (Number.isNaN(dealId)) {
-      logger.info(
-        `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        400,
-        `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-        false,
-      );
-    }
-    const targetDeal = await Deal.findOne({ where: { id: dealId } });
-    if (targetDeal === null) {
-      logger.info(
-        `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-        false,
-      );
-    }
-    const result = [];
-    for (let i of req.files) {
-      console.log(i);
-      const originalUrl = i.location;
-      // const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
-      result.push(originalUrl);
-    }
-    if (result.length > 0) {
-      for (let url of result) {
-        console.log(url);
-        const tmpImage = await DealImage.create({
-          dealImage: url,
-          dealId: dealId,
-        });
+dealRouter.post(
+  '/:dealId/img',
+  dealImageUpload.array('img'),
+  async (req, res) => {
+    // #swagger.summary = 'S3 이미지(Array) 업로드'
+    try {
+      const dealId = parseInt(req.params.dealId);
+      if (Number.isNaN(dealId)) {
         logger.info(
-          `dealId : ${dealId}에 dealImageId : ${tmpImage.id} 가 생성되었습니다.`,
+          `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
+        );
+        return util.jsonResponse(
+          res,
+          400,
+          `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
+          false,
         );
       }
+      const targetDeal = await Deal.findOne({ where: { id: dealId } });
+      if (targetDeal === null) {
+        logger.info(
+          `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
+        );
+        return util.jsonResponse(
+          res,
+          404,
+          `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
+          false,
+        );
+      }
+      const result = [];
+      for (let i of req.files) {
+        console.log(i);
+        const originalUrl = i.location;
+        // const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+        result.push(originalUrl);
+      }
+      if (result.length > 0) {
+        for (let url of result) {
+          console.log(url);
+          const tmpImage = await DealImage.create({
+            dealImage: url,
+            dealId: dealId,
+          });
+          logger.info(
+            `dealId : ${dealId}에 dealImageId : ${tmpImage.id} 가 생성되었습니다.`,
+          );
+        }
+      }
+      return util.jsonResponse(
+        res,
+        200,
+        `dealId : ${dealId}에 ${result.length}개의 이미지가 생성되었습니다.`,
+        true,
+        `${result}`,
+      );
+    } catch (error) {
+      logger.error(`[거래 이미지 생성] POST /deals/:dealId/img ${error}`);
+      util.jsonResponse(
+        res,
+        500,
+        '[거래 이미지 생성] POST /deals/:dealId/img',
+        false,
+      );
     }
-    return util.jsonResponse(
-      res,
-      200,
-      `dealId : ${dealId}에 ${result.length}개의 이미지가 생성되었습니다.`,
-      true,
-      `${result}`,
-    );
-  } catch (error) {
-    logger.error(`[거래 이미지 생성] POST /deals/:dealId/img ${error}`);
-    util.jsonResponse(
-      res,
-      500,
-      '[거래 이미지 생성] POST /deals/:dealId/img',
-      false,
-    );
-  }
-});
+  },
+);
 
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.

@@ -10,25 +10,7 @@ const { url } = require('inspector');
 const config = require('../config');
 const eventRouter = express.Router();
 const { util } = require('../modules/');
-
-AWS.config.update({
-  region: 'ap-northeast-2',
-  accessKeyId: config.s3AccessKeyID,
-  secretAccessKey: config.s3SecretAccessKey,
-});
-
-const s3 = new AWS.S3();
-
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: 'nbreadimg',
-    key: async (req, file, cb) => {
-      cb(null, `events/${Date.now()}_${file.originalname}`);
-    },
-  }),
-  limits: { fileSize: 100 * 1024 * 1024 }, // 이미지 최대 size 5MB
-});
+const { eventImageUpload } = require('../middlewares/upload');
 
 eventRouter.get('/', async (req, res, next) => {
   try {
@@ -118,7 +100,7 @@ eventRouter.post('/create', async (req, res, next) => {
 
 eventRouter.post(
   '/img/:eventId',
-  upload.single('img'),
+  eventImageUpload.single('img'),
   async (req, res, next) => {
     try {
       const file = req.file;
