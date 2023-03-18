@@ -6,13 +6,13 @@ const {
 } = require('passport-naver-v2');
 
 const User = require('../../database/models/user');
-
+const config = require('../');
 const passportNaver = () => {
   passport.use(
     new NaverStrategy(
       {
-        clientID: process.env.NAVER_ID,
-        clientSecret: process.env.NAVER_SECRET,
+        clientID: config.naverId,
+        clientSecret: config.naverSecret,
         callbackURL: '/auth/naver/callback',
       },
       async (accessToken, refreshToken, profile, done) => {

@@ -3,12 +3,13 @@ const KakaoStrategy = require('passport-kakao').Strategy;
 
 const Op = require('sequelize');
 const User = require('../../database/models/user');
+const config = require('../');
 
 const passportKakao = () => {
   passport.use(
     new KakaoStrategy(
       {
-        clientID: process.env.KAKAO_ID,
+        clientID: config.kakaoId,
         callbackURL: '/auth/kakao/callback',
       },
       async (accessToken, refreshToken, profile, done) => {

@@ -4,15 +4,15 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
 const User = require('../../database/models/user');
-
+const config = require('../');
 const passportApple = () => {
   passport.use(
     'apple',
     new AppleStrategy(
       {
-        clientID: process.env.APPLE_CLIENT_ID,
-        teamID: process.env.APPLE_TEAM_ID,
-        keyID: process.env.APPLE_KEY_ID,
+        clientID: config.appleClientId,
+        teamID: config.appleTeamId,
+        keyID: config.appleKeyId,
         key: fs.readFileSync(
           path.join(__dirname, '../../../AuthKey_689F483NJ3.p8'),
         ),
