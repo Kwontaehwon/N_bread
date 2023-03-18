@@ -20,15 +20,14 @@ const { JsonWebTokenError } = require('jsonwebtoken');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { util } = require('../modules');
+const { userRepository } = require('../repository');
 
 // GET users/:userId
 const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
   try {
-    const user = await User.findOne({
-      where: { Id: req.params.userId },
-      paranoid: false,
-    });
+    const userId = req.params.userId;
+    const user = userRepository.findUserById(+userId);
     if (!user) {
       return util.jsonResponse(
         res,
@@ -74,7 +73,7 @@ const getUser = async (req, res, next) => {
 const getMypageDeals = async (req, res, next) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
+    const user = userRepository.findUserById(+req.decoded.id);
     const refDeal = await Group.findAll({ where: { userId: req.decoded.id } });
     console.log('refDeal : ' + refDeal);
     if (refDeal.length === 0) {
