@@ -6,7 +6,6 @@ const { dealRouter } = require('./dealRouter');
 const { userRouter } = require('./userRouter');
 const { commentRouter } = require('./commentRouter');
 const { eventRouter } = require('./eventRouter');
-const { slackRouter } = require('./slackRouter');
 const { priceRouter } = require('./priceRouter');
 const { util } = require('../modules/');
 const router = express.Router();
@@ -36,11 +35,6 @@ router.use(
   '/events',
   // #swagger.tags = ['Events']
   eventRouter,
-);
-router.use(
-  '/slack',
-  // #swagger.tags = ['Slack']
-  slackRouter,
 );
 router.use(
   '/price',
