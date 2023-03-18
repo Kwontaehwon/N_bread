@@ -132,7 +132,7 @@ priceRouter.post('/:dealId', async (req, res) => {
 
   var answer = '';
   try {
-    const result_01 = await spawn('python3', ['./routes/getTopic.py', title]);
+    const result_01 = await spawn('python3', ['../modules/getTopic.py', title]);
 
     await result_01.stdout.on('data', async (result) => {
       console.log('spawn in');
