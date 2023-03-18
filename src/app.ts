@@ -5,7 +5,6 @@ const passport = require('passport');
 const morgan = require('morgan');
 const session = require('express-session');
 const nunjucks = require('nunjucks');
-const dotenv = require('dotenv');
 const https = require('https');
 const fs = require('fs');
 const bodyParser = require('body-parser');
@@ -13,8 +12,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./config/swagger/swagger.json');
 const admin = require('firebase-admin');
 let serviceAccount = require('./config/firebase-admin.json');
-
-dotenv.config();
+const config = require('../src/config/');
 const { indexRouter } = require('./routes/indexRouter');
 const { dealRouter } = require('./routes/dealRouter');
 const { authRouter } = require('./routes/authRouter');
@@ -36,7 +34,7 @@ admin.initializeApp({
 });
 
 passportIndex();
-app.set('port', process.env.PORT || 5005);
+app.set('port', config.PORT || 5005);
 app.set('view engine', 'html');
 nunjucks.configure('views', {
   express: app,
@@ -55,12 +53,12 @@ app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(cookieParser(config.COOKIE_SECRET));
 app.use(
   session({
     resave: false,
     saveUninitialized: false,
-    secret: process.env.COOKIE_SECRET,
+    secret: config.COOKIE_SECRET,
     cookie: {
       httpOnly: true,
       secure: false,
@@ -117,14 +115,14 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   res.locals.message = err.message;
-  res.locals.error = process.env.NODE_ENV !== 'production' ? err : {};
+  res.locals.error = config.NODE_ENV !== 'production' ? err : {};
   logger.error(err);
   res
     .status(err.status || 500)
     .json({ message: err.message, error: res.locals.error });
 });
 
-if (process.env.NODE_ENV == 'production') {
+if (config.NODE_ENV == 'production') {
   const options = {
     ca: fs.readFileSync(
       '/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem',
