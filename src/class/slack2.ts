@@ -1,5 +1,7 @@
 // import axios from 'axios'
 // import * as _ from 'lodash';
+const _ = require('lodash');
+const axios = require('axios');
 class Slack2 {
   // 색상으로 메시지를 꾸밀수 있습니다.
   static get Colors() {

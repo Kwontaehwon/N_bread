@@ -57,4 +57,4 @@ class Slack {
   }
 }
 
-exports.Slack = Slack;
+export { Slack };
