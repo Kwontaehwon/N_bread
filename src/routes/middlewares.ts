@@ -1,7 +1,7 @@
 const logger = require('../config/winston');
 const jwt = require('jsonwebtoken');
 const { User } = require('../database/models');
-
+const config = require('../config');
 function jsonResponse(res, code, message, isSuccess) {
   res.status(code).json({
     code: code,
@@ -29,13 +29,13 @@ const isNotLoggedIn = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
   try {
-    req.decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+    req.decoded = jwt.verify(req.headers.authorization, config.jwtSecret);
     return next();
   } catch (error) {
     logger.error(error);
     if (error.name === `TokenExpiredError`) {
       logger.info('토큰이 만료되었습니다.');
-      // const expiredToken = jwt.verify(req.headers.authorization, process.env.JWT_SECRET, {ignoreExpiration : true});
+      // const expiredToken = jwt.verify(req.headers.authorization, config.jwtSecret, {ignoreExpiration : true});
       // console.log(expiredToken);
       return jsonResponse(res, 419, `토큰이 만료됬습니다.`, false);
     }
