@@ -18,6 +18,7 @@ const exp = require('constants');
 const { json } = require('body-parser');
 const { JsonWebTokenError } = require('jsonwebtoken');
 const jwt = require('jsonwebtoken');
+const config = require('../config');
 
 function jsonResponse(res, code, message, isSuccess, result?) {
   res.status(code).json({
@@ -649,7 +650,7 @@ const deletelocation = async (req, res, next) => {
   // #swagger.summary = '동 삭제하기'
   try {
     var token = req.headers.authorization;
-    var decodedValue = jwt.verify(token, process.env.JWT_SECRET);
+    var decodedValue = jwt.verify(token, config.jwtSecret);
     const user = await User.findOne({ where: { id: decodedValue.id } });
     if (!user) {
       logger.info(
@@ -742,7 +743,7 @@ const addLocation = async (req, res, next) => {
   try {
     const { loc1, loc2, loc3 } = req.body;
     var token = req.headers.authorization;
-    var decodedValue = jwt.verify(token, process.env.JWT_SECRET);
+    var decodedValue = jwt.verify(token, config.jwtSecret);
     const user = await User.findOne({ where: { id: decodedValue.id } });
     if (!user) {
       logger.info(
