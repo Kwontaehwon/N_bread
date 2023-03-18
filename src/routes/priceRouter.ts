@@ -28,17 +28,8 @@ const admin = require('firebase-admin');
 const { env } = require('process');
 var request = require('request');
 const { error } = require('console');
-
+const { util } = require('../modules/');
 const priceRouter = express.Router();
-
-function jsonResponse(res, code, message, isSuccess, result) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-    result: result,
-  });
-}
 
 priceRouter.use(express.json());
 
@@ -60,7 +51,7 @@ priceRouter.post('/:dealId', async (req, res) => {
       imageLink = dealImage.dealImage;
     }
     if (!deal) {
-      jsonResponse(
+      util.jsonResponse(
         res,
         404,
         `${req.params.dealId}에 해당하는 거래를 찾을 수 없습니다`,
@@ -126,7 +117,7 @@ priceRouter.post('/:dealId', async (req, res) => {
 
     logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
   } catch (e) {
-    jsonResponse(
+    util.jsonResponse(
       res,
       401,
       '[가격비교 저장] 단위가격 추출 중 오류가 발생하였습니다.',
@@ -215,7 +206,7 @@ priceRouter.post('/:dealId', async (req, res) => {
               title: '[네이버 쇼핑 검색 결과 없음]',
               text: `${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색한 결과가 없습니다.`,
             });
-            return jsonResponse(
+            return util.jsonResponse(
               res,
               403,
               `네이버 쇼핑 검색 결과가 없습니다. 검색어는 ${productName}입니다.`,
@@ -228,14 +219,14 @@ priceRouter.post('/:dealId', async (req, res) => {
             title: '[가격비교 api 결과 조회 성공]',
             text: `${deal.id}번 거래 : ${deal.title}에서 추출한 검색어 \"${productName}\"으로 가격 비교 조회에 성공하였습니다.`,
           });
-          return jsonResponse(res, 200, '', true, jsonArray);
+          return util.jsonResponse(res, 200, '', true, jsonArray);
         } else {
           await Slack2.sendMessage({
             color: Slack2.Colors.danger,
             title: '[네이버 쇼핑 api 에러]',
             text: `네이버 쇼핑 api에서 에러가 발생했습니다. ${deal.title}에서 추출한 검색어 \"${productName}\"으로 검색하였습니다.`,
           });
-          return jsonResponse(
+          return util.jsonResponse(
             res,
             404,
             `[Lowest Price] 네이버 쇼핑 api error : 검색어는 ${productName}입니다.`,
@@ -253,7 +244,7 @@ priceRouter.post('/:dealId', async (req, res) => {
       title: '[가격비교 api 상품명 추출 에러]',
       text: `가격비교 api에서 상품명 추출 중 에러가 발생했습니다. ${deal.id}번 거래 : ${deal.title}에서 가격비교 조회를 시도하였습니다.`,
     });
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       402,
       `${title}에서 상품명 추출 중 오류가 발생하였습니다.`,
@@ -280,7 +271,7 @@ priceRouter.get('/:dealId', async (req, res) => {
         priceInfo = await Price.findAll({
           where: { dealId: req.params.dealId },
         });
-        jsonResponse(
+        util.jsonResponse(
           res,
           200,
           `[가격 정보 조회] : ${req.params.dealId}번 거래의 가격 정보 정보 조회에 성공했습니다.`,
@@ -296,7 +287,7 @@ priceRouter.get('/:dealId', async (req, res) => {
           logger.info(
             `${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다.`,
           );
-          jsonResponse(
+          util.jsonResponse(
             res,
             401,
             `[가격 정보 조회] : ${req.params.dealId}번 거래의 단위가격 추출 중 에러가 발생했습니다. N빵 거래 결과를 조회합니다.`,
@@ -307,7 +298,7 @@ priceRouter.get('/:dealId', async (req, res) => {
           logger.info(
             `${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다.`,
           );
-          jsonResponse(
+          util.jsonResponse(
             res,
             402,
             `[가격 정보 조회] : ${req.params.dealId}번 거래의 상품명 추출 중 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`,
@@ -318,7 +309,7 @@ priceRouter.get('/:dealId', async (req, res) => {
           logger.info(
             `${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다.`,
           );
-          jsonResponse(
+          util.jsonResponse(
             res,
             403,
             `[가격 정보 조회] : ${req.params.dealId}번 네이버 쇼핑 검색 결과가 없습니다. N빵 거래 결과를 조회합니다.`,
@@ -329,7 +320,7 @@ priceRouter.get('/:dealId', async (req, res) => {
           logger.info(
             `${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`,
           );
-          jsonResponse(
+          util.jsonResponse(
             res,
             404,
             `[가격 정보 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`,
@@ -340,7 +331,7 @@ priceRouter.get('/:dealId', async (req, res) => {
           logger.info(
             `${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다.`,
           );
-          jsonResponse(
+          util.jsonResponse(
             res,
             405,
             `[가격 정보 조회] : ${req.params.dealId}번 거래의 검색어 추출을 실패하였습니다. N빵 거래 결과를 조회합니다.`,
@@ -354,7 +345,7 @@ priceRouter.get('/:dealId', async (req, res) => {
           priceInfo = await Price.findAll({
             where: { dealId: req.params.dealId },
           });
-          jsonResponse(
+          util.jsonResponse(
             res,
             error.response.status,
             `[가격 정보 조회] : ${req.params.dealId}번 거래의 네이버 쇼핑 api에서 오류가 발생했습니다. N빵 거래 결과를 조회합니다.`,
@@ -364,7 +355,7 @@ priceRouter.get('/:dealId', async (req, res) => {
         }
       });
   } else {
-    jsonResponse(
+    util.jsonResponse(
       res,
       200,
       `[가격 정보 조회] : ${req.params.dealId}번 거래의 가격 정보 정보 조회에 성공했습니다.`,

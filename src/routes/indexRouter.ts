@@ -6,17 +6,8 @@ const net = require('net');
 const externalip = require('externalip');
 const axios = require('axios');
 const { verify } = require('crypto');
-
+const { util } = require('../modules/');
 const indexRouter = express.Router();
-
-function jsonResponse(res, code, message, isSuccess, result) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-    result: result,
-  });
-}
 
 indexRouter.get('/', verifyToken, async (req, res, next) => {
   try {
@@ -24,7 +15,7 @@ indexRouter.get('/', verifyToken, async (req, res, next) => {
       where: { id: req.decoded.id || null },
     });
     req.session.loginData = user;
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       `USER : ${req.session.loginData}`,
