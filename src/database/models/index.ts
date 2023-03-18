@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
-const env = process.env.NODE_ENV || 'development';
-const config = require('../../config/config.json')[env];
+const config = require('../../config');
+const env = config.env || 'development';
+const dbConfig = require('../../config/config.json')[env];
 const { User } = require('./user');
 const { Deal } = require('./deal');
 const { Group } = require('./group');
@@ -27,10 +28,10 @@ type dbType = {
 const db: dbType = {};
 
 const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  config,
+  dbConfig.database,
+  dbConfig.username,
+  dbConfig.password,
+  dbConfig,
 );
 
 db.sequelize = sequelize;
