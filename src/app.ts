@@ -13,15 +13,7 @@ const swaggerFile = require('./config/swagger/swagger.json');
 const admin = require('firebase-admin');
 let serviceAccount = require('./config/firebase-admin.json');
 const config = require('./config');
-const { indexRouter } = require('./routes/indexRouter');
-const { dealRouter } = require('./routes/dealRouter');
-const { authRouter } = require('./routes/authRouter');
-const { userRouter } = require('./routes/userRouter');
-const { commentRouter } = require('./routes/commentRouter');
-const { eventRouter } = require('./routes/eventRouter');
-const { slackRouter } = require('./routes/slackRouter');
-const { priceRouter } = require('./routes/priceRouter');
-
+const { router } = require('./routes/index');
 const { db } = require('./database/');
 const { passportIndex } = require('./config/passport');
 
@@ -34,8 +26,6 @@ admin.initializeApp({
 });
 
 passportIndex();
-app.set('port', config.port || 5005);
-app.set('view engine', 'html');
 nunjucks.configure('views', {
   express: app,
   watch: true,
@@ -48,7 +38,8 @@ db.sequelize
   .catch((err) => {
     console.error(err);
   });
-
+app.set('port', config.port || 5005);
+app.set('view engine', 'html');
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -69,42 +60,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/', indexRouter);
-app.use(
-  '/auth',
-  // #swagger.tags = ['Auth']
-  authRouter,
-);
-app.use(
-  // #swagger.tags = ['Deals']
-  '/deals',
-  dealRouter,
-);
-app.use(
-  // #swagger.tags = ['Users']
-  '/users',
-  userRouter,
-);
-app.use(
-  '/comments',
-  // #swagger.tags = ['Comments']
-  commentRouter,
-);
-app.use(
-  '/events',
-  // #swagger.tags = ['Events']
-  eventRouter,
-);
-app.use(
-  '/slack',
-  // #swagger.tags = ['Slack']
-  slackRouter,
-);
-app.use(
-  '/price',
-  // #swagger.tags = ['Slack']
-  priceRouter,
-);
+app.use('/api', router);
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use((req, res, next) => {
