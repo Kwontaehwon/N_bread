@@ -21,8 +21,8 @@ function jsonResponse(res, code, message, isSuccess, result?) {
 
 AWS.config.update({
   region: 'ap-northeast-2',
-  accessKeyId: process.env.S3_ACCESS_KEY_ID,
-  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  accessKeyId: config.s3AccessKeyID,
+  secretAccessKey: config.s3SecretAccessKey,
 });
 
 const s3 = new AWS.S3();

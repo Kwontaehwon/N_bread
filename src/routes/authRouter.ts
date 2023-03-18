@@ -12,6 +12,7 @@ const logger = require('../config/winston');
 const { response } = require('express');
 const axios = require('axios');
 const qs = require('qs');
+const config = require('../config');
 
 const { serveWithOptions } = require('swagger-ui-express');
 const { urlencoded } = require('body-parser');
@@ -63,7 +64,7 @@ authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
     });
     const curUser = await User.findOne({ where: { email } });
     console.log(curUser.id);
-    // var url = `http://localhost:${process.env.PORT}/users/location/`;
+    // var url = `http://localhost:${config.port}/users/location/`;
     // axios.post(url).then(async (Response)=>{
     //   console.log(Response.data);
     // }).catch((err)=>console.log(err));
@@ -105,7 +106,7 @@ authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
           nick: user.nick,
           provider: user.provider,
         };
-        const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+        const accessToken = jwt.sign(payload, config.jwtSecret, {
           algorithm: 'HS256',
           issuer: 'chocoBread',
         });
@@ -277,7 +278,7 @@ authRouter.get('/kakaosdk/createToken/:kakaoNumber', async (req, res, next) => {
       id: user.id,
       provider: user.provider,
     };
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+    const accessToken = jwt.sign(payload, config.jwtSecret, {
       algorithm: 'HS256',
       issuer: 'chocoBread',
     });
@@ -324,7 +325,7 @@ authRouter.get(
       nick: req.user.nick,
       provider: req.user.provider,
     };
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+    const accessToken = jwt.sign(payload, config.jwtSecret, {
       algorithm: 'HS256',
       issuer: 'chocoBread',
     });
@@ -357,7 +358,7 @@ authRouter.post(
       id: req.user.id,
       provider: req.user.provider,
     };
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+    const accessToken = jwt.sign(payload, config.jwtSecret, {
       algorithm: 'HS256',
       issuer: 'chocoBread',
     });
@@ -406,7 +407,7 @@ authRouter.get('/success', isLoggedIn, async (req, res, next) => {
     nick: user.nick,
     provider: user.provider,
   };
-  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+  const accessToken = jwt.sign(payload, config.jwtSecret, {
     algorithm: 'HS256',
     issuer: 'chocoBread',
   });
@@ -441,7 +442,7 @@ authRouter.get('/kakao/signout', verifyToken, async (req, res, next) => {
     };
     const qsBody = qs.stringify(body);
     const headers = {
-      'Authorization': process.env.KAKAO_ADMIN_KEY,
+      'Authorization': config.kakaoAdminKey,
       'Content-Type': 'application/x-www-form-urlencoded',
     };
     axios
@@ -478,11 +479,11 @@ authRouter.get('/naver/signout', async (req, res, next) => {
   try {
     console.log(req.query);
     const body = {
-      client_id: process.env.NAVER_CLIENT_ID,
-      client_secret: process.env.NAVER_CLIENT_SECRET,
+      client_id: config.naverClientId,
+      client_secret: config.NaverClientSecret,
       grant_type: 'authorization_code',
       code: req.query.code,
-      state: process.env.CSRF_TOKEN,
+      state: config.csrfToken,
     };
     const response = await axios.get(
       `https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=${body.client_id}&client_secret=${body.client_secret}&code=${body.code}&state=${body.state}`,
@@ -534,9 +535,9 @@ authRouter.get('/naver/reauth', async (req, res, next) => {
   try {
     const body = {
       response_type: `code`,
-      client_id: process.env.NAVER_CLIENT_ID,
+      client_id: config.naverClientId,
       redirect_uri: encodeURI('https://chocobread.shop/auth/naver/signout'),
-      state: process.env.CSRF_TOKEN,
+      state: config.csrfToken,
       auth_type: 'reauthenticate',
     };
     const headers = {
