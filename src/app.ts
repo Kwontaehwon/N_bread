@@ -22,7 +22,7 @@ const { eventRouter } = require('./routes/eventRouter');
 const { slackRouter } = require('./routes/slackRouter');
 const { priceRouter } = require('./routes/priceRouter');
 
-const { db } = require('./database/models');
+const { db } = require('./database/');
 const { passportIndex } = require('./config/passport');
 
 const { logger } = require('./config/winston');
