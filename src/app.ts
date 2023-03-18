@@ -12,7 +12,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./config/swagger/swagger.json');
 const admin = require('firebase-admin');
 let serviceAccount = require('./config/firebase-admin.json');
-const config = require('../src/config/');
+const config = require('./config');
 const { indexRouter } = require('./routes/indexRouter');
 const { dealRouter } = require('./routes/dealRouter');
 const { authRouter } = require('./routes/authRouter');
@@ -34,7 +34,7 @@ admin.initializeApp({
 });
 
 passportIndex();
-app.set('port', config.PORT || 5005);
+app.set('port', config.port || 5005);
 app.set('view engine', 'html');
 nunjucks.configure('views', {
   express: app,
@@ -53,12 +53,12 @@ app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser(config.COOKIE_SECRET));
+app.use(cookieParser(config.cookieSecret));
 app.use(
   session({
     resave: false,
     saveUninitialized: false,
-    secret: config.COOKIE_SECRET,
+    secret: config.cookieSecret,
     cookie: {
       httpOnly: true,
       secure: false,
@@ -115,14 +115,14 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   res.locals.message = err.message;
-  res.locals.error = config.NODE_ENV !== 'production' ? err : {};
+  res.locals.error = config.env !== 'production' ? err : {};
   logger.error(err);
   res
     .status(err.status || 500)
     .json({ message: err.message, error: res.locals.error });
 });
 
-if (config.NODE_ENV == 'production') {
+if (config.env == 'production') {
   const options = {
     ca: fs.readFileSync(
       '/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem',
