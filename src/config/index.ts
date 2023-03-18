@@ -1,5 +1,5 @@
 // import dotenv from "dotenv";
-const dotenv = require("dotenv");
+const dotenv = require('dotenv');
 
 const envFound = dotenv.config();
 
@@ -34,7 +34,8 @@ export default {
    * APPLE
    */
   appleClientId: process.env.APPLE_CLIENT_ID,
-  appleTeamId: process.env.APPLE_KEY_ID,
+  appleTeamId: process.env.APPLE_TEAM_ID,
+  appleKeyId: process.env.APPLE_KEY_ID,
 
   /**
    * S3
