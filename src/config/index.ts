@@ -7,7 +7,7 @@ if (envFound.error) {
   throw new Error(`⚠️  Couldn't find .env file  ⚠️`);
 }
 const env = process.env.NODE_ENV;
-const port = process.env.PORT as string;
+const port = process.env.PORT;
 
 /**
  * KAKAO
@@ -28,7 +28,7 @@ const NaverClientSecret = process.env.NAVER_CLIENT_SECRET;
 /**
  * APPLE
  */
-const appleClientId = process.env.APPLE_CLIENT_ID as string;
+const appleClientId = process.env.APPLE_CLIENT_ID;
 const appleTeamId = process.env.APPLE_TEAM_ID;
 const appleKeyId = process.env.APPLE_KEY_ID;
 
