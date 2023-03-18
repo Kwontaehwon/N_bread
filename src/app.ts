@@ -24,7 +24,7 @@ const eventRouter = require('./routes/event');
 const slackRouter = require('./routes/slack');
 const priceRouter = require('./routes/price');
 
-const { sequelize } = require('./database/models');
+const { db } = require('./database/models');
 const { passportIndex } = require('./config/passport');
 
 const logger = require('./config/winston');
@@ -42,8 +42,7 @@ nunjucks.configure('views', {
   express: app,
   watch: true,
 });
-sequelize
-  .sync({ force: false })
+db.sequelize.sync({ force: false })
   .then(() => {
     console.log('데이터베이스 연결 성공');
   })

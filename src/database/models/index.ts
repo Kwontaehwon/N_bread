@@ -1,30 +1,46 @@
 const Sequelize = require('sequelize');
 const env = process.env.NODE_ENV || 'development';
 const config = require('../../config/config.json')[env];
-const User = require('./user');
-const Deal = require('./deal');
-const Group = require('./group');
-const Comment = require('./comment');
-const Reply = require('./reply');
-const DealImage = require('./dealImage');
-const DealReport = require('./dealReport');
-const UserReport = require('./userReport');
-const Event = require('./event');
-const Price = require('./price');
+const { User } = require('./user');
+const { Deal } = require('./deal');
+const { Group } = require('./group');
+const { Comment } = require('./comment');
+const { Reply } = require('./reply');
+const { DealImage } = require('./dealImage');
+const { DealReport } = require('./dealReport');
+const { UserReport } = require('./userReport');
+const { Event } = require('./event');
+const { Price } = require('./price');
+type dbType = {
+  sequelize?: any;
+  Deal?: any;
+  User?: any;
+  Group?: any;
+  Comment?: any;
+  Reply?: any;
+  DealImage?: any;
+  DealReport?: any;
+  UserReport?: any;
+  Event?: any;
+  Price?: any;
+};
+const db: dbType = {};
 
-const db = {};
 const sequelize = new Sequelize(
-  config.database, config.username, config.password, config,
+  config.database,
+  config.username,
+  config.password,
+  config,
 );
 
 db.sequelize = sequelize;
 db.Deal = Deal;
 db.User = User;
 db.Group = Group;
-db.Comment=Comment;
+db.Comment = Comment;
 db.Reply = Reply;
-db.DealImage=DealImage;
-db.DealReport=DealReport;
+db.DealImage = DealImage;
+db.DealReport = DealReport;
 db.UserReport = UserReport;
 db.Event = Event;
 db.Price = Price;
@@ -48,7 +64,6 @@ Reply.associate(db);
 DealImage.associate(db);
 DealReport.associate(db);
 UserReport.associate(db);
-Event.associate(db);
 Price.associate(db);
 
-module.exports = db;
+export { db };
