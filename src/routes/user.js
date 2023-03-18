@@ -12,7 +12,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../database/models');
-const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick, checkUserNick, postReportUser, isSetNickname, putKakaoUserNick, getLocationByNaverMapsApi, setLocationByNaverMapsApi, deletelocation, addLocation} = require('../controllers/user');
+const { getUser, getMypageDeals, getNaverGeoLocation, getUserLocation, putUserNick, checkUserNick, postReportUser, isSetNickname, putKakaoUserNick, getLocationByNaverMapsApi, setLocationByNaverMapsApi, deletelocation, addLocation} = require('../controllers/userController');
 
 
 const router = express.Router();
