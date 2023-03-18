@@ -7,23 +7,24 @@ const options = {
   },
   host: 'localhost:5005',
   schemes: ['http'],
-  tags: [        // by default: empty Array
-  {
-    name: 'Users',         // Tag name
-    description: 'User에 대한 설명',  // Tag description
-  },
-  {
-    name: 'Deals',         // Tag name
-    description: 'Deals에 대한 설명',  // Tag description
-  },
-  {
-    name: 'Comments',         // Tag name
-    description: 'Comment에 대한 설명',  // Tag description
-  },
-  {
-    name: 'Auth',         // Tag name
-    description: 'Auth에 대한 설명',  // Tag description
-  },
+  tags: [
+    // by default: empty Array
+    {
+      name: 'Users', // Tag name
+      description: 'User에 대한 설명', // Tag description
+    },
+    {
+      name: 'Deals', // Tag name
+      description: 'Deals에 대한 설명', // Tag description
+    },
+    {
+      name: 'Comments', // Tag name
+      description: 'Comment에 대한 설명', // Tag description
+    },
+    {
+      name: 'Auth', // Tag name
+      description: 'Auth에 대한 설명', // Tag description
+    },
   ],
   securityDefinitions: {
     bearerAuth: {
