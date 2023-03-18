@@ -15,14 +15,14 @@ const admin = require('firebase-admin');
 let serviceAccount = require('./config/firebase-admin.json');
 
 dotenv.config();
-const indexRouter = require('./routes/index');
-const dealRouter = require('./routes/deals');
-const authRouter = require('./routes/auth');
-const userRouter = require('./routes/user');
-const commentRouter = require('./routes/comment');
-const eventRouter = require('./routes/event');
-const slackRouter = require('./routes/slack');
-const priceRouter = require('./routes/price');
+const { indexRouter } = require('./routes/indexRouter');
+const { dealRouter } = require('./routes/dealRouter');
+const { authRouter } = require('./routes/authRouter');
+const { userRouter } = require('./routes/userRouter');
+const { commentRouter } = require('./routes/commentRouter');
+const { eventRouter } = require('./routes/eventRouter');
+const { slackRouter } = require('./routes/slackRouter');
+const { priceRouter } = require('./routes/priceRouter');
 
 const { db } = require('./database/models');
 const { passportIndex } = require('./config/passport');
@@ -42,7 +42,8 @@ nunjucks.configure('views', {
   express: app,
   watch: true,
 });
-db.sequelize.sync({ force: false })
+db.sequelize
+  .sync({ force: false })
   .then(() => {
     console.log('데이터베이스 연결 성공');
   })
