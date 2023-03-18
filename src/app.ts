@@ -25,7 +25,7 @@ const { priceRouter } = require('./routes/priceRouter');
 const { db } = require('./database/models');
 const { passportIndex } = require('./config/passport');
 
-const logger = require('./config/winston');
+const { logger } = require('./config/winston');
 
 const app = express();
 

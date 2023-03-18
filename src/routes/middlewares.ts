@@ -1,4 +1,4 @@
-const logger = require('../config/winston');
+const { logger } = require('../config/winston');
 const jwt = require('jsonwebtoken');
 const { User } = require('../database/models');
 const config = require('../config');

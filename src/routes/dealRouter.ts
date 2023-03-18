@@ -23,7 +23,7 @@ const {
 } = require('../database/models');
 const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
 const { Op, Sequelize } = require('sequelize');
-const logger = require('../config/winston');
+const { logger } = require('../config/winston');
 const { timeLog } = require('console');
 const { link } = require('fs');
 

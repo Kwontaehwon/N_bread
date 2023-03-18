@@ -19,7 +19,7 @@ const { any, reject } = require('bluebird');
 const { response } = require('express');
 const { resolve } = require('path');
 const { Op, Sequelize } = require('sequelize');
-const logger = require('../config/winston');
+const { logger } = require('../config/winston');
 const admin = require('firebase-admin');
 
 const commentRouter = express.Router();

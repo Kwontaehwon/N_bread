@@ -8,7 +8,7 @@ const {
 const { Op, where } = require('sequelize');
 const CryptoJS = require('crypto-js');
 const axios = require('axios');
-const logger = require('../config/winston');
+const { logger } = require('../config/winston');
 const sequelize = require('../database/models');
 const requestIp = require('request-ip');
 const { env } = require('process');
