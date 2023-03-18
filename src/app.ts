@@ -1,33 +1,31 @@
-const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
-const passport = require("passport");
-const morgan = require("morgan");
-const session = require("express-session");
-const nunjucks = require("nunjucks");
-const dotenv = require("dotenv");
-const https = require("https");
-const fs = require("fs");
-const bodyParser = require("body-parser");
-const swaggerUi = require("swagger-ui-express");
-const swaggerFile = require("./config/swagger/swagger.json");
-const admin = require("firebase-admin");
-let serviceAccount = require("./config/firebase-admin.json");
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const passport = require('passport');
+const morgan = require('morgan');
+const session = require('express-session');
+const nunjucks = require('nunjucks');
+const https = require('https');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./config/swagger/swagger.json');
+const admin = require('firebase-admin');
+let serviceAccount = require('./config/firebase-admin.json');
+const config = require('./config');
+const { indexRouter } = require('./routes/indexRouter');
+const { dealRouter } = require('./routes/dealRouter');
+const { authRouter } = require('./routes/authRouter');
+const { userRouter } = require('./routes/userRouter');
+const { commentRouter } = require('./routes/commentRouter');
+const { eventRouter } = require('./routes/eventRouter');
+const { slackRouter } = require('./routes/slackRouter');
+const { priceRouter } = require('./routes/priceRouter');
 
-dotenv.config();
-const indexRouter = require("./routes/index");
-const dealRouter = require("./routes/deals");
-const authRouter = require("./routes/auth");
-const userRouter = require("./routes/user");
-const commentRouter = require("./routes/comment");
-const eventRouter = require("./routes/event");
-const slackRouter = require("./routes/slack");
-const priceRouter = require("./routes/price");
+const { db } = require('./database/models');
+const { passportIndex } = require('./config/passport');
 
-const { sequelize } = require("./database/models");
-const passportConfig = require("./config/passport");
-
-const logger = require("./config/winston");
+const { logger } = require('./config/winston');
 
 const app = express();
 
@@ -35,79 +33,79 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-passportConfig();
-app.set("port", process.env.PORT || 5005);
-app.set("view engine", "html");
-nunjucks.configure("views", {
+passportIndex();
+app.set('port', config.port || 5005);
+app.set('view engine', 'html');
+nunjucks.configure('views', {
   express: app,
   watch: true,
 });
-sequelize
+db.sequelize
   .sync({ force: false })
   .then(() => {
-    console.log("데이터베이스 연결 성공");
+    console.log('데이터베이스 연결 성공');
   })
   .catch((err) => {
     console.error(err);
   });
 
-app.use(morgan("dev"));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(morgan('dev'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(cookieParser(config.cookieSecret));
 app.use(
   session({
     resave: false,
     saveUninitialized: false,
-    secret: process.env.COOKIE_SECRET,
+    secret: config.cookieSecret,
     cookie: {
       httpOnly: true,
       secure: false,
     },
-  })
+  }),
 );
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/", indexRouter);
+app.use('/', indexRouter);
 app.use(
-  "/auth",
+  '/auth',
   // #swagger.tags = ['Auth']
-  authRouter
+  authRouter,
 );
 app.use(
   // #swagger.tags = ['Deals']
-  "/deals",
-  dealRouter
+  '/deals',
+  dealRouter,
 );
 app.use(
   // #swagger.tags = ['Users']
-  "/users",
-  userRouter
+  '/users',
+  userRouter,
 );
 app.use(
-  "/comments",
+  '/comments',
   // #swagger.tags = ['Comments']
-  commentRouter
+  commentRouter,
 );
 app.use(
-  "/events",
+  '/events',
   // #swagger.tags = ['Events']
-  eventRouter
+  eventRouter,
 );
 app.use(
-  "/slack",
+  '/slack',
   // #swagger.tags = ['Slack']
-  slackRouter
+  slackRouter,
 );
 app.use(
-  "/price",
+  '/price',
   // #swagger.tags = ['Slack']
-  priceRouter
+  priceRouter,
 );
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use((req, res, next) => {
   const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
@@ -117,28 +115,28 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   res.locals.message = err.message;
-  res.locals.error = process.env.NODE_ENV !== "production" ? err : {};
+  res.locals.error = config.env !== 'production' ? err : {};
   logger.error(err);
   res
     .status(err.status || 500)
     .json({ message: err.message, error: res.locals.error });
 });
 
-if (process.env.NODE_ENV == "production") {
+if (config.env == 'production') {
   const options = {
     ca: fs.readFileSync(
-      "/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem"
+      '/etc/letsencrypt/live/www.chocobread.shop/fullchain.pem',
     ),
     key: fs.readFileSync(
-      "/etc/letsencrypt/live/www.chocobread.shop/privkey.pem"
+      '/etc/letsencrypt/live/www.chocobread.shop/privkey.pem',
     ),
-    cert: fs.readFileSync("/etc/letsencrypt/live/www.chocobread.shop/cert.pem"),
+    cert: fs.readFileSync('/etc/letsencrypt/live/www.chocobread.shop/cert.pem'),
   };
-  https.createServer(options, app).listen(app.get("port"), () => {
-    logger.info(`HTTPS:${app.get("port")} 서버 시작`);
+  https.createServer(options, app).listen(app.get('port'), () => {
+    logger.info(`HTTPS:${app.get('port')} 서버 시작`);
   });
 } else {
-  app.listen(app.get("port"), "0.0.0.0", () => {
-    logger.info(`development HTTP:${app.get("port")} 서버 시작`);
+  app.listen(app.get('port'), '0.0.0.0', () => {
+    logger.info(`development HTTP:${app.get('port')} 서버 시작`);
   });
 }
