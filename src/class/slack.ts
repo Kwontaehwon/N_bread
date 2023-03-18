@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const axios = require('axios');
+const config = require('../config');
 // import axios from 'axios';
 // import * as _ from 'lodash';
 class Slack {
@@ -42,7 +43,7 @@ class Slack {
       }
 
       message.ts = Math.floor(Date.now() / 1000);
-      message.footer = `From 알림 서버 [${process.env.NODE_ENV}]`;
+      message.footer = `From 알림 서버 [${config.NODE_ENV}]`;
       data.attachments.push(message);
     }
 
