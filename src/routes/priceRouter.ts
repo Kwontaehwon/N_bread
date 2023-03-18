@@ -29,7 +29,7 @@ const { env } = require('process');
 var request = require('request');
 const { error } = require('console');
 
-const router = express.Router();
+const priceRouter = express.Router();
 
 function jsonResponse(res, code, message, isSuccess, result) {
   res.status(code).json({
@@ -40,10 +40,10 @@ function jsonResponse(res, code, message, isSuccess, result) {
   });
 }
 
-router.use(express.json());
+priceRouter.use(express.json());
 
 // POST price/:productName
-router.post('/:dealId', async (req, res) => {
+priceRouter.post('/:dealId', async (req, res) => {
   //python test
   const deal = await Deal.findOne({
     where: { id: req.params.dealId },
@@ -92,10 +92,10 @@ router.post('/:dealId', async (req, res) => {
       partial *= 1;
       unitPrice = particlePrice / partial;
     } else if (onePlus) {
-      numToDivide = 2;
+      let numToDivide = 2;
       unitPrice = totalPrice / numToDivide;
     } else if (twoPlus) {
-      numToDivide = 3;
+      let numToDivide = 3;
       unitPrice = totalPrice / numToDivide;
     }
     var priceToSave = unitPrice;
@@ -176,10 +176,10 @@ router.post('/:dealId', async (req, res) => {
             where: { dealId: req.params.dealId, mallName: { [Op.not]: 'N빵' } },
           });
           if (!existDeal) {
-            for (i = 0; i < item.length; i++) {
-              mobileLink = item[i]['link'].toString();
-              mob = mobileLink.split('id=');
-              processedTitle = item[i]['title'].toString();
+            for (let i = 0; i < item.length; i++) {
+              let mobileLink = item[i]['link'].toString();
+              let mob = mobileLink.split('id=');
+              let processedTitle = item[i]['title'].toString();
               console.log(processedTitle);
               processedTitle = processedTitle.replaceAll('<b>', '');
               console.log(processedTitle);
@@ -205,7 +205,7 @@ router.post('/:dealId', async (req, res) => {
             }
           }
 
-          for (i = 0; i < item.length; i++) {
+          for (let i = 0; i < item.length; i++) {
             item[i].lprice = item[i].lprice * 1 + 3000;
             jsonArray.push(item[i]);
           }
@@ -263,7 +263,7 @@ router.post('/:dealId', async (req, res) => {
   }
 });
 // GET price/:dealId
-router.get('/:dealId', async (req, res) => {
+priceRouter.get('/:dealId', async (req, res) => {
   console.log('가격비교 결과 조회 api 추출');
   var priceInfo = await Price.findAll({ where: { dealId: req.params.dealId } });
   console.log(priceInfo.length);
@@ -373,4 +373,5 @@ router.get('/:dealId', async (req, res) => {
     );
   }
 });
-module.exports = router;
+
+export { priceRouter };
