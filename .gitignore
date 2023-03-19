@@ -5,3 +5,4 @@ logs/
 /src/config/firebase-admin.json
 AuthKey_689F483NJ3.p8
 dist
+.vscode

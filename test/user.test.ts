@@ -1,19 +1,10 @@
-jest.mock('../models')
-const { getUser } = require('../controllers/user');
-const { User, Group, Deal, DealImage } = require('../models');
-
-function jsonResponse(res, code, message, isSuccess, result){
-    res.status(code).json({
-      code : code,
-      message : message,
-      isSuccess : isSuccess,
-      result : result
-    })
-}
+jest.mock('../src/database/models/user')
+import { getUser } from '../src/service/userService';
+import { User } from '../src/database/models/user';
 
 describe('getUser', () => {
     const req = {
-        params : {userId : 1}
+        params : {userId : +1}
     };
     const res = {
         status : jest.fn(() => res),

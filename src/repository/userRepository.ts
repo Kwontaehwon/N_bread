@@ -2,7 +2,7 @@ const { User } = require('../database/models');
 const { errorGenerator } = require('../modules/error/errorGenerator');
 const { responseMessage, statusCode } = require('../modules/constants');
 const findUserById = async (id: number) => {
-  await User.findOne({
+  return await User.findOne({
     where: { Id: id },
     paranoid: false,
   });
