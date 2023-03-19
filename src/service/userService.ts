@@ -27,7 +27,7 @@ const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
   try {
     const userId = req.params.userId;
-    const user = userRepository.findUserById(+userId);
+    const user = await userRepository.findUserById(+userId);
     if (!user) {
       return util.jsonResponse(
         res,
