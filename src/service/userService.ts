@@ -20,6 +20,8 @@ const { JsonWebTokenError } = require('jsonwebtoken');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { util } = require('../modules');
+const { success, fall } = require('../modules/util');
+const { responseMessage, statusCode } = require('../modules/constants');
 const { userRepository } = require('../repository');
 
 // GET users/:userId
@@ -396,50 +398,19 @@ const getUserLocation = async (req, res) => {
 const putUserNick = async (req, res, next) => {
   // #swagger.summary = '닉네임 변경'
   try {
+    const userId = req.params.userId;
     const { nick } = req.body;
-    const user = await User.findOne({ where: { Id: req.params.userId } });
-    if (!user) {
-      logger.info(`userId : ${req.params.userId}에 해당되는 유저가 없습니다.`);
-      return util.jsonResponse(
-        res,
-        404,
-        `userId : ${req.params.userId}에 해당되는 유저가 없습니다.`,
-        false,
-        null,
-      );
-    }
-    const isDuplicated = await User.findOne({ where: { nick: nick } });
-    if (isDuplicated) {
-      logger.info(`중복된 닉네임 (${nick})으로는 변경할 수 없습니다.`);
-      return util.jsonResponse(
-        res,
-        409,
-        `중복된 닉네임 (${nick})으로는 변경할 수 없습니다.`,
-        false,
-        null,
-      );
-    } else {
-      await user.update({
-        nick: nick,
-      });
-      const result = {
-        userId: user.id,
-        nick: user.nick,
-      };
-      logger.info(
-        `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
-      );
-      return util.jsonResponse(res, 200, `닉네임 변경 완료`, true, result);
-    }
-  } catch (error) {
-    console.log(error);
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      `[닉네임 변경] PUT users/:userId 서버 에러`,
-      false,
+    const result = await userRepository.putUserNick(userId, nick);
+    logger.info(
+      `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
     );
+    return res
+      .status(statusCode.OK)
+      .send(
+        success(statusCode.OK, responseMessage.NICKNAME_CHANGE_SUCESS, result),
+      );
+  } catch (error) {
+    next(error);
   }
 };
 
