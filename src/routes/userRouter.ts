@@ -13,7 +13,8 @@ const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../database/models');
 const { userService } = require('../service/');
-
+import { errorValidator } from '../modules/error/errorValidator';
+import { param } from 'express-validator';
 const userRouter = express.Router();
 
 userRouter.use(express.json());
@@ -34,7 +35,12 @@ userRouter.get('/location', verifyToken, userService.getUserLocation);
 userRouter.get('/:userId', userService.getUser);
 
 // 유저 닉네임 변경
-userRouter.put('/:userId', userService.putUserNick);
+userRouter.put(
+  '/:userId',
+  [param('userId').notEmpty()],
+  errorValidator,
+  userService.putUserNick,
+);
 
 //유저 닉네임 중복체크
 userRouter.get('/check/:userId/:nick', userService.checkUserNick); // 닉네임 중복체크를 하는데 userId가 필요한 이유는?
