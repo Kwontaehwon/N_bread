@@ -18,17 +18,8 @@ const { serveWithOptions } = require('swagger-ui-express');
 const { urlencoded } = require('body-parser');
 const { session } = require('passport');
 const { Slack } = require('../class/slack');
-
+const { util } = require('../modules/');
 const authRouter = express.Router();
-
-function jsonResponse(res, code, message, isSuccess, result?) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-    result: result,
-  });
-}
 
 function createClientSecret() {}
 
@@ -39,7 +30,7 @@ authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
     const exUser = await User.findOne({ where: { email } });
     const exNick = await User.findOne({ where: { nick } });
     if (exUser) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         409,
         '이미 존재하는 이메일 입니다.',
@@ -48,7 +39,7 @@ authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
       );
     }
     if (exNick) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         409,
         '이미 존재하는 닉네임 입니다.',
@@ -68,7 +59,7 @@ authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
     // axios.post(url).then(async (Response)=>{
     //   console.log(Response.data);
     // }).catch((err)=>console.log(err));
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       '로컬 회원가입에 성공하였습니다.',
@@ -77,7 +68,7 @@ authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
     );
   } catch (error) {
     console.error(error);
-    jsonResponse(res, 500, '[로컬 회원가입] POST /users/signup', false);
+    util.jsonResponse(res, 500, '[로컬 회원가입] POST /users/signup', false);
   }
 });
 
@@ -94,7 +85,12 @@ authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
       }
       if (!user) {
         logger.error(`로컬 로그인 실패 : ${info.message}`);
-        return jsonResponse(res, 400, `로컬 로그인 실패 ${info.message}`, info);
+        return util.jsonResponse(
+          res,
+          400,
+          `로컬 로그인 실패 ${info.message}`,
+          info,
+        );
       }
       return req.login(user, (loginError) => {
         if (loginError) {
@@ -112,7 +108,7 @@ authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
         });
         res.cookie('accessToken', accessToken);
         // return res.json("로그인 성공!");
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           200,
           '로컬 로그인에 성공하였습니다.',
@@ -128,7 +124,7 @@ authRouter.get('/logout', verifyToken, (req, res) => {
   // #swagger.summary = '로컬 로그아웃'
   req.logout();
   req.session.destroy();
-  return jsonResponse(res, 200, '로그아웃에 성공하였습니다.', true, null);
+  return util.jsonResponse(res, 200, '로그아웃에 성공하였습니다.', true, null);
 });
 
 authRouter.get(
@@ -185,7 +181,7 @@ authRouter.post('/kakaosdk/signup/', async (req, res, next) => {
         const getToken = await axios.get(url);
         console.log(getToken.data);
         console.log(getToken.data['result']['accessToken']);
-        jsonResponse(
+        util.jsonResponse(
           res,
           300,
           '[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.',
@@ -202,7 +198,7 @@ authRouter.post('/kakaosdk/signup/', async (req, res, next) => {
         });
       } catch (error) {
         logger.error(error);
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           500,
           '[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다.',
@@ -224,7 +220,7 @@ authRouter.post('/kakaosdk/signup/', async (req, res, next) => {
           logger.info(
             '이전에 회원가입을 완료한 회원입니다. 홈 화면으로 리다이렉트합니다.',
           );
-          return jsonResponse(
+          return util.jsonResponse(
             res,
             200,
             '[카카오SDK 회원가입] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.',
@@ -237,7 +233,7 @@ authRouter.post('/kakaosdk/signup/', async (req, res, next) => {
           logger.info(
             '회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.',
           );
-          return jsonResponse(
+          return util.jsonResponse(
             res,
             301,
             '[카카오SDK 회원가입] 회원가입을 완료하지 않은 유저입니다. 약관동의화면으로 리다이렉트합니다.',
@@ -247,7 +243,7 @@ authRouter.post('/kakaosdk/signup/', async (req, res, next) => {
         }
       } catch (error) {
         logger.error(error);
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           500,
           '[카카오SDK 회원가입] POST /auth/kakao/signIn jwt토큰 발급 중 에러가 발생하였습니다[기존sdk로그인유저].',
@@ -258,7 +254,7 @@ authRouter.post('/kakaosdk/signup/', async (req, res, next) => {
     }
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[카카오SDK 회원가입] POST /auth/kakao/signIn 서버 에러',
@@ -287,7 +283,7 @@ authRouter.get('/kakaosdk/createToken/:kakaoNumber', async (req, res, next) => {
       accessToken: accessToken,
     };
     console.log(accessToken);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       '[카카오 토큰 발급] 토큰 발급 성공',
@@ -295,7 +291,7 @@ authRouter.get('/kakaosdk/createToken/:kakaoNumber', async (req, res, next) => {
       token,
     );
   } catch (err) {
-    return jsonResponse(
+    return util.jsonResponse(
       err,
       500,
       '[카카오 토큰 발급] GET /kakaosdk/createToken/:kakaoNumber 서버 에러',
@@ -331,7 +327,7 @@ authRouter.get(
     });
     res.cookie('accessToken', accessToken);
     logger.info(`User Id ${req.user.id} 님이 네이버 로그인에 성공하였습니다.`);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       '네이버 로그인에 성공하였습니다.',
@@ -373,7 +369,7 @@ authRouter.post(
         title: '[회원가입]',
         text: `[apple] ${req.user.id}번 유저가 회원가입하였습니다.`,
       });
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         300,
         '[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.',
@@ -384,7 +380,7 @@ authRouter.post(
       logger.info(
         `[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         200,
         '[애플 로그인] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.',
@@ -423,7 +419,7 @@ authRouter.get('/error', (req, res, next) => {
   // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
   // #swagger.summary = '로그인 Error'
   logger.error('auth/error 로그인 문제');
-  return jsonResponse(
+  return util.jsonResponse(
     res,
     500,
     '정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)',
@@ -454,13 +450,13 @@ authRouter.get('/kakao/signout', verifyToken, async (req, res, next) => {
       .then((response) => {
         console.log(response);
         user.destroy().then(() => {
-          return jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
+          return util.jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
         });
       })
       .catch((error) => {
         logger.error(error);
         console.log(error);
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           400,
           `Kakao signout error :  ${error}`,
@@ -470,7 +466,7 @@ authRouter.get('/kakao/signout', verifyToken, async (req, res, next) => {
       });
   } catch (error) {
     logger.error(error);
-    return jsonResponse(res, 500, '서버 에러', false, null);
+    return util.jsonResponse(res, 500, '서버 에러', false, null);
   }
 });
 
@@ -504,7 +500,7 @@ authRouter.get('/naver/signout', async (req, res, next) => {
       logger.error(
         '가입되어 있지 않은 naver 사용자에 대한 탈퇴를 진행할 수 없습니다.',
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         400,
         '가입되어 있지 않은 naver 사용자에 대한 탈퇴를 진행할 수 없습니다.',
@@ -517,7 +513,7 @@ authRouter.get('/naver/signout', async (req, res, next) => {
     );
     console.log(deleteResponse);
     await user.destroy();
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       'Naver 회원탈퇴가 완료되었습니다.',
@@ -526,7 +522,7 @@ authRouter.get('/naver/signout', async (req, res, next) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(res, 500, '서버 에러', false, null);
+    return util.jsonResponse(res, 500, '서버 에러', false, null);
   }
 });
 
@@ -548,7 +544,7 @@ authRouter.get('/naver/reauth', async (req, res, next) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(res, 500, '서버 에러', false, null);
+    return util.jsonResponse(res, 500, '서버 에러', false, null);
   }
 });
 
@@ -594,13 +590,13 @@ authRouter.delete('/apple/signout', verifyToken, async (req, res, next) => {
     .post('https://appleid.apple.com/auth/revoke', qsData, { headers: headers })
     .then((response) => {
       user.destroy().then(() => {
-        return jsonResponse(res, 200, '애플 탈퇴완료', true, null);
+        return util.jsonResponse(res, 200, '애플 탈퇴완료', true, null);
       });
     })
     .catch((error) => {
       logger.error(error);
       console.log(error);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         400,
         `apple signout error :   ${error}`,
@@ -614,11 +610,11 @@ authRouter.get('/kakao/logout', async (req, res, next) => {
   // #swagger.summary = '카카오 웹뷰 로그아웃'
   try {
     res.status(200).send();
-    //return jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
+    //return util.jsonResponse(res, 200, '카카오 로그아웃 성공', true, null);
   } catch (error) {
     logger.error(error);
     res.status(500).send();
-    //return jsonResponse(res, 500, "서버 에러", false, null);
+    //return util.jsonResponse(res, 500, "서버 에러", false, null);
   }
 });
 
@@ -632,7 +628,7 @@ authRouter.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
       logger.info(
         '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
@@ -642,10 +638,10 @@ authRouter.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
     }
     await user.destroy();
     logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`);
-    return jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
+    return util.jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
   } catch (error) {
     logger.error('[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러' + error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러',

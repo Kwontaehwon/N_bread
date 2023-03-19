@@ -19,26 +19,17 @@ const { json } = require('body-parser');
 const { JsonWebTokenError } = require('jsonwebtoken');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-
-function jsonResponse(res, code, message, isSuccess, result?) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-    result: result,
-  });
-}
+const { util } = require('../modules');
+const { userRepository } = require('../repository');
 
 // GET users/:userId
 const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
   try {
-    const user = await User.findOne({
-      where: { Id: req.params.userId },
-      paranoid: false,
-    });
+    const userId = req.params.userId;
+    const user = userRepository.findUserById(+userId);
     if (!user) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         'userId에 해당되는 유저가 없습니다.',
@@ -60,10 +51,16 @@ const getUser = async (req, res, next) => {
     logger.info(
       `GET users/:userId | userId : ${req.params.userId} 의 유저 정보를 반환합니다.`,
     );
-    return jsonResponse(res, 200, 'userId의 정보를 반환합니다.', true, result); // #swagger.responses[200]
+    return util.jsonResponse(
+      res,
+      200,
+      'userId의 정보를 반환합니다.',
+      true,
+      result,
+    ); // #swagger.responses[200]
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[유저 정보 반환] GET users/:userId 서버 에러',
@@ -76,7 +73,7 @@ const getUser = async (req, res, next) => {
 const getMypageDeals = async (req, res, next) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
+    const user = userRepository.findUserById(+req.decoded.id);
     const refDeal = await Group.findAll({ where: { userId: req.decoded.id } });
     console.log('refDeal : ' + refDeal);
     if (refDeal.length === 0) {
@@ -84,7 +81,7 @@ const getMypageDeals = async (req, res, next) => {
       logger.info(
         `users/deals/:userId | userId : ${req.decoded.id}의 마이페이지에 [] 을 반환합니다.`,
       );
-      return jsonResponse(res, 200, '마이페이지 글 리스트', true, []);
+      return util.jsonResponse(res, 200, '마이페이지 글 리스트', true, []);
     } else {
       const [tmpres, metadata] = await sequelize.sequelize.query(
         `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
@@ -151,11 +148,11 @@ const getMypageDeals = async (req, res, next) => {
       logger.info(
         `users/deals/:userId | userId : ${req.params.userId}의 마이페이지에 글을 반환합니다.`,
       );
-      return jsonResponse(res, 200, '전체 글 리스트', true, deal);
+      return util.jsonResponse(res, 200, '전체 글 리스트', true, deal);
     }
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[마이페이지 거래내역] /users/deals/:userId 서버 에러',
@@ -172,7 +169,7 @@ const getNaverGeoLocation = async (req, res) => {
     const latitude = req.params.latitude;
     const user = await User.findOne({ where: { id: req.params.userId } });
     if (!user) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         'userId에 해당되는 유저가 없습니다.',
@@ -192,7 +189,7 @@ const getNaverGeoLocation = async (req, res) => {
       })
       .then(async (Response) => {
         if (Response.data['status']['code'] === 200) {
-          jsonResponse(
+          util.jsonResponse(
             res,
             401,
             'Naver ClientKey, Naver ClientSecretKey가 필요합니다.',
@@ -200,7 +197,7 @@ const getNaverGeoLocation = async (req, res) => {
             null,
           );
         } else if (Response.data['status']['code'] === 100) {
-          jsonResponse(
+          util.jsonResponse(
             res,
             400,
             '좌표가 유효하지 않습니다. 올바른 좌표를 넣어주세요.',
@@ -217,7 +214,7 @@ const getNaverGeoLocation = async (req, res) => {
             curLocation2: data['area2']['name'],
             curLocation3: data['area3']['name'],
           });
-          jsonResponse(
+          util.jsonResponse(
             res,
             200,
             `현재 위치 저장이 완료되었습니다. 현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${data['area3']['name']}입니다. `,
@@ -233,7 +230,7 @@ const getNaverGeoLocation = async (req, res) => {
       .catch((err) => {
         console.log('err : ' + err);
         logger.error(err);
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           500,
           '[Naver GeoLocation] users/location/:userId/:latitude/:longitude 내부 서버 에러',
@@ -244,7 +241,7 @@ const getNaverGeoLocation = async (req, res) => {
     //makeSignature();
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[Naver GeoLocation] users/location/:userId/:latitude/:longitude 서버 에러',
@@ -270,7 +267,7 @@ const getLocationByNaverMapsApi = async (req, res) => {
       })
       .then(async (Response) => {
         if (Response.data['status']['code'] === 200) {
-          jsonResponse(
+          util.jsonResponse(
             res,
             401,
             'Naver ClientKey, Naver ClientSecretKey가 필요합니다.',
@@ -278,7 +275,7 @@ const getLocationByNaverMapsApi = async (req, res) => {
             null,
           );
         } else if (Response.data['status']['code'] === 100) {
-          jsonResponse(
+          util.jsonResponse(
             res,
             400,
             '[getLocationByNaver] 좌표가 유효하지 않습니다. 올바른 좌표를 넣어주세요.',
@@ -288,7 +285,7 @@ const getLocationByNaverMapsApi = async (req, res) => {
         } else {
           const tmpdata = Response.data;
           const data = tmpdata['results'][0]['region'];
-          jsonResponse(
+          util.jsonResponse(
             res,
             200,
             `[getLocationByNaver]현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${data['area3']['name']}입니다. `,
@@ -304,7 +301,7 @@ const getLocationByNaverMapsApi = async (req, res) => {
       .catch((err) => {
         console.log('err : ' + err);
         logger.error(err);
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           500,
           '[getLocationByNaver] users/location/:latitude/:longitude 내부 서버 에러',
@@ -315,7 +312,7 @@ const getLocationByNaverMapsApi = async (req, res) => {
     //makeSignature();
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[getLocationByNaver] users/location/:latitude/:longitude 서버 에러',
@@ -329,7 +326,7 @@ const setLocationByNaverMapsApi = async (req, res) => {
   try {
     const user = await User.findOne({ where: { id: req.params.userId } });
     if (!user) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         '[setLocationByNaver] userId에 해당되는 유저가 없습니다.',
@@ -342,7 +339,7 @@ const setLocationByNaverMapsApi = async (req, res) => {
       curLocation2: req.params.loc2,
       curLocation3: req.params.loc3,
     });
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       `[setLocationByNaver] 유저${user.id}의 위치가 ${req.params.loc1} ${req.params.loc2} ${req.params.loc3}으로 저장되었습니다.`,
@@ -351,7 +348,7 @@ const setLocationByNaverMapsApi = async (req, res) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[setLocationByNaver] users/location/:userId/:loc1/:loc2/:loc3 서버 에러',
@@ -377,7 +374,7 @@ const getUserLocation = async (req, res) => {
     logger.info(
       `users/location | userId : ${req.decoded.id}의 현재 지역 : ${result.location} 을 반환합니다.`,
     );
-    jsonResponse(
+    util.jsonResponse(
       res,
       200,
       `현재 위치 : ${result.location} 을(를) DB에서 가져오는데 성공하였습니다`,
@@ -386,7 +383,7 @@ const getUserLocation = async (req, res) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[사용하지 않는 API] GET users/location 서버 에러',
@@ -403,7 +400,7 @@ const putUserNick = async (req, res, next) => {
     const user = await User.findOne({ where: { Id: req.params.userId } });
     if (!user) {
       logger.info(`userId : ${req.params.userId}에 해당되는 유저가 없습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `userId : ${req.params.userId}에 해당되는 유저가 없습니다.`,
@@ -414,7 +411,7 @@ const putUserNick = async (req, res, next) => {
     const isDuplicated = await User.findOne({ where: { nick: nick } });
     if (isDuplicated) {
       logger.info(`중복된 닉네임 (${nick})으로는 변경할 수 없습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         409,
         `중복된 닉네임 (${nick})으로는 변경할 수 없습니다.`,
@@ -432,12 +429,12 @@ const putUserNick = async (req, res, next) => {
       logger.info(
         `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
       );
-      return jsonResponse(res, 200, `닉네임 변경 완료`, true, result);
+      return util.jsonResponse(res, 200, `닉네임 변경 완료`, true, result);
     }
   } catch (error) {
     console.log(error);
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       `[닉네임 변경] PUT users/:userId 서버 에러`,
@@ -453,7 +450,7 @@ const checkUserNick = async (req, res, next) => {
     const user = await User.findOne({ where: { Id: req.params.userId } });
     if (!user) {
       logger.info(`userId : ${req.params.userId}에 해당되는 유저가 없습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `userId : ${req.params.userId}에 해당되는 유저가 없습니다.`,
@@ -464,7 +461,7 @@ const checkUserNick = async (req, res, next) => {
     const isDuplicated = await User.findOne({ where: { nick: nick } });
     if (isDuplicated) {
       logger.info(`중복된 닉네임 (${nick})이 이미 존재합니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         409,
         `중복된 닉네임 (${nick})이 이미 존재합니다.`,
@@ -472,7 +469,7 @@ const checkUserNick = async (req, res, next) => {
         null,
       );
     } else {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         200,
         `(${nick})은 사용가능한 닉네임입니다.`,
@@ -483,7 +480,7 @@ const checkUserNick = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       `[닉네임 중복 체크] /check/:userId/:nick 서버 에러`,
@@ -498,7 +495,7 @@ const postReportUser = async (req, res, next) => {
     const { title, content } = req.body;
     if (title === undefined || content === undefined) {
       logger.info(`Body에 빠진 정보가 있습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         400,
         `req.body에 빠진 정보가 있습니다`,
@@ -507,7 +504,7 @@ const postReportUser = async (req, res, next) => {
       );
     }
     if (req.params.userId == ':userId') {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `parameter :userId가 필요합니다.`,
@@ -522,7 +519,7 @@ const postReportUser = async (req, res, next) => {
 
     if (!reporter) {
       logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`,
@@ -534,7 +531,7 @@ const postReportUser = async (req, res, next) => {
       logger.info(
         `userId : ${req.params.userId} 에 해당되는 유저가 없어 신고할 수 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `userId : ${req.params.userId} 에 유저가 없어 신고할 수 없습니다.`,
@@ -546,7 +543,7 @@ const postReportUser = async (req, res, next) => {
       logger.info(
         `userId : ${req.decoded.id} 자기 자신을 신고 할 수 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         403,
         `userId : ${req.decoded.id} 자기 자신을 신고 할 수 없습니다.`,
@@ -563,7 +560,7 @@ const postReportUser = async (req, res, next) => {
     logger.info(
       `${req.params.userId} 님이 userId : ${req.params.userId}을 신고 하였습니다.`,
     );
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       `${req.params.userId} 님이 userId : ${req.params.userId}을 신고 하였습니다.`,
@@ -572,7 +569,7 @@ const postReportUser = async (req, res, next) => {
     );
   } catch (error) {
     console.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[유저신고] /report/:userId 서버 에러',
@@ -590,7 +587,7 @@ const isSetNickname = async (req, res, next) => {
       paranoid: false,
     });
     if (!user) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         'userId에 해당되는 유저가 없습니다.',
@@ -601,7 +598,7 @@ const isSetNickname = async (req, res, next) => {
       logger.info(
         `GET users/check/:userId | userId : ${req.params.userId} 는 탈퇴한 회원입니다.`,
       );
-      return jsonResponse(res, 404, '탈퇴한 유저입니다.', false, null); // #swagger.responses[404]
+      return util.jsonResponse(res, 404, '탈퇴한 유저입니다.', false, null); // #swagger.responses[404]
     } else {
       const result = {
         nick: user.nick,
@@ -614,7 +611,7 @@ const isSetNickname = async (req, res, next) => {
           `GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료한 회원입니다.`,
         );
         result.setNickname = true;
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           200,
           `[회원가입 완료 여부]${req.params.userId} 는 회원가입을 완료한 회원입니다. 홈 화면으로 리다이렉트합니다.`,
@@ -625,7 +622,7 @@ const isSetNickname = async (req, res, next) => {
         logger.info(
           `GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다.`,
         );
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           300,
           `[회원가입 완료 여부]${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다. 약관동의 화면으로 리다이렉트합니다.`,
@@ -636,7 +633,7 @@ const isSetNickname = async (req, res, next) => {
     }
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[회원가입 완료 여부] GET users/check/:userId 서버 에러',
@@ -656,7 +653,7 @@ const deletelocation = async (req, res, next) => {
       logger.info(
         `DELETE users/location/:dong | userId : ${decodedValue.id}는 회원이 아닙니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         '[동 삭제 api] userId에 해당되는 유저가 없습니다.',
@@ -674,7 +671,7 @@ const deletelocation = async (req, res, next) => {
       logger.info(
         `DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         200,
         '[동 삭제 api] 동네 삭제에 성공하였습니다.',
@@ -686,7 +683,7 @@ const deletelocation = async (req, res, next) => {
         logger.info(
           `DELETE users/location/:dong | userId : ${decodedValue.id}에서 동네가 하나만 있습니다.`,
         );
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           405,
           '[동 삭제 api] 동네가 하나만 있을 경우 지울 수 없습니다.',
@@ -707,7 +704,7 @@ const deletelocation = async (req, res, next) => {
       logger.info(
         `DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         200,
         '[동 삭제 api] 동네 삭제에 성공하였습니다.',
@@ -718,7 +715,7 @@ const deletelocation = async (req, res, next) => {
       logger.info(
         `DELETE users/location/:dong | userId : ${decodedValue.id}에서 일치하는 동네가 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         '[동 삭제 api] 일치하는 동네가 없습니다.',
@@ -728,7 +725,7 @@ const deletelocation = async (req, res, next) => {
     }
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[동 삭제] DELETE users/location/:dong 서버 에러',
@@ -749,7 +746,7 @@ const addLocation = async (req, res, next) => {
       logger.info(
         `POST users/location | userId : ${decodedValue.id}는 회원이 아닙니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         '[동 추가 api] userId에 해당되는 유저가 없습니다.',
@@ -765,7 +762,7 @@ const addLocation = async (req, res, next) => {
     logger.info(
       `POST users/location | userId : ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
     );
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       `[동 추가 api] ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
@@ -774,7 +771,7 @@ const addLocation = async (req, res, next) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[동 추가] POST users/location 서버 에러',

@@ -21,17 +21,8 @@ const { resolve } = require('path');
 const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../config/winston');
 const admin = require('firebase-admin');
-
+const { util } = require('../modules/');
 const commentRouter = express.Router();
-
-function jsonResponse(res, code, message, isSuccess, result?) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-    result: result,
-  });
-}
 
 commentRouter.use(express.json());
 
@@ -68,9 +59,9 @@ commentRouter.post('/:dealId', verifyToken, async (req, res) => {
         });
       }
     }
-    jsonResponse(res, 200, '댓글 작성에 성공하였습니다.', true, comment);
+    util.jsonResponse(res, 200, '댓글 작성에 성공하였습니다.', true, comment);
   } catch (err) {
-    jsonResponse(
+    util.jsonResponse(
       res,
       500,
       '[댓글 생성] POST comments/:dealId 서버 에러',
@@ -86,7 +77,7 @@ commentRouter.post('/reply/:dealId', verifyToken, async (req, res) => {
     const user = await User.findOne({ where: { id: req.decoded.id } });
     //const comment = await Comment.findOne({ where: { dealId: req.params.dealId } });
     if (user == null) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `userId ${req.decoded.id} 에 해당하는 유저를 찾을 수 없습니다. `,
@@ -129,9 +120,9 @@ commentRouter.post('/reply/:dealId', verifyToken, async (req, res) => {
         },
       });
     }
-    jsonResponse(res, 200, '답글 작성에 성공하였습니다.', true, reply);
+    util.jsonResponse(res, 200, '답글 작성에 성공하였습니다.', true, reply);
   } catch (err) {
-    jsonResponse(
+    util.jsonResponse(
       res,
       500,
       '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
@@ -162,19 +153,19 @@ commentRouter.delete('/:commentId', verifyToken, async (req, res) => {
       },
     });
     if (comment === null) {
-      jsonResponse(res, 404, '해당 댓글을 찾을 수 없습니다.', false);
+      util.jsonResponse(res, 404, '해당 댓글을 찾을 수 없습니다.', false);
       res.end();
     } else {
       if (comment.userId === user.id) {
         try {
           await comment.destroy();
-          jsonResponse(res, 200, '삭제가 완료되었습니다.', false);
+          util.jsonResponse(res, 200, '삭제가 완료되었습니다.', false);
         } catch (err) {
-          jsonResponse(res, 404, err, false);
+          util.jsonResponse(res, 404, err, false);
           console.log(err);
         }
       } else {
-        jsonResponse(
+        util.jsonResponse(
           res,
           403,
           '댓글의 작성자만 댓글을 삭제할 수 있습니다.',
@@ -184,7 +175,7 @@ commentRouter.delete('/:commentId', verifyToken, async (req, res) => {
       }
     }
   } catch (error) {
-    jsonResponse(
+    util.jsonResponse(
       res,
       500,
       '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
@@ -202,20 +193,20 @@ commentRouter.delete('/reply/:replyId', verifyToken, async (req, res) => {
       where: { id: parseInt(req.params.replyId), deletedAt: { [Op.eq]: null } },
     });
     if (reply === null) {
-      jsonResponse(res, 404, '이미 삭제된 답글입니다.', false);
+      util.jsonResponse(res, 404, '이미 삭제된 답글입니다.', false);
       0;
       res.end();
     } else {
       if (reply.userId === user.id) {
         try {
           await reply.destroy();
-          jsonResponse(res, 200, '삭제에 성공하였습니다.', true);
+          util.jsonResponse(res, 200, '삭제에 성공하였습니다.', true);
         } catch (err) {
-          jsonResponse(res, 404, err, false);
+          util.jsonResponse(res, 404, err, false);
           console.log(err);
         }
       } else {
-        jsonResponse(
+        util.jsonResponse(
           res,
           403,
           '답글의 생성자만 답글을 삭제할 수 있습니다.',
@@ -226,7 +217,7 @@ commentRouter.delete('/reply/:replyId', verifyToken, async (req, res) => {
     }
   } catch (error) {
     logger.error('[대댓글 삭제] POST /comments/reply/:replyId 서버 에러');
-    jsonResponse(
+    util.jsonResponse(
       res,
       500,
       '[대댓글 삭제] POST /comments/reply/:replyId 서버 에러',
@@ -246,16 +237,16 @@ commentRouter.put('/:commentId', verifyToken, async (req, res) => {
       },
     });
     if (comment === null) {
-      jsonResponse(res, 403, '댓글이 존재하지 않습니다.', false);
+      util.jsonResponse(res, 403, '댓글이 존재하지 않습니다.', false);
       res.end();
     } else {
       if (comment.userId === user.id) {
         await comment.update({
           content: req.body.content,
         });
-        jsonResponse(res, 200, '댓글 수정에 성공하였습니다.', {});
+        util.jsonResponse(res, 200, '댓글 수정에 성공하였습니다.', {});
       } else {
-        jsonResponse(
+        util.jsonResponse(
           res,
           403,
           '댓글 작성자만 댓글을 수정할 수 있습니다.',
@@ -266,7 +257,7 @@ commentRouter.put('/:commentId', verifyToken, async (req, res) => {
     }
   } catch (error) {
     logger.error('[대댓글 생성] POST /comments/reply/:dealId 서버 에러');
-    jsonResponse(
+    util.jsonResponse(
       res,
       500,
       '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
@@ -283,16 +274,16 @@ commentRouter.put('/reply/:replyId', verifyToken, async (req, res) => {
       where: { id: parseInt(req.params.replyId) },
     });
     if (reply === null) {
-      jsonResponse(res, 404, '답글이 존재하지 않습니다.', false);
+      util.jsonResponse(res, 404, '답글이 존재하지 않습니다.', false);
       res.end();
     } else {
       if (reply.userId === user.id) {
         await reply.update({
           content: req.body.content,
         });
-        jsonResponse(res, 200, '답글 수정이 완료되었습니다.', {});
+        util.jsonResponse(res, 200, '답글 수정이 완료되었습니다.', {});
       } else {
-        jsonResponse(
+        util.jsonResponse(
           res,
           403,
           '작성자만 답글을 수정할 수 있습니다.',
@@ -303,7 +294,7 @@ commentRouter.put('/reply/:replyId', verifyToken, async (req, res) => {
     }
   } catch (error) {
     logger.error('[대댓글 생성] POST /comments/reply/:dealId 서버 에러');
-    jsonResponse(
+    util.jsonResponse(
       res,
       500,
       '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
@@ -386,10 +377,15 @@ commentRouter.get('/:dealId', async (req, res) => {
       }
     }
     const result = { suggest: suggest, group: group, comments: comments };
-    jsonResponse(res, 200, 'get comments', true, result);
+    util.jsonResponse(res, 200, 'get comments', true, result);
   } catch (error) {
     logger.error('[거래 댓글 조회] GET /comments/:dealId');
-    jsonResponse(res, 500, '[거래 댓글 조회] GET /comments/:dealId', false);
+    util.jsonResponse(
+      res,
+      500,
+      '[거래 댓글 조회] GET /comments/:dealId',
+      false,
+    );
   }
 });
 

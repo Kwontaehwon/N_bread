@@ -1,3 +1,5 @@
+import { dealImageUpload } from '../middlewares/upload';
+
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -5,12 +7,10 @@ const url = require('url');
 const axios = require('axios');
 const passport = require('passport');
 const schedule = require('node-schedule');
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const AWS = require('aws-sdk');
 const admin = require('firebase-admin');
 const { Slack } = require('../class/slack');
 const config = require('../config');
+const { upload } = require('../middlewares/upload');
 
 const {
   User,
@@ -26,45 +26,8 @@ const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../config/winston');
 const { timeLog } = require('console');
 const { link } = require('fs');
-
+const { util } = require('../modules');
 const dealRouter = express.Router();
-
-function jsonResponse(res, code, message, isSuccess, result?) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-    result: result,
-  });
-}
-
-AWS.config.update({
-  region: 'ap-northeast-2',
-  accessKeyId: config.s3AccessKeyID,
-  secretAccessKey: config.s3SecretAccessKey,
-});
-
-const s3 = new AWS.S3();
-
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: 'nbreadimg',
-    key: async (req, file, cb) => {
-      const dealImages = await DealImage.findAll({
-        where: { dealId: req.params.dealId },
-      });
-      console.log(dealImages);
-      if (dealImages.length > 0) {
-        for (let dealImage of dealImages) {
-          await dealImage.destroy(); // 그냥 삭제하는 것이 맞는가? 거래 수정됬을 때 어떻게 수정하면 좋을까?
-        }
-      }
-      cb(null, `original/${Date.now()}_${file.originalname}`);
-    },
-  }),
-  limits: { fileSize: 100 * 1024 * 1024 }, // 이미지 최대 size 5MB
-});
 
 dealRouter.post('/:dealId/img/coupang', async (req, res) => {
   // #swagger.summary = '쿠팡 썸네일 이미지 업로드'
@@ -75,7 +38,7 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
       logger.info(
         `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang 에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         400,
         `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang 에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
@@ -87,7 +50,7 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
       logger.info(
         `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
@@ -101,7 +64,7 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
     logger.info(
       `dealId : ${dealId}에 dealImageId : ${coupangImage.id} 가 생성되었습니다.`,
     );
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       `dealId : ${dealId}에 쿠팡 썸네일 이미지가 생성되었습니다.`,
@@ -112,7 +75,7 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
     logger.error(
       `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang ${error}`,
     );
-    jsonResponse(
+    util.jsonResponse(
       res,
       500,
       '[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang',
@@ -121,64 +84,73 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
   }
 });
 
-dealRouter.post('/:dealId/img', upload.array('img'), async (req, res) => {
-  // #swagger.summary = 'S3 이미지(Array) 업로드'
-  try {
-    const dealId = parseInt(req.params.dealId);
-    if (Number.isNaN(dealId)) {
-      logger.info(
-        `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-      );
-      return jsonResponse(
-        res,
-        400,
-        `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-        false,
-      );
-    }
-    const targetDeal = await Deal.findOne({ where: { id: dealId } });
-    if (targetDeal === null) {
-      logger.info(
-        `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-      );
-      return jsonResponse(
-        res,
-        404,
-        `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-        false,
-      );
-    }
-    const result = [];
-    for (let i of req.files) {
-      console.log(i);
-      const originalUrl = i.location;
-      // const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
-      result.push(originalUrl);
-    }
-    if (result.length > 0) {
-      for (let url of result) {
-        console.log(url);
-        const tmpImage = await DealImage.create({
-          dealImage: url,
-          dealId: dealId,
-        });
+dealRouter.post(
+  '/:dealId/img',
+  dealImageUpload.array('img'),
+  async (req, res) => {
+    // #swagger.summary = 'S3 이미지(Array) 업로드'
+    try {
+      const dealId = parseInt(req.params.dealId);
+      if (Number.isNaN(dealId)) {
         logger.info(
-          `dealId : ${dealId}에 dealImageId : ${tmpImage.id} 가 생성되었습니다.`,
+          `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
+        );
+        return util.jsonResponse(
+          res,
+          400,
+          `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
+          false,
         );
       }
+      const targetDeal = await Deal.findOne({ where: { id: dealId } });
+      if (targetDeal === null) {
+        logger.info(
+          `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
+        );
+        return util.jsonResponse(
+          res,
+          404,
+          `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
+          false,
+        );
+      }
+      const result = [];
+      for (let i of req.files) {
+        console.log(i);
+        const originalUrl = i.location;
+        // const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
+        result.push(originalUrl);
+      }
+      if (result.length > 0) {
+        for (let url of result) {
+          console.log(url);
+          const tmpImage = await DealImage.create({
+            dealImage: url,
+            dealId: dealId,
+          });
+          logger.info(
+            `dealId : ${dealId}에 dealImageId : ${tmpImage.id} 가 생성되었습니다.`,
+          );
+        }
+      }
+      return util.jsonResponse(
+        res,
+        200,
+        `dealId : ${dealId}에 ${result.length}개의 이미지가 생성되었습니다.`,
+        true,
+        `${result}`,
+      );
+    } catch (error) {
+      logger.error(`[거래 이미지 생성] POST /deals/:dealId/img ${error}`);
+      util.jsonResponse(
+        res,
+        500,
+        '[거래 이미지 생성] POST /deals/:dealId/img',
+        false,
+      );
     }
-    return jsonResponse(
-      res,
-      200,
-      `dealId : ${dealId}에 ${result.length}개의 이미지가 생성되었습니다.`,
-      true,
-      `${result}`,
-    );
-  } catch (error) {
-    logger.error(`[거래 이미지 생성] POST /deals/:dealId/img ${error}`);
-    jsonResponse(res, 500, '[거래 이미지 생성] POST /deals/:dealId/img', false);
-  }
-});
+  },
+);
 
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
 // offset, limit 적용 방안 생각해야됨.
@@ -310,10 +282,15 @@ dealRouter.get('/all/:range/:region', verifyToken, async (req, res, next) => {
       }
     }
     var testres = { capsule: allDeal };
-    return jsonResponse(res, 200, '전체 글 리스트', true, testres);
+    return util.jsonResponse(res, 200, '전체 글 리스트', true, testres);
   } catch (error) {
     logger.error(`[홈 전체 글 리스트] GET /deals/all/:region ${error}`);
-    jsonResponse(res, 500, `[홈 전체 글 리스트] GET /deals/all/:region`, false);
+    util.jsonResponse(
+      res,
+      500,
+      `[홈 전체 글 리스트] GET /deals/all/:region`,
+      false,
+    );
   }
 });
 
@@ -588,10 +565,15 @@ dealRouter.get('/all/:region', verifyToken, async (req, res, next) => {
       }
     }
     var testres = { capsule: allDeal };
-    return jsonResponse(res, 200, '전체 글 리스트', true, testres);
+    return util.jsonResponse(res, 200, '전체 글 리스트', true, testres);
   } catch (error) {
     logger.error(`${error}  [홈 전체 글 리스트] GET /deals/all/:region`);
-    jsonResponse(res, 500, '[홈 전체 글 리스트] GET /deals/all/:region', false);
+    util.jsonResponse(
+      res,
+      500,
+      '[홈 전체 글 리스트] GET /deals/all/:region',
+      false,
+    );
   }
 });
 
@@ -616,7 +598,7 @@ dealRouter.post('/create', verifyToken, async (req, res, next) => {
     const user = await User.findOne({ where: { Id: req.decoded.id } });
     if (!user) {
       logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`,
@@ -671,10 +653,10 @@ dealRouter.post('/create', verifyToken, async (req, res, next) => {
     // }
     // );
     logger.info(`dealId : ${deal.id} 거래가 생성되었습니다.`);
-    return jsonResponse(res, 200, '거래가 생성되었습니다', true, deal);
+    return util.jsonResponse(res, 200, '거래가 생성되었습니다', true, deal);
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[거래 생성] POST /deals/create 서버 에러',
@@ -703,7 +685,7 @@ dealRouter.get('/:dealId', verifyToken, async (req, res, next) => {
       logger.info(
         `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`,
@@ -754,7 +736,7 @@ dealRouter.get('/:dealId', verifyToken, async (req, res, next) => {
       }
     }
     logger.info(`dealId : ${req.params.dealId} 에 대한 거래정보를 반환합니다.`);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       `dealId ${deal.id} 의 거래 정보`,
@@ -763,7 +745,7 @@ dealRouter.get('/:dealId', verifyToken, async (req, res, next) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[거래 세부정보] GET /deals/:dealId 서버 에러',
@@ -793,7 +775,7 @@ dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
       logger.info(
         `dealId : ${req.params.dealId}에 매칭되는 거래를 찾을 수 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`,
@@ -805,7 +787,7 @@ dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
       logger.info(
         `userId : ${req.decoded.id}는 거래를 수정할 권한이 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         403,
         `글의 작성자만 거래를 수정할 수 있습니다.`,
@@ -818,7 +800,7 @@ dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
       logger.info(
         `참여자가 ${groups.length - 1}명 있으므로 거래를 수정 할 수 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         400,
         `참여자가 ${groups.length - 1}명 있으므로 거래를 수정 할 수 없습니다.`,
@@ -839,7 +821,7 @@ dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
       userId: req.params.userId,
     });
     logger.info(`${deal.id} 의 거래를 수정하였습니다.`);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       deal.id + `의 거래를 수정하였습니다.`,
@@ -848,7 +830,7 @@ dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[거래 수정] PUT deals/:dealId 서버 에러',
@@ -864,7 +846,7 @@ dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
   try {
     const deal = await Deal.findOne({ where: { id: req.params.dealId } });
     if (!deal) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         'dealId에 매칭되는 deal를 찾을 수 없습니다.',
@@ -873,7 +855,7 @@ dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
       );
     }
     if (deal.userId != req.decoded.id) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         403,
         '글의 작성자만 거래를 삭제할 수 있습니다.',
@@ -883,7 +865,7 @@ dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
     }
     const groups = await Group.findAll({ where: { dealId: deal.id } });
     if (groups.length > 1) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         400,
         '참여자가 있으므로 거래를 삭제할 수 없습니다.',
@@ -898,7 +880,7 @@ dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
     const reply = Reply.findAll({ where: { dealId: req.params.dealId } });
     console.log(reply);
     //reply.update({isDeleted:1});
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       '정상적으로 거래를 삭제하였습니다.',
@@ -907,7 +889,7 @@ dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
     );
   } catch (error) {
     logger.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[거래 삭제] Delete /deals/:dealId 서버 에러',
@@ -930,7 +912,7 @@ dealRouter.post(
         where: { userId: req.params.userId, dealId: req.params.dealId },
       });
       if (!user) {
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           404,
           `userId : ${req.params.userId} 에 해당되는 유저가 없습니다.`,
@@ -939,7 +921,7 @@ dealRouter.post(
         );
       }
       if (!deal) {
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           404,
           `dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`,
@@ -948,7 +930,7 @@ dealRouter.post(
         );
       }
       if (isJoin) {
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           403,
           `userId : ${req.params.userId} 는 이미 거래에 참여했습니다.`,
@@ -958,7 +940,7 @@ dealRouter.post(
       }
       const expireDate = deal.dealDate.setDate(deal.dealDate.getDate());
       if (expireDate < Date.now()) {
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           401,
           `거래 모집 시간이 지났습니다.`,
@@ -969,7 +951,7 @@ dealRouter.post(
       const stock = deal.totalMember - deal.currentMember;
       if (stock <= 0) {
         logger.log(stock);
-        return jsonResponse(
+        return util.jsonResponse(
           res,
           400,
           `구매 가능한 수량 ${stock} 내의 수를 입력해야 합니다.`,
@@ -1007,13 +989,13 @@ dealRouter.post(
         await admin.messaging().subscribeToTopic(fcmToken, fcmTopicName);
       }
 
-      return jsonResponse(res, 200, `거래 참여가 완료되었습니다.`, true, {
+      return util.jsonResponse(res, 200, `거래 참여가 완료되었습니다.`, true, {
         deal: deal,
         group: group,
       });
     } catch (error) {
       logger.error(error);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         500,
         `[거래 참여] deals/:dealId/join/:userId 서버 에러`,
@@ -1030,7 +1012,7 @@ dealRouter.get('/:dealId/users/:userId', async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { Id: req.params.userId } });
     if (!user) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         'userId에 해당되는 유저를 찾을 수 없습니다.',
@@ -1064,7 +1046,7 @@ dealRouter.get('/:dealId/users/:userId', async (req, res, next) => {
       userId: req.params.userId,
       dealId: req.params.dealId,
     };
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       '거래에 대한 상태를 반환합니다.',
@@ -1073,7 +1055,7 @@ dealRouter.get('/:dealId/users/:userId', async (req, res, next) => {
     );
   } catch (error) {
     logger.log(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[거래 유저 상태] GET deals/:dealId/users/:userId 서버 에러',
@@ -1088,7 +1070,7 @@ dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
   try {
     const { title, content } = req.body;
     if (req.params.dealId == ':dealId') {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `parameter :dealId가 필요합니다.`,
@@ -1101,7 +1083,7 @@ dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
 
     if (!user) {
       logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`,
@@ -1111,7 +1093,7 @@ dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
     }
     if (!deal) {
       logger.info(`dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`);
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         `dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`,
@@ -1123,7 +1105,7 @@ dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
       logger.info(
         `userId : ${req.decoded.id} 자신이 작성한 글을 신고 할 수 없습니다.`,
       );
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         403,
         `userId : ${req.decoded.id} 자신이 작성한 글을 신고 할 수 없습니다.`,
@@ -1140,7 +1122,7 @@ dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
     logger.info(
       `${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`,
     );
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       `${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`,
@@ -1149,7 +1131,7 @@ dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
     );
   } catch (error) {
     console.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[거래 신고] deals/:dealId/report 서버 에러',
@@ -1165,7 +1147,7 @@ dealRouter.post('/:dealId/endRecruit', verifyToken, async (req, res, next) => {
   try {
     const deal = await Deal.findOne({ where: { id: req.params.dealId } });
     if (!deal) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         404,
         'dealId에 매칭되는 거래를 찾을 수 없습니다.',
@@ -1174,7 +1156,7 @@ dealRouter.post('/:dealId/endRecruit', verifyToken, async (req, res, next) => {
       );
     }
     if (deal.userId != req.decoded.id) {
-      return jsonResponse(
+      return util.jsonResponse(
         res,
         403,
         '글의 작성자만 모집을 마감 할 수 있습니다.',
@@ -1185,7 +1167,7 @@ dealRouter.post('/:dealId/endRecruit', verifyToken, async (req, res, next) => {
     deal.update({ where: { isRecruitDone: true } });
     const groups = await Group.findAll({ where: { dealId: deal.id } });
     const result = { deal: deal, groups: groups };
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       '모집이 정상적으로 마감되었습니다.',
@@ -1194,7 +1176,7 @@ dealRouter.post('/:dealId/endRecruit', verifyToken, async (req, res, next) => {
     );
   } catch (error) {
     console.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[모집 마감 - 삭제됨] POST /deals/:dealId/endRecruit 서버 에러',
@@ -1221,7 +1203,7 @@ dealRouter.post('/admin/fillLocation', async (req, res, next) => {
       await curDeal.update({ loc2: user.curLocation2 });
       await curDeal.update({ loc3: user.curLocation3 });
     }
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       200,
       '[관리자용 api] POST /admin/fillLocation 가 성공적으로 수행되었습니다.',
@@ -1230,7 +1212,7 @@ dealRouter.post('/admin/fillLocation', async (req, res, next) => {
     );
   } catch (error) {
     console.error(error);
-    return jsonResponse(
+    return util.jsonResponse(
       res,
       500,
       '[관리자용 api] POST /admin/fillLocation 에러',
@@ -1244,20 +1226,20 @@ dealRouter.post('/admin/fillLocation', async (req, res, next) => {
 //   try{
 //     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
 //     if(!deal){
-//       return jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
+//       return util.jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
 //     }
 //     if(deal.userId != req.user.id){
-//       return jsonResponse(res, 403, '글의 작성자만 거래를 마감할 수 있습니다.', false, null)
+//       return util.jsonResponse(res, 403, '글의 작성자만 거래를 마감할 수 있습니다.', false, null)
 //     }
 //     // 거래 시간이 지난 후에만 거래를 마감 할 수 있게?
 //     deal.update({isDealDone : true, isRecruitDone : true}); // 일단 recruitDone 확인하지 않고 둘다 true로 만들어줌.
 //     const groups = await Group.findAll({where : {dealId : deal.id}});
 //     const result = {deal : deal, groups : groups};
-//     return jsonResponse(res, 200, "거래가 정상적으로 마감되었습니다.", true, result);
+//     return util.jsonResponse(res, 200, "거래가 정상적으로 마감되었습니다.", true, result);
 //   }
 //   catch (error){
 //     logger.error(error);
-//     return jsonResponse(res, 500, "서버 에러", false, null)
+//     return util.jsonResponse(res, 500, "서버 에러", false, null)
 //   }
 // })
 
