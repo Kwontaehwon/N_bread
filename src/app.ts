@@ -16,7 +16,7 @@ const config = require('./config');
 const { router } = require('./routes/index');
 const { db } = require('./database/');
 const { passportIndex } = require('./config/passport');
-
+const { errorHandler } = require('./modules/error/errorHandler');
 const { logger } = require('./config/winston');
 
 const app = express();
@@ -69,6 +69,8 @@ app.use((req, res, next) => {
   // error.status = 404;
   next(error);
 });
+
+app.use(errorHandler);
 
 app.use((err, req, res, next) => {
   res.locals.message = err.message;

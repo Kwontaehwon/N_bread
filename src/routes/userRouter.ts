@@ -13,7 +13,8 @@ const { response } = require('express');
 const { resolve } = require('path');
 const sequelize = require('../database/models');
 const { userService } = require('../service/');
-
+import { errorValidator } from '../modules/error/errorValidator';
+import { param } from 'express-validator';
 const userRouter = express.Router();
 
 userRouter.use(express.json());

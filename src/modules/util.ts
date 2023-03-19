@@ -7,4 +7,21 @@ const jsonResponse = (res, code, message, isSuccess, result) => {
   });
 };
 
-export { jsonResponse };
+const success = (code: number, message: string, result?: any) => {
+  return {
+    code,
+    success: true,
+    message,
+    result,
+  };
+};
+
+const fail = (code: number, message: string) => {
+  return {
+    code,
+    success: false,
+    message,
+  };
+};
+
+export { jsonResponse, success, fail };
