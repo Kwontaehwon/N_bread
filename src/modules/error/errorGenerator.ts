@@ -26,4 +26,4 @@ const errorGenerator = ({
   throw err;
 };
 
-export { errorGenerator };
+export { errorGenerator, ErrorWithStatusCode };
