@@ -14,9 +14,10 @@ const { env } = require('process');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { util } = require('../modules');
-const { success } = require('../modules/util');
-const { responseMessage, statusCode } = require('../modules/constants');
+import { success } from '../modules/util';
+import { responseMessage, statusCode } from '../modules/constants';
 const { userRepository } = require('../repository');
+import { NextFunction, Request, Response } from 'express';
 
 // GET users/:userId
 const getUser = async (req, res, next) => {
@@ -353,38 +354,29 @@ const setLocationByNaverMapsApi = async (req, res) => {
   }
 };
 // GET users/location
-const getUserLocation = async (req, res) => {
+const getUserLocation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.deprecated = true
   try {
-    const headerIp = await (
-      req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress
-    ).replace(/^.*:/, '');
-    const requestIps = await requestIp.getClientIp(req);
-    console.log(headerIp);
-    console.log(req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress);
-    const loggedInUser = await User.findOne({ where: { Id: req.decoded.id } });
+    const user = await userRepository.findUserById(+req.params.id);
     const result = {
-      userId: loggedInUser.id,
-      location: loggedInUser.curLocation3,
+      userId: user.id,
+      location: user.curLocation3,
     };
     logger.info(
-      `users/location | userId : ${req.decoded.id}의 현재 지역 : ${result.location} 을 반환합니다.`,
+      `users/location | userId : ${req.params.id}의 현재 지역 : ${result.location} 을 반환합니다.`,
     );
-    util.jsonResponse(
-      res,
-      200,
-      `현재 위치 : ${result.location} 을(를) DB에서 가져오는데 성공하였습니다`,
-      true,
-      result,
-    );
+    res
+      .status(statusCode.OK)
+      .send(
+        success(statusCode.OK, responseMessage.GET_LOCATION_SUCCESS, result),
+      );
   } catch (error) {
     logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[사용하지 않는 API] GET users/location 서버 에러',
-      false,
-    );
+    next(error);
   }
 };
 
