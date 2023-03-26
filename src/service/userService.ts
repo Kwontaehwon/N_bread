@@ -18,7 +18,7 @@ import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 const { userRepository } = require('../repository');
 import { NextFunction, Request, Response } from 'express';
-
+import { User } from '../dto/userDto';
 // GET users/:userId
 const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
@@ -362,18 +362,18 @@ const getUserLocation = async (
   // #swagger.deprecated = true
   try {
     const user = await userRepository.findUserById(+req.params.id);
-    const result = {
-      userId: user.id,
-      location: user.curLocation3,
+    const data: User = {
+      id: +req.params.id,
+      curLocation1: user.curLocation1,
+      curLocation2: user.curLocation2,
+      curLocation3: user.curLocation3,
     };
     logger.info(
-      `users/location | userId : ${req.params.id}의 현재 지역 : ${result.location} 을 반환합니다.`,
+      `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
     );
     res
       .status(statusCode.OK)
-      .send(
-        success(statusCode.OK, responseMessage.GET_LOCATION_SUCCESS, result),
-      );
+      .send(success(statusCode.OK, responseMessage.GET_LOCATION_SUCCESS, data));
   } catch (error) {
     logger.error(error);
     next(error);
