@@ -1,20 +1,8 @@
 import express, { Express, Request, Response, Router } from 'express';
-const jwt = require('jsonwebtoken');
-const cors = require('cors');
-const url = require('url');
-const path = require('path');
 
-require('dotenv').config();
 
 const { verifyToken } = require('./middlewares');
-const { json } = require('body-parser');
-const { any, reject } = require('bluebird');
-const { response } = require('express');
-const { resolve } = require('path');
-const sequelize = require('../database/models');
 const { userService } = require('../service/');
-import { errorValidator } from '../modules/error/errorValidator';
-import { param } from 'express-validator';
 const userRouter: Router = express.Router();
 
 userRouter.use(express.json());
