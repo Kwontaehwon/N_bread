@@ -10,6 +10,7 @@ const errorHandler: ErrorRequestHandler = (
   next: NextFunction,
 ) => {
   const { message, statusCode } = error;
+  console.log(error);
   return res.status(statusCode).json(fail(statusCode, message));
 };
 export { errorHandler };
