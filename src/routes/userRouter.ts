@@ -1,4 +1,4 @@
-const express = require('express');
+import express, { Express, Request, Response, Router } from 'express';
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const url = require('url');
@@ -15,7 +15,7 @@ const sequelize = require('../database/models');
 const { userService } = require('../service/');
 import { errorValidator } from '../modules/error/errorValidator';
 import { param } from 'express-validator';
-const userRouter = express.Router();
+const userRouter: Router = express.Router();
 
 userRouter.use(express.json());
 
