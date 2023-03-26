@@ -1,13 +1,11 @@
 import { User, Group, Deal, DealImage, UserReport } from '../database/models';
 import axios from 'axios';
 import { logger } from '../config/winston';
-const sequelize = require('../database/models');
-const jwt = require('jsonwebtoken');
 import config from '../config';
-const { util } = require('../modules');
+import { util } from '../modules';
 import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
-const { userRepository } = require('../repository');
+import { userRepository } from '../repository';
 import { NextFunction, Request, Response } from 'express';
 import { UserDto } from '../dto/userDto';
 // GET users/:userId
@@ -71,13 +69,13 @@ const getMypageDeals = async (req, res, next) => {
       );
       return util.jsonResponse(res, 200, '마이페이지 글 리스트', true, []);
     } else {
-      const [tmpres, metadata] = await sequelize.sequelize.query(
-        `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
-        {
-          replacements: [user.id, user.id],
-          type: sequelize.select,
-        },
-      );
+      // const [tmpres, metadata] = await sequelize.sequelize.query(
+      //   `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
+      //   {
+      //     replacements: [user.id, user.id],
+      //     type: sequelize.select,
+      //   },
+      // );
 
       var suggesterId = [];
       var memberId = [];
@@ -91,9 +89,9 @@ const getMypageDeals = async (req, res, next) => {
       //logger.debug()
       console.log('suggesterId : ', suggesterId);
 
-      for (let i = 0; i < tmpres.length; i++) {
-        memberId.push(tmpres[i]['id']);
-      }
+      // for (let i = 0; i < tmpres.length; i++) {
+      //   memberId.push(tmpres[i]['id']);
+      // }
       console.log(memberId);
       const deal = await Deal.findAll({
         where: { id: memberId },
@@ -591,15 +589,18 @@ const isSetNickname = async (req, res, next) => {
   }
 };
 
-const deletelocation = async (req, res, next) => {
+const deletelocation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.summary = '동 삭제하기'
   try {
     var token = req.headers.authorization;
-    var decodedValue = jwt.verify(token, config.jwtSecret);
-    const user = await User.findOne({ where: { id: decodedValue.id } });
+    const user = await User.findOne({ where: { id: req.params.id } });
     if (!user) {
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}는 회원이 아닙니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}는 회원이 아닙니다.`,
       );
       return util.jsonResponse(
         res,
@@ -617,7 +618,7 @@ const deletelocation = async (req, res, next) => {
         curLocationC: null,
       });
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}에서 ${dong} 삭제에 성공하였습니다.`,
       );
       return util.jsonResponse(
         res,
@@ -629,7 +630,7 @@ const deletelocation = async (req, res, next) => {
     } else if (user.curLocation3 === dong) {
       if (user.curLocationC === null) {
         logger.info(
-          `DELETE users/location/:dong | userId : ${decodedValue.id}에서 동네가 하나만 있습니다.`,
+          `DELETE users/location/:dong | userId : ${req.params.id}에서 동네가 하나만 있습니다.`,
         );
         return util.jsonResponse(
           res,
@@ -650,7 +651,7 @@ const deletelocation = async (req, res, next) => {
         curLocationC: null,
       });
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}에서 ${dong} 삭제에 성공하였습니다.`,
       );
       return util.jsonResponse(
         res,
@@ -661,7 +662,7 @@ const deletelocation = async (req, res, next) => {
       );
     } else {
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}에서 일치하는 동네가 없습니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}에서 일치하는 동네가 없습니다.`,
       );
       return util.jsonResponse(
         res,
@@ -688,11 +689,10 @@ const addLocation = async (req, res, next) => {
   try {
     const { loc1, loc2, loc3 } = req.body;
     var token = req.headers.authorization;
-    var decodedValue = jwt.verify(token, config.jwtSecret);
-    const user = await User.findOne({ where: { id: decodedValue.id } });
+    const user = await User.findOne({ where: { id: req.params.id } });
     if (!user) {
       logger.info(
-        `POST users/location | userId : ${decodedValue.id}는 회원이 아닙니다.`,
+        `POST users/location | userId : ${req.params.id}는 회원이 아닙니다.`,
       );
       return util.jsonResponse(
         res,
@@ -708,12 +708,12 @@ const addLocation = async (req, res, next) => {
       curLocationC: loc3,
     });
     logger.info(
-      `POST users/location | userId : ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
+      `POST users/location | userId : ${req.params.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
     );
     return util.jsonResponse(
       res,
       200,
-      `[동 추가 api] ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
+      `[동 추가 api] ${req.params.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
       true,
       null,
     );
