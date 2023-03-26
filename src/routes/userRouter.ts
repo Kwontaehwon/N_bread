@@ -1,8 +1,6 @@
 import express, { Express, Request, Response, Router } from 'express';
-
-
-const { verifyToken } = require('./middlewares');
-const { userService } = require('../service/');
+import { verifyToken } from './middlewares';
+import { userService } from '../service';
 const userRouter: Router = express.Router();
 
 userRouter.use(express.json());
