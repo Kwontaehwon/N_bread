@@ -1,2 +1,1 @@
-const userService = require('./userService');
-export { userService };
+export { default as userService } from './userService';
