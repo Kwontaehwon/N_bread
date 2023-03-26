@@ -1,7 +1,8 @@
 const { logger } = require('../config/winston');
 const jwt = require('jsonwebtoken');
 const { User } = require('../database/models');
-const config = require('../config');
+import { Request, Response, NextFunction } from 'express';
+import config from '../config';
 function jsonResponse(res, code, message, isSuccess) {
   res.status(code).json({
     code: code,
@@ -10,7 +11,7 @@ function jsonResponse(res, code, message, isSuccess) {
   });
 }
 
-const isLoggedIn = (req, res, next) => {
+const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
     console.log('로그인 된 상태입니다.');
     next();
@@ -19,7 +20,7 @@ const isLoggedIn = (req, res, next) => {
   }
 };
 
-const isNotLoggedIn = (req, res, next) => {
+const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (!req.isAuthenticated()) {
     next();
   } else {
@@ -27,9 +28,10 @@ const isNotLoggedIn = (req, res, next) => {
   }
 };
 
-const verifyToken = (req, res, next) => {
+const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   try {
-    req.decoded = jwt.verify(req.headers.authorization, config.jwtSecret);
+    console.log('verify');
+    req.params = jwt.verify(req.headers.authorization, config.jwtSecret);
     return next();
   } catch (error) {
     logger.error(error);

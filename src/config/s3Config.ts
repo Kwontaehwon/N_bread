@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const config = require('../config');
+import config from '../config';
 AWS.config.update({
   region: 'ap-northeast-2',
   accessKeyId: config.s3AccessKeyID,

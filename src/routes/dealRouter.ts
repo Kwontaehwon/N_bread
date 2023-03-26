@@ -9,7 +9,7 @@ const passport = require('passport');
 const schedule = require('node-schedule');
 const admin = require('firebase-admin');
 const { Slack } = require('../class/slack');
-const config = require('../config');
+import config from '../config';
 const { upload } = require('../middlewares/upload');
 
 const {
@@ -21,7 +21,11 @@ const {
   DealImage,
   DealReport,
 } = require('../database/models');
-const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
+const {
+  isLoggedIn,
+  isNotLoggedIn,
+  verifyToken,
+} = require('../middlewares/middleware');
 const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../config/winston');
 const { timeLog } = require('console');

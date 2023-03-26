@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
 const User = require('../../database/models/user');
-const config = require('../');
+import config from '../';
 const passportApple = () => {
   passport.use(
     'apple',

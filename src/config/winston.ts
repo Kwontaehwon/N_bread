@@ -1,6 +1,6 @@
 const winston = require('winston');
 require('winston-daily-rotate-file');
-const config = require('../config');
+import config from '../config';
 const logDir = './logs';
 
 const levels = {
@@ -12,7 +12,7 @@ const levels = {
 };
 
 const level = () => {
-  const env = config.NODE_ENV || 'development';
+  const env = config.env || 'development';
   const isDevelopment = env === 'development';
   return isDevelopment ? 'debug' : 'warn';
 };

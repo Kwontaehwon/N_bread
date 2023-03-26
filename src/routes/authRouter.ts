@@ -4,7 +4,11 @@ const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
+const {
+  verifyToken,
+  isLoggedIn,
+  isNotLoggedIn,
+} = require('../middlewares/middleware');
 const { User } = require('../database/models');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
@@ -12,7 +16,7 @@ const { logger } = require('../config/winston');
 const { response } = require('express');
 const axios = require('axios');
 const qs = require('qs');
-const config = require('../config');
+import config from '../config';
 
 const { serveWithOptions } = require('swagger-ui-express');
 const { urlencoded } = require('body-parser');
@@ -106,6 +110,7 @@ authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
           algorithm: 'HS256',
           issuer: 'chocoBread',
         });
+        console.log(accessToken);
         res.cookie('accessToken', accessToken);
         // return res.json("로그인 성공!");
         return util.jsonResponse(
@@ -587,7 +592,9 @@ authRouter.delete('/apple/signout', verifyToken, async (req, res, next) => {
   const qsData = qs.stringify(data);
   console.log(qsData);
   axios
-    .post('https://appleid.apple.com/auth/revoke', qsData, { headers: headers })
+    .post('https://appleid.apple.com/auth/revoke', qsData, {
+      headers: headers,
+    })
     .then((response) => {
       user.destroy().then(() => {
         return util.jsonResponse(res, 200, '애플 탈퇴완료', true, null);

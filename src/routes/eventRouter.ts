@@ -7,7 +7,7 @@ const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const { default: axios } = require('axios');
 const { url } = require('inspector');
-const config = require('../config');
+import config from '../config';
 const eventRouter = express.Router();
 const { util } = require('../modules/');
 const { eventImageUpload } = require('../middlewares/upload');
