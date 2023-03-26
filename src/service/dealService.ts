@@ -47,5 +47,5 @@ const createDeal = async (req, res, next) => {
 }
 
 export {
-    createUserId
+    createDeal
 }
