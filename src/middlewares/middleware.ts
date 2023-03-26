@@ -1,7 +1,7 @@
 const { logger } = require('../config/winston');
 const jwt = require('jsonwebtoken');
 const { User } = require('../database/models');
-const config = require('../config');
+import config from '../config';
 function jsonResponse(res, code, message, isSuccess) {
   res.status(code).json({
     code: code,
@@ -29,6 +29,7 @@ const isNotLoggedIn = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
   try {
+    console.log('verify');
     req.params = jwt.verify(req.headers.authorization, config.jwtSecret);
     return next();
   } catch (error) {

@@ -2,7 +2,7 @@
 // import * as _ from 'lodash';
 const _ = require('lodash');
 const axios = require('axios');
-const config = require('../config');
+import config from '../config';
 class Slack2 {
   // 색상으로 메시지를 꾸밀수 있습니다.
   static get Colors() {
@@ -43,7 +43,7 @@ class Slack2 {
       }
 
       message.ts = Math.floor(Date.now() / 1000);
-      message.footer = `From 알림 서버 [${config.NODE_ENV}]`;
+      message.footer = `From 알림 서버 [${config.env}]`;
       data.attachments.push(message);
     }
 

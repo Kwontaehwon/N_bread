@@ -9,7 +9,7 @@ const passport = require('passport');
 const schedule = require('node-schedule');
 const admin = require('firebase-admin');
 const { Slack } = require('../class/slack');
-const config = require('../config');
+import config from '../config';
 const { upload } = require('../middlewares/upload');
 
 const {

@@ -16,7 +16,7 @@ const { logger } = require('../config/winston');
 const { response } = require('express');
 const axios = require('axios');
 const qs = require('qs');
-const config = require('../config');
+import config from '../config';
 
 const { serveWithOptions } = require('swagger-ui-express');
 const { urlencoded } = require('body-parser');
