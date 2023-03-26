@@ -21,7 +21,11 @@ const {
   DealImage,
   DealReport,
 } = require('../database/models');
-const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
+const {
+  isLoggedIn,
+  isNotLoggedIn,
+  verifyToken,
+} = require('../middlewares/middleware');
 const { Op, Sequelize } = require('sequelize');
 const { logger } = require('../config/winston');
 const { timeLog } = require('console');

@@ -7,7 +7,11 @@ require('dotenv').config();
 const spawn = require('child_process').spawn;
 const { Slack2 } = require('../class/slack2');
 
-const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
+const {
+  isLoggedIn,
+  isNotLoggedIn,
+  verifyToken,
+} = require('../middlewares/middleware');
 const {
   User,
   Group,

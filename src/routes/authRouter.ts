@@ -4,7 +4,11 @@ const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
+const {
+  verifyToken,
+  isLoggedIn,
+  isNotLoggedIn,
+} = require('../middlewares/middleware');
 const { User } = require('../database/models');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
@@ -548,63 +552,69 @@ authRouter.get('/naver/reauth', async (req, res, next) => {
   }
 });
 
-authRouter.delete('/apple/signout', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '애플 회원탈퇴'
-  const nowSec = await Math.round(new Date().getTime() / 1000);
-  const expirySec = 120000;
-  const expSec = (await nowSec) + expirySec;
-  const payload = {
-    aud: 'https://appleid.apple.com',
-    iss: '5659G44R65',
-    iat: nowSec,
-    exp: expSec,
-    sub: 'shop.chocobread.service',
-  };
-  const signOptions = (jwt.SignOptions = {
-    algorithm: 'ES256',
-    header: {
-      alg: 'ES256',
-      kid: '689F483NJ3',
-      typ: 'JWT',
-    },
-  });
-  const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8';
-  const privKey = fs.readFileSync(path);
-  const appleClientSecret = jwt.sign(payload, privKey, signOptions);
-
-  const user = await User.findOne({ where: { Id: req.decoded.id } });
-  const data = {
-    client_id: 'shop.chocobread.service',
-    client_secret: appleClientSecret,
-    token: user.refreshToken,
-    token_type_hint: 'refresh_token',
-  };
-
-  const headers = {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  };
-
-  const qsData = qs.stringify(data);
-  console.log(qsData);
-  axios
-    .post('https://appleid.apple.com/auth/revoke', qsData, { headers: headers })
-    .then((response) => {
-      user.destroy().then(() => {
-        return util.jsonResponse(res, 200, '애플 탈퇴완료', true, null);
-      });
-    })
-    .catch((error) => {
-      logger.error(error);
-      console.log(error);
-      return util.jsonResponse(
-        res,
-        400,
-        `apple signout error :   ${error}`,
-        false,
-        null,
-      );
+authRouter.delete(
+  '/apple/signout',
+  verifyToken,
+  async (req, res, next) => {
+    // #swagger.summary = '애플 회원탈퇴'
+    const nowSec = await Math.round(new Date().getTime() / 1000);
+    const expirySec = 120000;
+    const expSec = (await nowSec) + expirySec;
+    const payload = {
+      aud: 'https://appleid.apple.com',
+      iss: '5659G44R65',
+      iat: nowSec,
+      exp: expSec,
+      sub: 'shop.chocobread.service',
+    };
+    const signOptions = (jwt.SignOptions = {
+      algorithm: 'ES256',
+      header: {
+        alg: 'ES256',
+        kid: '689F483NJ3',
+        typ: 'JWT',
+      },
     });
-});
+    const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8';
+    const privKey = fs.readFileSync(path);
+    const appleClientSecret = jwt.sign(payload, privKey, signOptions);
+
+    const user = await User.findOne({ where: { Id: req.decoded.id } });
+    const data = {
+      client_id: 'shop.chocobread.service',
+      client_secret: appleClientSecret,
+      token: user.refreshToken,
+      token_type_hint: 'refresh_token',
+    };
+
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    };
+
+    const qsData = qs.stringify(data);
+    console.log(qsData);
+    axios
+      .post('https://appleid.apple.com/auth/revoke', qsData, {
+        headers: headers,
+      })
+      .then((response) => {
+        user.destroy().then(() => {
+          return util.jsonResponse(res, 200, '애플 탈퇴완료', true, null);
+        });
+      })
+      .catch((error) => {
+        logger.error(error);
+        console.log(error);
+        return util.jsonResponse(
+          res,
+          400,
+          `apple signout error :   ${error}`,
+          false,
+          null,
+        );
+      });
+  },
+);
 
 authRouter.get('/kakao/logout', async (req, res, next) => {
   // #swagger.summary = '카카오 웹뷰 로그아웃'
@@ -618,38 +628,44 @@ authRouter.get('/kakao/logout', async (req, res, next) => {
   }
 });
 
-authRouter.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '카카오 SDK 회원탈퇴'
-  try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
-    const userId = req.decoded.id;
-    console.log(user);
-    if (!user) {
-      logger.info(
-        '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
+authRouter.delete(
+  '/kakaosdk/signout',
+  verifyToken,
+  async (req, res, next) => {
+    // #swagger.summary = '카카오 SDK 회원탈퇴'
+    try {
+      const user = await User.findOne({ where: { id: req.decoded.id } });
+      const userId = req.decoded.id;
+      console.log(user);
+      if (!user) {
+        logger.info(
+          '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
+        );
+        return util.jsonResponse(
+          res,
+          404,
+          '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
+          false,
+          null,
+        );
+      }
+      await user.destroy();
+      logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`);
+      return util.jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
+    } catch (error) {
+      logger.error(
+        '[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러' + error,
       );
       return util.jsonResponse(
         res,
-        404,
-        '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
+        500,
+        '[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러',
         false,
         null,
       );
     }
-    await user.destroy();
-    logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`);
-    return util.jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
-  } catch (error) {
-    logger.error('[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러' + error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러',
-      false,
-      null,
-    );
-  }
-});
+  },
+);
 
 //https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
 
