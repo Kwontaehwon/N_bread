@@ -6,7 +6,7 @@ const {
 } = require('passport-naver-v2');
 
 const User = require('../../database/models/user');
-const config = require('../');
+import config from '../';
 const passportNaver = () => {
   passport.use(
     new NaverStrategy(

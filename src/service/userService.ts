@@ -1,12 +1,9 @@
 import { User, Group, Deal, DealImage, UserReport } from '../database/models';
-const { Op } = require('sequelize');
 const axios = require('axios');
 const { logger } = require('../config/winston');
 const sequelize = require('../database/models');
-const requestIp = require('request-ip');
-const { env } = require('process');
 const jwt = require('jsonwebtoken');
-const config = require('../config');
+import config from '../config';
 const { util } = require('../modules');
 import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
@@ -78,7 +75,7 @@ const getMypageDeals = async (req, res, next) => {
         `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
         {
           replacements: [user.id, user.id],
-          type: Op.SELECT,
+          type: sequelize.select,
         },
       );
 
@@ -174,8 +171,8 @@ const getNaverGeoLocation = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': env.NAVER_CLIENTKEY,
-          'X-NCP-APIGW-API-KEY': env.NAVER_CLIENTSECRETKEY,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
         },
       })
       .then(async (Response) => {
@@ -252,8 +249,8 @@ const getLocationByNaverMapsApi = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': env.NAVER_CLIENTKEY,
-          'X-NCP-APIGW-API-KEY': env.NAVER_CLIENTSECRETKEY,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
         },
       })
       .then(async (Response) => {
