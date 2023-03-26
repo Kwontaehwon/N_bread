@@ -1,21 +1,7 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const cors = require('cors');
-const url = require('url');
-const path = require('path');
-
-require('dotenv').config();
-
-const { verifyToken } = require('./middlewares');
-const { json } = require('body-parser');
-const { any, reject } = require('bluebird');
-const { response } = require('express');
-const { resolve } = require('path');
-const sequelize = require('../database/models');
-const { userService } = require('../service/');
-import { errorValidator } from '../modules/error/errorValidator';
-import { param } from 'express-validator';
-const userRouter = express.Router();
+import express, { Express, Request, Response, Router } from 'express';
+import { verifyToken } from './middlewares';
+import { userService } from '../service';
+const userRouter: Router = Router();
 
 userRouter.use(express.json());
 
@@ -64,65 +50,4 @@ userRouter.delete('/location/:dong', verifyToken, userService.deletelocation);
 //위치를 body로 받아 curLocation ABC를 채워주는 api
 userRouter.post('/location', verifyToken, userService.addLocation);
 
-// router.delete('/:userId', async (req, res, next) => {
-//     try{
-//         const user = await User.findOne({where : { Id : req.params.userId}});
-//         if(!user){
-//             return jsonResponse(res, 404, "해당되는 유저를 찾을 수 없습니다.", false, null)
-//         }
-//         await user.destroy();
-//         return jsonResponse(res, 500, "회원 탈퇴가 완료되었습니다.", true, null)
-//     }  catch(error){
-//         console.log(error);
-//         return jsonResponse(res, 500, "서버 에러", false, null)
-//     }
-// });
-
-// router.get('/:userId/deals', async (req, res, next) => {
-//     try {
-//       const user = User.findOne({where : {id : req.params.userId}});
-//       if(!user){
-//         return jsonResponse(res, 404, "해당되는 유저가 없습니다.", false, null);
-//       }
-//       let deals; // 정의만 하려면 자료형이 let?
-//       if(req.query.isSuggester == 1){ // 제안자
-//         deals = await Deal.findAll({
-//           where: { userId: req.params.userId },
-//           include : {
-//            model : Group,
-//            attribute: ['userId']
-//           }
-//          });
-//       } else{ // isSuggester가 1일때 처럼 groups를 가져오는 방법
-//         const user = await User.findOne({
-//           where : {Id : req.params.userId}
-//         });
-//         const groups = await user.getGroups();
-//         deals = []
-//         for(let i = 0 ; i < groups.length ; i++){
-//           const deal = await Deal.findOne({ where : {Id : groups[i].dealId} });
-//           if(deal.userId != req.params.userId) deals.push(deal); // 참여자로써 참여한 것만
-//         }
-//       }
-//       for (let i = 0; i < deals.length; i++) { // 진행된 거래
-//         const cur = new Date(deals[i].dealDate);
-//         if (req.query.isDealDone == 1 && cur > Date.now()) { // 수정필요 -> 어짜피 나중에 deal 테이블에 isDealDone 수정하면 바로 가져올 수 있음.
-//           deals.splice(i, 1);
-//           i--;
-//         }
-//         else if (req.query.isDealDone == 0 && cur <= Date.now()) {
-//           deals.splice(i, 1);
-//           i--;
-//         }
-//       }
-
-//       if (deals.length == 0) {
-//         return jsonResponse(res, 404, "검색 결과가 없습니다.", false, null)
-//       }
-//       return jsonResponse(res, 200, user.id + "user의 거래 내역", true, {userId : user.id , deals : deals});
-//     } catch (error) {
-//       console.error(error);
-//       return jsonResponse(res, 500, "서버 에러", false, null)
-//     }
-//   });
 export { userRouter };
