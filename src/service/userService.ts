@@ -5,22 +5,16 @@ const {
   DealImage,
   UserReport,
 } = require('../database/models');
-const { Op, where } = require('sequelize');
-const CryptoJS = require('crypto-js');
+const { Op } = require('sequelize');
 const axios = require('axios');
 const { logger } = require('../config/winston');
 const sequelize = require('../database/models');
 const requestIp = require('request-ip');
 const { env } = require('process');
-const { RDS } = require('aws-sdk');
-const { resourceLimits } = require('worker_threads');
-const exp = require('constants');
-const { json } = require('body-parser');
-const { JsonWebTokenError } = require('jsonwebtoken');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const { util } = require('../modules');
-const { success, fall } = require('../modules/util');
+const { success } = require('../modules/util');
 const { responseMessage, statusCode } = require('../modules/constants');
 const { userRepository } = require('../repository');
 
