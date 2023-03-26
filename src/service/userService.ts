@@ -1,10 +1,4 @@
-const {
-  User,
-  Group,
-  Deal,
-  DealImage,
-  UserReport,
-} = require('../database/models');
+import { User, Group, Deal, DealImage, UserReport } from '../database/models';
 const { Op } = require('sequelize');
 const axios = require('axios');
 const { logger } = require('../config/winston');
@@ -18,7 +12,7 @@ import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 const { userRepository } = require('../repository');
 import { NextFunction, Request, Response } from 'express';
-import { User } from '../dto/userDto';
+import { UserDto } from '../dto/userDto';
 // GET users/:userId
 const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
@@ -362,7 +356,7 @@ const getUserLocation = async (
   // #swagger.deprecated = true
   try {
     const user = await userRepository.findUserById(+req.params.id);
-    const data: User = {
+    const data: UserDto = {
       id: +req.params.id,
       curLocation1: user.curLocation1,
       curLocation2: user.curLocation2,
