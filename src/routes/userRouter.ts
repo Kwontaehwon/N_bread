@@ -1,7 +1,7 @@
 import express, { Express, Request, Response, Router } from 'express';
 import { verifyToken } from './middlewares';
 import { userService } from '../service';
-const userRouter: Router = express.Router();
+const userRouter: Router = Router();
 
 userRouter.use(express.json());
 
