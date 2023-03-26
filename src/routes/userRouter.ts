@@ -1,5 +1,5 @@
 import express, { Express, Request, Response, Router } from 'express';
-import { verifyToken } from './middlewares';
+import { verifyToken } from '../middlewares/auth';
 import { userService } from '../service';
 const userRouter: Router = Router();
 
