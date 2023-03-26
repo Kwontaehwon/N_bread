@@ -29,7 +29,7 @@ const isNotLoggedIn = (req, res, next) => {
 
 const verifyToken = (req, res, next) => {
   try {
-    req.decoded = jwt.verify(req.headers.authorization, config.jwtSecret);
+    req.params = jwt.verify(req.headers.authorization, config.jwtSecret);
     return next();
   } catch (error) {
     logger.error(error);
