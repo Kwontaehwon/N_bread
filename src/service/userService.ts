@@ -1,6 +1,6 @@
 import { User, Group, Deal, DealImage, UserReport } from '../database/models';
-const axios = require('axios');
-const { logger } = require('../config/winston');
+import axios from 'axios';
+import { logger } from '../config/winston';
 const sequelize = require('../database/models');
 const jwt = require('jsonwebtoken');
 import config from '../config';
