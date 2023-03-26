@@ -1,16 +1,12 @@
 import { dealImageUpload } from '../middlewares/upload';
 
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const cors = require('cors');
-const url = require('url');
 const axios = require('axios');
-const passport = require('passport');
-const schedule = require('node-schedule');
 const admin = require('firebase-admin');
 const { Slack } = require('../class/slack');
 const config = require('../config');
 const { upload } = require('../middlewares/upload');
+import { dealService } from '../service';
 
 const {
   User,
@@ -580,90 +576,7 @@ dealRouter.get('/all/:region', verifyToken, async (req, res, next) => {
 // 거래 생성하기
 dealRouter.post('/create', verifyToken, async (req, res, next) => {
   // #swagger.summary = '거래 생성'
-  try {
-    // console.log(req.body);
-    // const parseResult = await JSON.parse(body);
-    const {
-      title,
-      link,
-      totalPrice,
-      personalPrice,
-      totalMember,
-      dealDate,
-      place,
-      content,
-      region,
-    } = req.body; // currentMember 수정 필요.
-
-    const user = await User.findOne({ where: { Id: req.decoded.id } });
-    if (!user) {
-      logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
-      return util.jsonResponse(
-        res,
-        404,
-        `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`,
-        false,
-        null,
-      );
-    }
-    const group = await Group.create({
-      amount: 1,
-      userId: user.id,
-    });
-    const deal = await Deal.create({
-      link: link,
-      title: title,
-      content: content,
-      totalPrice: totalPrice,
-      personalPrice: personalPrice,
-      totalMember: totalMember,
-      dealDate: new Date(dealDate), // 날짜 변환
-      dealPlace: place,
-      currentMember: 1, // 내가 얼마나 가져갈지 선택지를 줘야할듯
-      userId: user.id,
-      loc1: user.curLocation1,
-      loc2: user.curLocation2,
-      loc3: user.curLocation3,
-    });
-    await group.update({ dealId: deal.id }); // 업데이트
-    const fcmTokenJson = await axios.get(
-      `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`,
-    ); // ${user.id}
-    // logger.info(fcmTokenJson);
-    if (Object.keys(fcmTokenJson.data).length !== 0) {
-      const fcmToken = fcmTokenJson.data.Item.fcmToken;
-      logger.info(`fcmToken : ${fcmToken}`);
-      const fcmTopicName = `dealFcmTopic` + deal.id;
-      await admin.messaging().subscribeToTopic(fcmToken, fcmTopicName);
-    }
-
-    //const categoryNLPLink = "http://3.35.167.210/category/";
-    //const categoryRespnose = await axios.get(categoryNLPLink + encodeURIComponent(deal.title));
-    //let categoryReturnList = [];
-    //let formatedString = "처리 결과 : \n\n";
-    //for (let categoryData of categoryRespnose.data){
-    //formatedString = formatedString + `[${categoryData["BIG"]} - ${categoryData["SMALL"]}] : ${ categoryData["prob"]}]\n`
-    //categoryReturnList.push(formatedString);
-    // }
-    // Slack.sendMessage(
-    // {
-    //   color: Slack.Colors.info,
-    //  title: `[${deal.title}] 카테고리 NLP 처리 완료`,
-    //text: formatedString
-    // }
-    // );
-    logger.info(`dealId : ${deal.id} 거래가 생성되었습니다.`);
-    return util.jsonResponse(res, 200, '거래가 생성되었습니다', true, deal);
-  } catch (error) {
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[거래 생성] POST /deals/create 서버 에러',
-      false,
-      null,
-    );
-  }
+  const test = dealService.createDeal(req, res, next);
 });
 
 // 거래 세부정보
