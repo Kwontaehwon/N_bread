@@ -5,7 +5,11 @@ const path = require('path');
 const axios = require('axios');
 require('dotenv').config();
 
-const { isLoggedIn, isNotLoggedIn, verifyToken } = require('./middlewares');
+const {
+  isLoggedIn,
+  isNotLoggedIn,
+  verifyToken,
+} = require('../middlewares/middleware');
 const {
   User,
   Group,

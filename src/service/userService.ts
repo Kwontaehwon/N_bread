@@ -1,29 +1,13 @@
-const {
-  User,
-  Group,
-  Deal,
-  DealImage,
-  UserReport,
-} = require('../database/models');
-const { Op, where } = require('sequelize');
-const CryptoJS = require('crypto-js');
-const axios = require('axios');
-const { logger } = require('../config/winston');
-const sequelize = require('../database/models');
-const requestIp = require('request-ip');
-const { env } = require('process');
-const { RDS } = require('aws-sdk');
-const { resourceLimits } = require('worker_threads');
-const exp = require('constants');
-const { json } = require('body-parser');
-const { JsonWebTokenError } = require('jsonwebtoken');
-const jwt = require('jsonwebtoken');
-const config = require('../config');
-const { util } = require('../modules');
-const { success, fall } = require('../modules/util');
-const { responseMessage, statusCode } = require('../modules/constants');
-const { userRepository } = require('../repository');
-
+import { User, Group, Deal, DealImage, UserReport } from '../database/models';
+import axios from 'axios';
+import { logger } from '../config/winston';
+import config from '../config';
+import { util } from '../modules';
+import { success } from '../modules/util';
+import { responseMessage, statusCode } from '../modules/constants';
+import { userRepository } from '../repository';
+import { NextFunction, Request, Response } from 'express';
+import { UserDto } from '../dto/userDto';
 // GET users/:userId
 const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
@@ -85,13 +69,13 @@ const getMypageDeals = async (req, res, next) => {
       );
       return util.jsonResponse(res, 200, '마이페이지 글 리스트', true, []);
     } else {
-      const [tmpres, metadata] = await sequelize.sequelize.query(
-        `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
-        {
-          replacements: [user.id, user.id],
-          type: Op.SELECT,
-        },
-      );
+      // const [tmpres, metadata] = await sequelize.sequelize.query(
+      //   `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
+      //   {
+      //     replacements: [user.id, user.id],
+      //     type: sequelize.select,
+      //   },
+      // );
 
       var suggesterId = [];
       var memberId = [];
@@ -105,9 +89,9 @@ const getMypageDeals = async (req, res, next) => {
       //logger.debug()
       console.log('suggesterId : ', suggesterId);
 
-      for (let i = 0; i < tmpres.length; i++) {
-        memberId.push(tmpres[i]['id']);
-      }
+      // for (let i = 0; i < tmpres.length; i++) {
+      //   memberId.push(tmpres[i]['id']);
+      // }
       console.log(memberId);
       const deal = await Deal.findAll({
         where: { id: memberId },
@@ -185,8 +169,8 @@ const getNaverGeoLocation = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': env.NAVER_CLIENTKEY,
-          'X-NCP-APIGW-API-KEY': env.NAVER_CLIENTSECRETKEY,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
         },
       })
       .then(async (Response) => {
@@ -263,8 +247,8 @@ const getLocationByNaverMapsApi = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': env.NAVER_CLIENTKEY,
-          'X-NCP-APIGW-API-KEY': env.NAVER_CLIENTSECRETKEY,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
         },
       })
       .then(async (Response) => {
@@ -359,38 +343,29 @@ const setLocationByNaverMapsApi = async (req, res) => {
   }
 };
 // GET users/location
-const getUserLocation = async (req, res) => {
+const getUserLocation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.deprecated = true
   try {
-    const headerIp = await (
-      req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress
-    ).replace(/^.*:/, '');
-    const requestIps = await requestIp.getClientIp(req);
-    console.log(headerIp);
-    console.log(req.headers['X-FORWARDED-FOR'] || req.connection.remoteAddress);
-    const loggedInUser = await User.findOne({ where: { Id: req.decoded.id } });
-    const result = {
-      userId: loggedInUser.id,
-      location: loggedInUser.curLocation3,
+    const user = await userRepository.findUserById(+req.params.id);
+    const data: UserDto = {
+      id: +req.params.id,
+      curLocation1: user.curLocation1,
+      curLocation2: user.curLocation2,
+      curLocation3: user.curLocation3,
     };
     logger.info(
-      `users/location | userId : ${req.decoded.id}의 현재 지역 : ${result.location} 을 반환합니다.`,
+      `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
     );
-    util.jsonResponse(
-      res,
-      200,
-      `현재 위치 : ${result.location} 을(를) DB에서 가져오는데 성공하였습니다`,
-      true,
-      result,
-    );
+    res
+      .status(statusCode.OK)
+      .send(success(statusCode.OK, responseMessage.GET_LOCATION_SUCCESS, data));
   } catch (error) {
     logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[사용하지 않는 API] GET users/location 서버 에러',
-      false,
-    );
+    next(error);
   }
 };
 
@@ -614,15 +589,18 @@ const isSetNickname = async (req, res, next) => {
   }
 };
 
-const deletelocation = async (req, res, next) => {
+const deletelocation = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.summary = '동 삭제하기'
   try {
     var token = req.headers.authorization;
-    var decodedValue = jwt.verify(token, config.jwtSecret);
-    const user = await User.findOne({ where: { id: decodedValue.id } });
+    const user = await User.findOne({ where: { id: req.params.id } });
     if (!user) {
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}는 회원이 아닙니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}는 회원이 아닙니다.`,
       );
       return util.jsonResponse(
         res,
@@ -640,7 +618,7 @@ const deletelocation = async (req, res, next) => {
         curLocationC: null,
       });
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}에서 ${dong} 삭제에 성공하였습니다.`,
       );
       return util.jsonResponse(
         res,
@@ -652,7 +630,7 @@ const deletelocation = async (req, res, next) => {
     } else if (user.curLocation3 === dong) {
       if (user.curLocationC === null) {
         logger.info(
-          `DELETE users/location/:dong | userId : ${decodedValue.id}에서 동네가 하나만 있습니다.`,
+          `DELETE users/location/:dong | userId : ${req.params.id}에서 동네가 하나만 있습니다.`,
         );
         return util.jsonResponse(
           res,
@@ -673,7 +651,7 @@ const deletelocation = async (req, res, next) => {
         curLocationC: null,
       });
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}에서 ${dong} 삭제에 성공하였습니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}에서 ${dong} 삭제에 성공하였습니다.`,
       );
       return util.jsonResponse(
         res,
@@ -684,7 +662,7 @@ const deletelocation = async (req, res, next) => {
       );
     } else {
       logger.info(
-        `DELETE users/location/:dong | userId : ${decodedValue.id}에서 일치하는 동네가 없습니다.`,
+        `DELETE users/location/:dong | userId : ${req.params.id}에서 일치하는 동네가 없습니다.`,
       );
       return util.jsonResponse(
         res,
@@ -711,11 +689,10 @@ const addLocation = async (req, res, next) => {
   try {
     const { loc1, loc2, loc3 } = req.body;
     var token = req.headers.authorization;
-    var decodedValue = jwt.verify(token, config.jwtSecret);
-    const user = await User.findOne({ where: { id: decodedValue.id } });
+    const user = await User.findOne({ where: { id: req.params.id } });
     if (!user) {
       logger.info(
-        `POST users/location | userId : ${decodedValue.id}는 회원이 아닙니다.`,
+        `POST users/location | userId : ${req.params.id}는 회원이 아닙니다.`,
       );
       return util.jsonResponse(
         res,
@@ -731,12 +708,12 @@ const addLocation = async (req, res, next) => {
       curLocationC: loc3,
     });
     logger.info(
-      `POST users/location | userId : ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
+      `POST users/location | userId : ${req.params.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
     );
     return util.jsonResponse(
       res,
       200,
-      `[동 추가 api] ${decodedValue.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
+      `[동 추가 api] ${req.params.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
       true,
       null,
     );
@@ -752,7 +729,7 @@ const addLocation = async (req, res, next) => {
   }
 };
 
-export {
+export default {
   getUser,
   getMypageDeals,
   getNaverGeoLocation,

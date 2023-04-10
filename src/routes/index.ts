@@ -1,6 +1,6 @@
 const express = require('express');
 const { User } = require('../database/models');
-const { verifyToken } = require('./middlewares');
+const { verifyToken } = require('../middlewares/middleware');
 const { authRouter } = require('./authRouter');
 const { dealRouter } = require('./dealRouter');
 const { userRouter } = require('./userRouter');
@@ -9,7 +9,6 @@ const { eventRouter } = require('./eventRouter');
 const { priceRouter } = require('./priceRouter');
 const { util } = require('../modules/');
 const router = express.Router();
-
 
 router.use(
   '/auth',

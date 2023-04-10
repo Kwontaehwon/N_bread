@@ -1,4 +1,2 @@
-const responseMessage = require('./responseMessage');
-const statusCode = require('./statusCode');
-
-export { responseMessage, statusCode };
+export { default as responseMessage } from './responseMessage';
+export { default as statusCode } from './statusCode';

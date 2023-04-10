@@ -12,13 +12,12 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./config/swagger/swagger.json');
 const admin = require('firebase-admin');
 let serviceAccount = require('./config/firebase-admin.json');
-const config = require('./config');
+import config from './config';
 const { router } = require('./routes/index');
 const { db } = require('./database/');
 const { passportIndex } = require('./config/passport');
 const { errorHandler } = require('./modules/error/errorHandler');
 const { logger } = require('./config/winston');
-
 const app = express();
 
 admin.initializeApp({

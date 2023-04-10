@@ -1,75 +1,57 @@
 // import dotenv from "dotenv";
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 const envFound = dotenv.config();
 
 if (envFound.error) {
   throw new Error(`⚠️  Couldn't find .env file  ⚠️`);
 }
-const env = process.env.NODE_ENV;
-const port = process.env.PORT;
 
-/**
- * KAKAO
- */
-const kakaoId = process.env.KAKAO_ID;
-const kakaoAdminKey = process.env.KAKAO_ADMIN_KEY;
+export default {
+  env: process.env.NODE_ENV,
+  port: process.env.PORT,
 
-/**
- * NAVER
- */
-const naverId = process.env.NAVER_ID;
-const naverSecret = process.env.NAVER_SECRET;
-const naverAccessKey = process.env.NAVER_ACCESSLEY;
-const naverSecretKey = process.env.NAVER_SECRETKEY;
-const naverClientId = process.env.NAVER_CLIENT_ID;
-const NaverClientSecret = process.env.NAVER_CLIENT_SECRET;
+  /**
+   * KAKAO
+   */
+  kakaoId: process.env.KAKAO_ID,
+  kakaoAdminKey: process.env.KAKAO_ADMIN_KEY,
 
-/**
- * APPLE
- */
-const appleClientId = process.env.APPLE_CLIENT_ID;
-const appleTeamId = process.env.APPLE_TEAM_ID;
-const appleKeyId = process.env.APPLE_KEY_ID;
+  /**
+   * NAVER
+   */
+  naverId: process.env.NAVER_ID,
+  naverSecret: process.env.NAVER_SECRET,
+  naverAccessKey: process.env.NAVER_ACCESSKEY,
+  naverSecretKey: process.env.NAVER_SECRETKEY,
+  naverClientId: process.env.NAVER_CLIENT_ID,
+  NaverClientSecret: process.env.NAVER_CLIENT_SECRET,
 
-/**
- * S3
- */
-const s3AccessKeyID = process.env.S3_ACCESS_KEY_ID;
-const s3SecretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+  /**
+   * APPLE
+   */
+  appleClientId: process.env.APPLE_CLIENT_ID,
+  appleTeamId: process.env.APPLE_TEAM_ID,
+  appleKeyId: process.env.APPLE_KEY_ID,
 
-/**
- * JWT
- */
-const jwtSecret = process.env.JWT_SECRET;
+  /**
+   * S3
+   */
+  s3AccessKeyID: process.env.S3_ACCESS_KEY_ID,
+  s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 
-/**
- * COOKIE
- */
-const cookieSecret = process.env.COOKIE_SECRET;
+  /**
+   * JWT
+   */
+  jwtSecret: process.env.JWT_SECRET,
 
-/**
- * CSRF
- */
-const csrfToken = process.env.CSRF_TOKEN;
+  /**
+   * COOKIE
+   */
+  cookieSecret: process.env.COOKIE_SECRET,
 
-export {
-  env,
-  port,
-  kakaoId,
-  kakaoAdminKey,
-  naverId,
-  naverSecret,
-  naverAccessKey,
-  naverSecretKey,
-  naverClientId,
-  NaverClientSecret,
-  appleClientId,
-  appleTeamId,
-  appleKeyId,
-  s3AccessKeyID,
-  s3SecretAccessKey,
-  jwtSecret,
-  cookieSecret,
-  csrfToken,
+  /**
+   * CSRF
+   */
+  csrfToken: process.env.CSRF_TOKEN,
 };
