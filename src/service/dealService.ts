@@ -7,6 +7,7 @@ import { logger } from '../config/winston';
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage } from '../modules/constants';
 import { dealDto } from '../dto/deal/dealDto';
+const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
   try {
@@ -52,4 +53,4 @@ const createDeal = async (req, res, next) => {
   }
 };
 
-export { createDeal };
+export default { createDeal };
