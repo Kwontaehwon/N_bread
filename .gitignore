@@ -6,3 +6,4 @@ logs/
 AuthKey_689F483NJ3.p8
 dist
 .vscode
+.DS_Store

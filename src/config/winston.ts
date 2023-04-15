@@ -27,11 +27,17 @@ const colors = {
 
 winston.addColors(colors);
 
+const printFormat = winston.format.printf((info) => {
+  let logString = `${info.timestamp} ${info.level}  -> ${info.message}`;
+  if (info.level == 'error') {
+    logString += `\n ${info.stack}`;
+  }
+  return logString;
+});
+
 const format = winston.format.combine(
   winston.format.timestamp({ format: ' YYYY-MM-DD HH:MM:SS ||' }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}  -> ${info.message}`,
-  ),
+  printFormat,
 );
 
 const logger = winston.createLogger({
