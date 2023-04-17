@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model comments {
+  id        Int       @id @default(autoincrement())
+  content   String    @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.DateTime(0)
+  dealId    Int?
+  userId    Int?
+  deals     deals?    @relation(fields: [dealId], references: [id], onDelete: Cascade, map: "comments_ibfk_1")
+  users     users?    @relation(fields: [userId], references: [id], map: "comments_ibfk_2")
+  replies   replies[]
+
+  @@index([dealId], map: "dealId")
+  @@index([userId], map: "userId")
+}
+
+model dealImages {
+  id        Int       @id @default(autoincrement())
+  dealId    Int
+  dealImage String    @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.DateTime(0)
+  deals     deals     @relation(fields: [dealId], references: [id], onDelete: Cascade, map: "dealimages_ibfk_1")
+
+  @@index([dealId], map: "dealId")
+}
+
+model dealReports {
+  id         Int       @id @default(autoincrement())
+  content    String    @db.VarChar(255)
+  title      String?   @db.VarChar(255)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime? @db.DateTime(0)
+  dealId     Int?
+  reporterId Int?
+  deals      deals?    @relation(fields: [dealId], references: [id], map: "dealreports_ibfk_1")
+  users      users?    @relation(fields: [reporterId], references: [id], map: "dealreports_ibfk_2")
+
+  @@index([dealId], map: "dealId")
+  @@index([reporterId], map: "reporterId")
+}
+
+model deals {
+  id             Int           @id @default(autoincrement())
+  loc3           String        @db.VarChar(255)
+  mystatus       String?       @db.VarChar(255)
+  title          String        @db.VarChar(255)
+  link           String        @db.VarChar(255)
+  totalPrice     Int
+  personalPrice  Int
+  currentMember  Int
+  totalMember    Int
+  dealDate       DateTime      @db.DateTime(0)
+  dealPlace      String        @db.VarChar(255)
+  content        String        @db.VarChar(255)
+  status         String        @default("모집중") @db.VarChar(255)
+  loc1           String?       @db.VarChar(255)
+  loc2           String?       @db.VarChar(255)
+  isCertificated Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  deletedAt      DateTime?     @db.DateTime(0)
+  userId         Int?
+  comments       comments[]
+  dealImages     dealImages[]
+  dealReports    dealReports[]
+  users          users?        @relation(fields: [userId], references: [id], map: "deals_ibfk_1")
+  groups         groups[]
+  prices         prices[]
+  replies        replies[]
+
+  @@index([userId], map: "userId")
+}
+
+model events {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  eventImage  String?   @db.VarChar(255)
+  type        String    @db.VarChar(255)
+  target      String    @db.VarChar(255)
+  eventStatus Int       @default(-1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? @db.DateTime(0)
+}
+
+model groups {
+  id        Int       @id @default(autoincrement())
+  amount    Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.DateTime(0)
+  dealId    Int?
+  userId    Int?
+  deals     deals?    @relation(fields: [dealId], references: [id], map: "groups_ibfk_1")
+  users     users?    @relation(fields: [userId], references: [id], map: "groups_ibfk_2")
+
+  @@index([dealId], map: "dealId")
+  @@index([userId], map: "userId")
+}
+
+model prices {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(255)
+  link        String?   @db.VarChar(255)
+  image       String?   @db.VarChar(255)
+  lPrice      Int?
+  hPrice      String?   @db.VarChar(255)
+  mallName    String?   @db.VarChar(255)
+  productId   String?   @db.VarChar(255)
+  productType String?   @db.VarChar(255)
+  brand       String?   @db.VarChar(255)
+  maker       String?   @db.VarChar(255)
+  category1   String?   @db.VarChar(255)
+  category2   String?   @db.VarChar(255)
+  category3   String?   @db.VarChar(255)
+  category4   String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? @db.DateTime(0)
+  dealId      Int?
+  deals       deals?    @relation(fields: [dealId], references: [id], map: "prices_ibfk_1")
+
+  @@index([dealId], map: "dealId")
+}
+
+model replies {
+  id        Int       @id @default(autoincrement())
+  content   String    @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.DateTime(0)
+  parentId  Int?
+  dealId    Int?
+  userId    Int?
+  comments  comments? @relation(fields: [parentId], references: [id], map: "replies_ibfk_1")
+  deals     deals?    @relation(fields: [dealId], references: [id], map: "replies_ibfk_2")
+  users     users?    @relation(fields: [userId], references: [id], map: "replies_ibfk_3")
+
+  @@index([dealId], map: "dealId")
+  @@index([parentId], map: "parentId")
+  @@index([userId], map: "userId")
+}
+
+model userReports {
+  id                                      Int       @id @default(autoincrement())
+  content                                 String    @db.VarChar(255)
+  title                                   String?   @db.VarChar(255)
+  createdAt                               DateTime  @default(now())
+  updatedAt                               DateTime  @updatedAt
+  deletedAt                               DateTime? @db.DateTime(0)
+  reporterId                              Int?
+  reportedUserId                          Int?
+  users_userReports_reporterIdTousers     users?    @relation("userReports_reporterIdTousers", fields: [reporterId], references: [id], map: "userreports_ibfk_1")
+  users_userReports_reportedUserIdTousers users?    @relation("userReports_reportedUserIdTousers", fields: [reportedUserId], references: [id], map: "userreports_ibfk_2")
+
+  @@index([reportedUserId], map: "reportedUserId")
+  @@index([reporterId], map: "reporterId")
+}
+
+model users {
+  id                                            Int           @id @default(autoincrement())
+  email                                         String?       @db.VarChar(40)
+  nick                                          String?       @db.VarChar(15)
+  password                                      String?       @db.VarChar(100)
+  provider                                      String        @default("local") @db.VarChar(255)
+  snsId                                         String?       @db.VarChar(255)
+  accessToken                                   String?       @db.VarChar(255)
+  curLocation1                                  String?       @db.VarChar(255)
+  curLocation2                                  String?       @db.VarChar(255)
+  curLocation3                                  String?       @db.VarChar(255)
+  curLocationA                                  String?       @db.VarChar(255)
+  curLocationB                                  String?       @db.VarChar(255)
+  curLocationC                                  String?       @db.VarChar(255)
+  userStatus                                    String?       @db.VarChar(255)
+  refreshToken                                  String?       @db.VarChar(255)
+  isNewUser                                     Boolean       @default(true)
+  kakaoNumber                                   String?       @db.VarChar(255)
+  createdAt                                     DateTime      @default(now())
+  updatedAt                                     DateTime      @updatedAt
+  deletedAt                                     DateTime?     @db.DateTime(0)
+  comments                                      comments[]
+  dealReports                                   dealReports[]
+  deals                                         deals[]
+  groups                                        groups[]
+  replies                                       replies[]
+  userReports_userReports_reporterIdTousers     userReports[] @relation("userReports_reporterIdTousers")
+  userReports_userReports_reportedUserIdTousers userReports[] @relation("userReports_reportedUserIdTousers")
+}
