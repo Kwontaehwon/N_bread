@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { util } from '../modules/index';
-import { Deal, User, Group } from '../database/models';
 import { userRepository, groupRepository, dealRepository } from '../repository';
 import { dealParam } from '../dto/deal/dealParam';
 import { logger } from '../config/winston';
@@ -12,7 +11,7 @@ const admin = require('firebase-admin');
 const createDeal = async (req, res, next) => {
   try {
     const dealParam: dealParam = req.body; // currentMember 수정 필요.
-    const userId = req.decoded.id;
+    const userId = req.params.id;
     const user = await userRepository.findUserById(userId);
     if (!user) {
       throw errorGenerator({
@@ -22,7 +21,7 @@ const createDeal = async (req, res, next) => {
     }
     const group = await groupRepository.createGroup(1, userId);
     const deal = await dealRepository.createDeal(dealParam, user);
-    await group.update({ dealId: deal.id }); // 업데이트
+    await groupRepository.updateDealId(group.id, deal.id);
     const fcmTokenJson = await axios.get(
       `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`,
     );
