@@ -4,6 +4,14 @@ import { dealParam } from '../dto/deal/dealParam';
 import { users } from '@prisma/client';
 import prisma from '../prisma';
 
+const findDealById = async (id: number) => {
+  return prisma.deals.findUnique({
+    where: {
+      id: id,
+    },
+  });
+};
+
 const createDeal = async (dealParam: dealParam, user: users) => {
   return prisma.deals.create({
     data: {
@@ -24,4 +32,4 @@ const createDeal = async (dealParam: dealParam, user: users) => {
   });
 };
 
-export { createDeal };
+export { findDealById, createDeal };
