@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { util } from '../modules/index';
-import { Deal, User, Group } from '../database/models';
 import { userRepository, groupRepository, dealRepository } from '../repository';
 import { dealParam } from '../dto/deal/dealParam';
 import { logger } from '../config/winston';
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage } from '../modules/constants';
 import { dealDto } from '../dto/deal/dealDto';
+import prisma from '../prisma';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
@@ -22,7 +22,7 @@ const createDeal = async (req, res, next) => {
     }
     const group = await groupRepository.createGroup(1, userId);
     const deal = await dealRepository.createDeal(dealParam, user);
-    await group.update({ dealId: deal.id }); // 업데이트
+    await groupRepository.updateDealId(group.id, deal.id);
     const fcmTokenJson = await axios.get(
       `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`,
     );
@@ -53,4 +53,62 @@ const createDeal = async (req, res, next) => {
   }
 };
 
-export default { createDeal };
+const deleteDeal = async (req, res, next) => {
+  try {
+    console.log(req.params.dealId);
+    const dealId: number = +req.params.dealId;
+    const deal = await dealRepository.findDealById(dealId);
+
+    logger.info(dealId);
+
+    if (!deal) {
+      return util.jsonResponse(
+        res,
+        404,
+        'dealId에 매칭되는 deal를 찾을 수 없습니다.',
+        false,
+        null,
+      );
+    }
+    if (deal.userId != req.decoded.id) {
+      return util.jsonResponse(
+        res,
+        403,
+        '글의 작성자만 거래를 삭제할 수 있습니다.',
+        false,
+        null,
+      );
+    }
+    const groups = await prisma.groups.findMany({ where: { dealId: deal.id } });
+    if (groups.length > 1) {
+      return util.jsonResponse(
+        res,
+        400,
+        '참여자가 있으므로 거래를 삭제할 수 없습니다.',
+        false,
+        null,
+      );
+    }
+    const deletedDeal = await prisma.deals.delete({
+      where: { id: dealId },
+    });
+    const comment = await prisma.comments.deleteMany({
+      where: { dealId: dealId },
+    });
+    const reply = await prisma.replies.deleteMany({
+      where: { dealId: dealId },
+    });
+    return util.jsonResponse(
+      res,
+      200,
+      '정상적으로 거래를 삭제하였습니다.',
+      true,
+      null,
+    );
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+export default { createDeal, deleteDeal };

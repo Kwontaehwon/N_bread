@@ -1,10 +1,13 @@
 const { User } = require('../database/models');
 const { errorGenerator } = require('../modules/error/errorGenerator');
 const { responseMessage, statusCode } = require('../modules/constants');
+import prisma from '../prisma';
+
 const findUserById = async (id: number) => {
-  return await User.findOne({
-    where: { Id: id },
-    paranoid: false,
+  return prisma.users.findUnique({
+    where: {
+      id: id,
+    },
   });
 };
 

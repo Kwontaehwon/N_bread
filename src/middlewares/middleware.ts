@@ -30,8 +30,7 @@ const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log('verify');
-    req.params = jwt.verify(req.headers.authorization, config.jwtSecret);
+    req.decoded = jwt.verify(req.headers.authorization, config.jwtSecret);
     return next();
   } catch (error) {
     logger.error(error);

@@ -760,60 +760,8 @@ dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
 // 거래 삭제
 dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
   // #swagger.summary = '거래 삭제'
-  try {
-    const deal = await Deal.findOne({ where: { id: req.params.dealId } });
-    if (!deal) {
-      return util.jsonResponse(
-        res,
-        404,
-        'dealId에 매칭되는 deal를 찾을 수 없습니다.',
-        false,
-        null,
-      );
-    }
-    if (deal.userId != req.decoded.id) {
-      return util.jsonResponse(
-        res,
-        403,
-        '글의 작성자만 거래를 삭제할 수 있습니다.',
-        false,
-        null,
-      );
-    }
-    const groups = await Group.findAll({ where: { dealId: deal.id } });
-    if (groups.length > 1) {
-      return util.jsonResponse(
-        res,
-        400,
-        '참여자가 있으므로 거래를 삭제할 수 없습니다.',
-        false,
-        null,
-      );
-    }
-    deal.destroy({ truncate: true });
-    const comment = Comment.findAll({ where: { dealId: req.params.dealId } });
-    console.log(comment);
-    //comment.update({isDeleted:1});
-    const reply = Reply.findAll({ where: { dealId: req.params.dealId } });
-    console.log(reply);
-    //reply.update({isDeleted:1});
-    return util.jsonResponse(
-      res,
-      200,
-      '정상적으로 거래를 삭제하였습니다.',
-      true,
-      null,
-    );
-  } catch (error) {
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[거래 삭제] Delete /deals/:dealId 서버 에러',
-      false,
-      null,
-    );
-  }
+  logger.info('router dealid : ' + req.params.dealId);
+  dealService.deleteDeal(req, res, next);
 });
 
 // 참여자 : 거래 참여하기
