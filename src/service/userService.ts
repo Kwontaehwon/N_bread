@@ -729,7 +729,7 @@ const addLocation = async (req, res, next) => {
   }
 };
 
-export default {
+export {
   getUser,
   getMypageDeals,
   getNaverGeoLocation,
