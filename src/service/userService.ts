@@ -370,12 +370,12 @@ const getUserLocation = async (
 };
 
 // PUT users/:userId
-const putUserNick = async (req, res, next) => {
+const changeUserNick = async (req, res, next) => {
   // #swagger.summary = '닉네임 변경'
   try {
     const userId = req.params.userId;
     const { nick } = req.body;
-    const result = await userRepository.putUserNick(userId, nick);
+    const result = await userRepository.changeUserNick(userId, nick);
     logger.info(
       `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
     );
@@ -734,7 +734,7 @@ export default {
   getMypageDeals,
   getNaverGeoLocation,
   getUserLocation,
-  putUserNick,
+  changeUserNick,
   checkUserNick,
   postReportUser,
   isSetNickname,

@@ -11,7 +11,7 @@ const findUserById = async (id: number) => {
   });
 };
 
-const putUserNick = async (id: number, nickName: string) => {
+const changeUserNick = async (id: number, nickName: string) => {
   const user = await User.findOne({ where: { Id: id } });
   console.log(id, nickName, 'this is repository');
   if (!user) {
@@ -37,4 +37,4 @@ const putUserNick = async (id: number, nickName: string) => {
   return result;
 };
 
-export { findUserById, putUserNick };
+export { findUserById, changeUserNick };
