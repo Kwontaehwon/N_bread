@@ -1,7 +1,8 @@
 const { User } = require('../database/models');
 const { errorGenerator } = require('../modules/error/errorGenerator');
 const { responseMessage, statusCode } = require('../modules/constants');
-import prisma from '../prisma';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 const findUserById = async (id: number) => {
   return prisma.users.findUnique({
@@ -12,27 +13,31 @@ const findUserById = async (id: number) => {
 };
 
 const changeUserNick = async (id: number, nickName: string) => {
-  const user = await User.findOne({ where: { Id: id } });
-  console.log(id, nickName, 'this is repository');
+  const user = await prisma.users.findFirst({ where: { id: id } });
   if (!user) {
     throw errorGenerator({
       message: responseMessage.USER_NOT_FOUND,
       statusCode: statusCode.NOT_FOUND,
     });
   }
-  const isDuplicated = await User.findOne({ where: { nick: nickName } });
+  const isDuplicated = await prisma.users.findFirst({
+    where: { nick: nickName },
+  });
   if (isDuplicated) {
     throw errorGenerator({
       message: responseMessage.NICKNAME_DUPLICATED,
       statusCode: statusCode.BAD_REQUEST,
     });
   }
-  await user.update({
-    nick: nickName,
+  await prisma.users.update({
+    where: { id },
+    data: {
+      nick: nickName,
+    },
   });
   const result = {
     userId: user.id,
-    nick: user.nickName,
+    nick: nickName,
   };
   return result;
 };
