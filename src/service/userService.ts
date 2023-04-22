@@ -81,11 +81,11 @@ const getMypageDeals = async (req, res, next) => {
       var memberId = [];
 
       const suggesterDeal = await Deal.findAll({
-        where: { userId: user.id },
+        where: { userId: user!.id },
       });
-      for (let i = 0; i < suggesterDeal.length; i++) {
-        suggesterId.push(suggesterDeal[i]['id']);
-      }
+      // for (let i = 0; i < suggesterDeal.length; i++) {
+      //   suggesterId.push(suggesterDeal[i]['id']);
+      // }
       //logger.debug()
       console.log('suggesterId : ', suggesterId);
 
@@ -125,11 +125,11 @@ const getMypageDeals = async (req, res, next) => {
           else toSetStatus['status'] = '모집중';
         }
 
-        if (suggesterId.includes(deal[i]['id'])) {
-          deal[i]['mystatus'] = '제안자';
-        } else {
-          deal[i]['mystatus'] = '참여자';
-        }
+        // if (suggesterId.includes(deal[i]['id'])) {
+        //   deal[i]['mystatus'] = '제안자';
+        // } else {
+        //   deal[i]['mystatus'] = '참여자';
+        // }
       }
       logger.info(
         `users/deals/:userId | userId : ${req.params.userId}의 마이페이지에 글을 반환합니다.`,
