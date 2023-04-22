@@ -169,8 +169,8 @@ const getNaverGeoLocation = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
-          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId!,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret!,
         },
       })
       .then(async (Response) => {
@@ -247,8 +247,8 @@ const getLocationByNaverMapsApi = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
-          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId!,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret!,
         },
       })
       .then(async (Response) => {
@@ -353,9 +353,9 @@ const getUserLocation = async (
     const user = await userRepository.findUserById(+req.params.id);
     const data: UserDto = {
       id: +req.params.id,
-      curLocation1: user.curLocation1,
-      curLocation2: user.curLocation2,
-      curLocation3: user.curLocation3,
+      curLocation1: user!.curLocation1!,
+      curLocation2: user!.curLocation2!,
+      curLocation3: user!.curLocation3!,
     };
     logger.info(
       `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
