@@ -59,7 +59,7 @@ const getUser = async (req, res, next) => {
 const getMypageDeals = async (req, res, next) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
-    const user = userRepository.findUserById(+req.decoded.id);
+    const user = await userRepository.findUserById(+req.decoded.id);
     const refDeal = await Group.findAll({ where: { userId: req.decoded.id } });
     console.log('refDeal : ' + refDeal);
     if (refDeal.length === 0) {
