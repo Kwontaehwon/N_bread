@@ -111,4 +111,4 @@ const deleteDeal = async (req, res, next) => {
   }
 };
 
-export default { createDeal, deleteDeal };
+export { createDeal, deleteDeal };

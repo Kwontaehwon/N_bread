@@ -1,2 +1,3 @@
-export { default as userService } from './userService';
-export { default as dealService } from './dealService';
+import * as userService from './userService';
+import * as dealService from './dealService';
+export { userService, dealService };
