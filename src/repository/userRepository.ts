@@ -13,33 +13,37 @@ const findUserById = async (id: number) => {
 };
 
 const changeUserNick = async (id: number, nickName: string) => {
-  const user = await prisma.users.findFirst({ where: { id: id } });
-  if (!user) {
-    throw errorGenerator({
-      message: responseMessage.USER_NOT_FOUND,
-      statusCode: statusCode.NOT_FOUND,
+  try {
+    const user = await prisma.users.findFirst({ where: { id: id } });
+    if (!user) {
+      throw errorGenerator({
+        message: responseMessage.USER_NOT_FOUND,
+        statusCode: statusCode.NOT_FOUND,
+      });
+    }
+    const isDuplicated = await prisma.users.findFirst({
+      where: { nick: nickName },
     });
-  }
-  const isDuplicated = await prisma.users.findFirst({
-    where: { nick: nickName },
-  });
-  if (isDuplicated) {
-    throw errorGenerator({
-      message: responseMessage.NICKNAME_DUPLICATED,
-      statusCode: statusCode.BAD_REQUEST,
+    if (isDuplicated) {
+      throw errorGenerator({
+        message: responseMessage.NICKNAME_DUPLICATED,
+        statusCode: statusCode.BAD_REQUEST,
+      });
+    }
+    const updateRes = await prisma.users.update({
+      where: { id },
+      data: {
+        nick: nickName,
+      },
     });
+    const result = {
+      userId: updateRes.id,
+      nick: updateRes.nick,
+    };
+    return result;
+  } catch (error) {
+    throw error;
   }
-  await prisma.users.update({
-    where: { id },
-    data: {
-      nick: nickName,
-    },
-  });
-  const result = {
-    userId: user.id,
-    nick: nickName,
-  };
-  return result;
 };
 
 export { findUserById, changeUserNick };
