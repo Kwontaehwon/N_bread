@@ -1,13 +1,13 @@
-const { User } = require('./user');
-const { Deal } = require('./deal');
-const { Group } = require('./group');
-const { Comment } = require('./comment');
-const { Reply } = require('./reply');
-const { DealImage } = require('./dealImage');
-const { DealReport } = require('./dealReport');
-const { UserReport } = require('./userReport');
-const { Event } = require('./event');
-const { Price } = require('./price');
+import { User } from './user';
+import { Deal } from './deal';
+import { Group } from './group';
+import { Comment } from './comment';
+import { Reply } from './reply';
+import { DealImage } from './dealImage';
+import { DealReport } from './dealReport';
+import { UserReport } from './userReport';
+import { Event } from './event';
+import { Price } from './price';
 
 export {
   User,

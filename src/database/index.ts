@@ -1,6 +1,6 @@
-const model = require('./models');
-const Sequelize = require('sequelize');
+import * as model from './models';
 import config from '../config';
+import { Sequelize } from 'sequelize';
 const env = config.env || 'development';
 const dbConfig = require('../config/config.json')[env];
 
