@@ -1,5 +1,5 @@
-const winston = require('winston');
-require('winston-daily-rotate-file');
+import winston from 'winston';
+import 'winston-daily-rotate-file';
 import config from '../config';
 const logDir = './logs';
 
