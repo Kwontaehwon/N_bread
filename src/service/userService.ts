@@ -59,7 +59,7 @@ const getUser = async (req, res, next) => {
 const getMypageDeals = async (req, res, next) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
-    const user = userRepository.findUserById(+req.decoded.id);
+    const user = await userRepository.findUserById(+req.decoded.id);
     const refDeal = await Group.findAll({ where: { userId: req.decoded.id } });
     console.log('refDeal : ' + refDeal);
     if (refDeal.length === 0) {
@@ -81,11 +81,11 @@ const getMypageDeals = async (req, res, next) => {
       var memberId = [];
 
       const suggesterDeal = await Deal.findAll({
-        where: { userId: user.id },
+        where: { userId: user!.id },
       });
-      for (let i = 0; i < suggesterDeal.length; i++) {
-        suggesterId.push(suggesterDeal[i]['id']);
-      }
+      // for (let i = 0; i < suggesterDeal.length; i++) {
+      //   suggesterId.push(suggesterDeal[i]['id']);
+      // }
       //logger.debug()
       console.log('suggesterId : ', suggesterId);
 
@@ -125,11 +125,11 @@ const getMypageDeals = async (req, res, next) => {
           else toSetStatus['status'] = '모집중';
         }
 
-        if (suggesterId.includes(deal[i]['id'])) {
-          deal[i]['mystatus'] = '제안자';
-        } else {
-          deal[i]['mystatus'] = '참여자';
-        }
+        // if (suggesterId.includes(deal[i]['id'])) {
+        //   deal[i]['mystatus'] = '제안자';
+        // } else {
+        //   deal[i]['mystatus'] = '참여자';
+        // }
       }
       logger.info(
         `users/deals/:userId | userId : ${req.params.userId}의 마이페이지에 글을 반환합니다.`,
@@ -169,8 +169,8 @@ const getNaverGeoLocation = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
-          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId!,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret!,
         },
       })
       .then(async (Response) => {
@@ -247,8 +247,8 @@ const getLocationByNaverMapsApi = async (req, res) => {
     axios
       .get(url, {
         headers: {
-          'X-NCP-APIGW-API-KEY-ID': config.naverClientId,
-          'X-NCP-APIGW-API-KEY': config.NaverClientSecret,
+          'X-NCP-APIGW-API-KEY-ID': config.naverClientId!,
+          'X-NCP-APIGW-API-KEY': config.NaverClientSecret!,
         },
       })
       .then(async (Response) => {
@@ -353,9 +353,9 @@ const getUserLocation = async (
     const user = await userRepository.findUserById(+req.params.id);
     const data: UserDto = {
       id: +req.params.id,
-      curLocation1: user.curLocation1,
-      curLocation2: user.curLocation2,
-      curLocation3: user.curLocation3,
+      curLocation1: user!.curLocation1!,
+      curLocation2: user!.curLocation2!,
+      curLocation3: user!.curLocation3!,
     };
     logger.info(
       `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
@@ -370,12 +370,12 @@ const getUserLocation = async (
 };
 
 // PUT users/:userId
-const putUserNick = async (req, res, next) => {
+const changeUserNick = async (req, res, next) => {
   // #swagger.summary = '닉네임 변경'
   try {
     const userId = req.params.userId;
     const { nick } = req.body;
-    const result = await userRepository.putUserNick(userId, nick);
+    const result = await userRepository.changeUserNick(+userId, nick);
     logger.info(
       `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
     );
@@ -729,12 +729,12 @@ const addLocation = async (req, res, next) => {
   }
 };
 
-export default {
+export {
   getUser,
   getMypageDeals,
   getNaverGeoLocation,
   getUserLocation,
-  putUserNick,
+  changeUserNick,
   checkUserNick,
   postReportUser,
   isSetNickname,
