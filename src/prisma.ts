@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const prisma:PrismaClient = new PrismaClient();
 
 prisma.$use(async (params, next) => {
   if (params.action === 'findUnique' || params.action === 'findFirst') {
