@@ -2,7 +2,7 @@ import { getUser, changeUserNick } from '../src/service/userService';
 import { User } from '../src/database/models/user';
 import { responseMessage, statusCode } from '../src/modules/constants';
 import { success, fail } from '../src/modules/util';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../src/prisma';
 import { ErrorWithStatusCode } from '../src/modules/error/errorGenerator';
 
 describe('getUser', () => {
