@@ -1,13 +1,13 @@
-const passport = require('passport');
-const { passportLocal } = require('./localStrategy');
-const { passportKakao } = require('./kakaoStrategy');
-const { passportNaver } = require('./naverStrategy');
-const { passportApple } = require('./appleStrategy');
+import passport from 'passport';
+import { passportLocal } from './localStrategy';
+import { passportKakao } from './kakaoStrategy';
+import { passportNaver } from './naverStrategy';
+import { passportApple } from './appleStrategy';
 
-const { User } = require('../../database/models/user');
+import { User } from '../../database/models/user';
 
 const passportIndex = () => {
-  passport.serializeUser((user, done) => {
+  passport.serializeUser((user: any, done) => {
     done(null, user.id);
   });
 
