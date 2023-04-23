@@ -7,7 +7,8 @@
     "start": "tsc && node dist/app.js",
     "test": "jest",
     "build": "tsc",
-    "tsnode": "ts-node src/app"
+    "tsnode": "ts-node src/app",
+    "coverage":"jest --coverage"
   },
   "author": "Kwon TaeHyun",
   "license": "ISC",
