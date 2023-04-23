@@ -2,7 +2,6 @@ const { User } = require('../database/models');
 import { errorGenerator } from '../modules/error/errorGenerator';
 const { responseMessage, statusCode } = require('../modules/constants');
 import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
 
 const findUserById = async (id: number) => {
   return prisma.users.findUnique({
