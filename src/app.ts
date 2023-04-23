@@ -16,7 +16,7 @@ import config from './config';
 const { router } = require('./routes/index');
 const { db } = require('./database/');
 const { passportIndex } = require('./config/passport');
-const { errorHandler } = require('./modules/error/errorHandler');
+import { errorHandler } from './modules/error/errorHandler';
 const { logger } = require('./config/winston');
 const app = express();
 
