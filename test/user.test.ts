@@ -4,7 +4,6 @@ import { responseMessage, statusCode } from '../src/modules/constants';
 import { success, fail } from '../src/modules/util';
 import { PrismaClient } from '@prisma/client';
 import { ErrorWithStatusCode } from '../src/modules/error/errorGenerator';
-const prisma = new PrismaClient();
 
 describe('getUser', () => {
   const req = {
