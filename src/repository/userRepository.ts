@@ -1,5 +1,5 @@
 const { User } = require('../database/models');
-const { errorGenerator } = require('../modules/error/errorGenerator');
+import { errorGenerator } from '../modules/error/errorGenerator';
 const { responseMessage, statusCode } = require('../modules/constants');
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
@@ -18,7 +18,7 @@ const changeUserNick = async (id: number, nickName: string) => {
     if (!user) {
       throw errorGenerator({
         message: responseMessage.USER_NOT_FOUND,
-        statusCode: statusCode.NOT_FOUND,
+        code: statusCode.NOT_FOUND,
       });
     }
     const isDuplicated = await prisma.users.findFirst({
@@ -27,7 +27,7 @@ const changeUserNick = async (id: number, nickName: string) => {
     if (isDuplicated) {
       throw errorGenerator({
         message: responseMessage.NICKNAME_DUPLICATED,
-        statusCode: statusCode.BAD_REQUEST,
+        code: statusCode.BAD_REQUEST,
       });
     }
     const updateRes = await prisma.users.update({
