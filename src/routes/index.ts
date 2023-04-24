@@ -1,13 +1,13 @@
 const express = require('express');
-const { User } = require('../database/models');
-const { verifyToken } = require('../middlewares/middleware');
-const { authRouter } = require('./authRouter');
-const { dealRouter } = require('./dealRouter');
-const { userRouter } = require('./userRouter');
-const { commentRouter } = require('./commentRouter');
-const { eventRouter } = require('./eventRouter');
-const { priceRouter } = require('./priceRouter');
-const { util } = require('../modules/');
+import { User } from '../database/models';
+import { verifyToken } from '../middlewares/middleware';
+import { authRouter } from './authRouter';
+import { dealRouter } from './dealRouter';
+import { userRouter } from './userRouter';
+import { commentRouter } from './commentRouter';
+import { eventRouter } from './eventRouter';
+import { priceRouter } from './priceRouter';
+import { util } from '../modules/';
 const router = express.Router();
 
 router.use(
