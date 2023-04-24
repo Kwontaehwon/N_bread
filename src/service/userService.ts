@@ -51,6 +51,7 @@ const getUser = async (req, res, next) => {
       500,
       '[유저 정보 반환] GET users/:userId 서버 에러',
       false,
+      {},
     ); // #swagger.responses[500]
   }
 };
@@ -143,6 +144,7 @@ const getMypageDeals = async (req, res, next) => {
       500,
       '[마이페이지 거래내역] /users/deals/:userId 서버 에러',
       false,
+      {},
     );
   }
 };
@@ -232,6 +234,7 @@ const getNaverGeoLocation = async (req, res) => {
       500,
       '[Naver GeoLocation] users/location/:userId/:latitude/:longitude 서버 에러',
       false,
+      {},
     );
   }
 };
@@ -303,6 +306,7 @@ const getLocationByNaverMapsApi = async (req, res) => {
       500,
       '[getLocationByNaver] users/location/:latitude/:longitude 서버 에러',
       false,
+      {},
     );
   }
 };
@@ -339,6 +343,7 @@ const setLocationByNaverMapsApi = async (req, res) => {
       500,
       '[setLocationByNaver] users/location/:userId/:loc1/:loc2/:loc3 서버 에러',
       false,
+      {},
     );
   }
 };
@@ -431,6 +436,7 @@ const checkUserNick = async (req, res, next) => {
       500,
       `[닉네임 중복 체크] /check/:userId/:nick 서버 에러`,
       false,
+      {},
     );
   }
 };

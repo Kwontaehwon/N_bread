@@ -1,6 +1,6 @@
-const { User } = require('../database/models');
+
 import { errorGenerator } from '../modules/error/errorGenerator';
-const { responseMessage, statusCode } = require('../modules/constants');
+import { responseMessage, statusCode } from '../modules/constants';
 import prisma from '../prisma';
 
 const findUserById = async (id: number) => {
