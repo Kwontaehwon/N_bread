@@ -1,9 +1,6 @@
-const fetch = require('node-fetch');
-
 const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcrypt');
-const path = require('path');
 const {
   verifyToken,
   isLoggedIn,
@@ -13,19 +10,12 @@ const { User } = require('../database/models');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const { logger } = require('../config/winston');
-const { response } = require('express');
 const axios = require('axios');
 const qs = require('qs');
 import config from '../config';
-
-const { serveWithOptions } = require('swagger-ui-express');
-const { urlencoded } = require('body-parser');
-const { session } = require('passport');
 const { Slack } = require('../class/slack');
 const { util } = require('../modules/');
 const authRouter = express.Router();
-
-function createClientSecret() {}
 
 authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
   // #swagger.summary = '로컬 회원가입'
