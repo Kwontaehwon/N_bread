@@ -1,38 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const url = require('url');
-const path = require('path');
-const axios = require('axios');
-require('dotenv').config();
+import express from 'express';
+import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 const spawn = require('child_process').spawn;
-const { Slack2 } = require('../class/slack2');
-
-const {
-  isLoggedIn,
-  isNotLoggedIn,
-  verifyToken,
-} = require('../middlewares/middleware');
-const {
-  User,
-  Group,
-  Deal,
-  Comment,
-  Reply,
-  sequelize,
-  Price,
-  DealImage,
-} = require('../database/models');
-const { json } = require('body-parser');
-const { any, reject } = require('bluebird');
-const { response } = require('express');
-const { resolve } = require('path');
-const { Op } = require('sequelize');
-const { logger } = require('../config/winston');
-const admin = require('firebase-admin');
-const { env } = require('process');
+import { Slack2 } from '../class/slack2';
+import { Deal, Price, DealImage } from '../database/models';
+import { Op } from 'sequelize';
+import { logger } from '../config/winston';
+import { env } from 'process';
 var request = require('request');
-const { error } = require('console');
-const { util } = require('../modules/');
+import { util } from '../modules/';
 const priceRouter = express.Router();
 
 priceRouter.use(express.json());

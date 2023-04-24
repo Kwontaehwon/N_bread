@@ -1,32 +1,15 @@
 import { dealImageUpload } from '../middlewares/upload';
 
 const express = require('express');
-const axios = require('axios');
-const admin = require('firebase-admin');
-const { Slack } = require('../class/slack');
-import config from '../config';
-const { upload } = require('../middlewares/upload');
+import axios from 'axios';
+import admin from 'firebase-admin';
 import { dealService } from '../service';
 
-const {
-  User,
-  Group,
-  Deal,
-  Comment,
-  Reply,
-  DealImage,
-  DealReport,
-} = require('../database/models');
-const {
-  isLoggedIn,
-  isNotLoggedIn,
-  verifyToken,
-} = require('../middlewares/middleware');
-const { Op, Sequelize } = require('sequelize');
-const { logger } = require('../config/winston');
-const { timeLog } = require('console');
-const { link } = require('fs');
-const { util } = require('../modules');
+import { User, Group, Deal, DealImage, DealReport } from '../database/models';
+import { verifyToken } from '../middlewares/middleware';
+import { Op, Sequelize } from 'sequelize';
+import { logger } from '../config/winston';
+import { util } from '../modules';
 const dealRouter = express.Router();
 
 dealRouter.post('/:dealId/img/coupang', async (req, res) => {
@@ -43,6 +26,7 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
         400,
         `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang 에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
         false,
+        {},
       );
     }
     const targetDeal = await Deal.findOne({ where: { id: dealId } });
@@ -55,6 +39,7 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
         404,
         `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
         false,
+        {},
       );
     }
     const coupangImage = await DealImage.create({
@@ -80,6 +65,7 @@ dealRouter.post('/:dealId/img/coupang', async (req, res) => {
       500,
       '[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang',
       false,
+      {},
     );
   }
 });
@@ -100,6 +86,7 @@ dealRouter.post(
           400,
           `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
           false,
+          {},
         );
       }
       const targetDeal = await Deal.findOne({ where: { id: dealId } });
@@ -112,6 +99,7 @@ dealRouter.post(
           404,
           `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
           false,
+          {},
         );
       }
       const result = [];
@@ -147,6 +135,7 @@ dealRouter.post(
         500,
         '[거래 이미지 생성] POST /deals/:dealId/img',
         false,
+        {},
       );
     }
   },
@@ -290,6 +279,7 @@ dealRouter.get('/all/:range/:region', verifyToken, async (req, res, next) => {
       500,
       `[홈 전체 글 리스트] GET /deals/all/:region`,
       false,
+      {},
     );
   }
 });
@@ -573,6 +563,7 @@ dealRouter.get('/all/:region', verifyToken, async (req, res, next) => {
       500,
       '[홈 전체 글 리스트] GET /deals/all/:region',
       false,
+      {},
     );
   }
 });
@@ -789,7 +780,7 @@ dealRouter.post(
         return util.jsonResponse(
           res,
           404,
-          `dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`,
+          `dealId : ${req.params.dealId} 에 해당되는 거래가 없습니다.`,
           false,
           null,
         );
@@ -815,7 +806,6 @@ dealRouter.post(
       }
       const stock = deal.totalMember - deal.currentMember;
       if (stock <= 0) {
-        logger.log(stock);
         return util.jsonResponse(
           res,
           400,
@@ -957,11 +947,11 @@ dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
       );
     }
     if (!deal) {
-      logger.info(`dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`);
+      logger.info(`dealId : ${req.params.dealId} 에 해당되는 거래가 없습니다.`);
       return util.jsonResponse(
         res,
         404,
-        `dealId : ${req.parms.dealId} 에 해당되는 거래가 없습니다.`,
+        `dealId : ${req.params.dealId} 에 해당되는 거래가 없습니다.`,
         false,
         null,
       );

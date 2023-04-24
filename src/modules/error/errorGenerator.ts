@@ -1,4 +1,4 @@
-const { responseMessage, statusCode } = require('../constants');
+import { responseMessage } from '../constants';
 
 const HTTPS_ERROR: { [key: number]: string } = {
   400: responseMessage.BAD_REQUEST,
@@ -16,7 +16,7 @@ interface ErrorWithStatusCode extends Error {
 //상태 코드 받아 HTTPS 에러와 매핑
 const errorGenerator = ({
   code = 500,
-  message = responseMessage.INTERNER_SERVER_ERROR,
+  message = responseMessage.INTERNAL_SERVER_ERROR,
 }: {
   code?: number;
   message?: string;

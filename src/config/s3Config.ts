@@ -1,4 +1,4 @@
-const AWS = require('aws-sdk');
+import AWS from 'aws-sdk';
 import config from '../config';
 AWS.config.update({
   region: 'ap-northeast-2',

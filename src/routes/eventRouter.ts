@@ -1,17 +1,11 @@
 const express = require('express');
-const { logger } = require('../config/winston');
-const Event = require('../database/models/event');
-const { Op, Sequelize } = require('sequelize');
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const AWS = require('aws-sdk');
-const { default: axios } = require('axios');
-const { url } = require('inspector');
-import config from '../config';
-const eventRouter = express.Router();
-const { util } = require('../modules/');
-const { eventImageUpload } = require('../middlewares/upload');
+import { logger } from '../config/winston';
+import { Event } from '../database/models/event';
+import { Op } from 'sequelize';
+import { util } from '../modules/';
+import { eventImageUpload } from '../middlewares/upload';
 
+const eventRouter = express.Router();
 eventRouter.get('/', async (req, res, next) => {
   try {
     const events = await Event.findAll({
@@ -33,7 +27,7 @@ eventRouter.get('/', async (req, res, next) => {
     return util.jsonResponse(res, 200, 'Event를 반환합니다.', true, events);
   } catch (error) {
     logger.error(`${error}  [전체 Event] GET /events`);
-    util.jsonResponse(res, 500, '[전체 Event] GET /events', false);
+    util.jsonResponse(res, 500, '[전체 Event] GET /events', false, {});
   }
 });
 
@@ -72,7 +66,7 @@ eventRouter.get('/popup/:recentId', async (req, res, next) => {
     );
   } catch (error) {
     logger.error(`${error}  [Event Popup] GET /events/popup`);
-    util.jsonResponse(res, 500, '[Event Popup] GET /events/popup', false);
+    util.jsonResponse(res, 500, '[Event Popup] GET /events/popup', false, {});
   }
 });
 
@@ -91,10 +85,17 @@ eventRouter.post('/create', async (req, res, next) => {
       200,
       `Event id : ${event.id} 가 생성되었습니다.`,
       true,
+      {},
     );
   } catch (error) {
     logger.error(`${error}  [Event Create] POST /events/create`);
-    util.jsonResponse(res, 500, '[Event Create] POST /events/create', false);
+    util.jsonResponse(
+      res,
+      500,
+      '[Event Create] POST /events/create',
+      false,
+      {},
+    );
   }
 });
 
@@ -118,6 +119,7 @@ eventRouter.post(
           404,
           `POST events/img/:eventId 의 eventId : ${eventId} 에 해당하는 event를 찾을 수 없습니다.`,
           false,
+          {},
         );
       }
       if (file != null) {
@@ -132,6 +134,7 @@ eventRouter.post(
         200,
         `Event id : ${eventId} 에 이미지가 Update 되었습니다.`,
         true,
+        {},
       );
     } catch (error) {
       logger.error(`${error}  [Event Img Create] POST /events/img/:eventId`);
@@ -140,6 +143,7 @@ eventRouter.post(
         500,
         '[Event Img Create] POST /events/img/:eventId',
         false,
+        {},
       );
     }
   },

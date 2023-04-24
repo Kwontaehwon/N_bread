@@ -1,8 +1,6 @@
-const { ErrorWithStatusCode } = require('./errorGenerator');
-import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { ErrorWithStatusCode } from './errorGenerator';
-const express = require('express');
-const { fail } = require('../util');
+import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import { fail } from '../util';
 
 const errorHandler: ErrorRequestHandler = (
   error: ErrorWithStatusCode,

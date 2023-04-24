@@ -1,31 +1,21 @@
-const fetch = require('node-fetch');
-
 const express = require('express');
 const passport = require('passport');
-const bcrypt = require('bcrypt');
-const path = require('path');
-const {
+import bcrypt from 'bcrypt';
+import {
   verifyToken,
   isLoggedIn,
   isNotLoggedIn,
-} = require('../middlewares/middleware');
-const { User } = require('../database/models');
+} from '../middlewares/middleware';
+import { User } from '../database/models';
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const { logger } = require('../config/winston');
-const { response } = require('express');
-const axios = require('axios');
-const qs = require('qs');
+import fs from 'fs';
+import { logger } from '../config/winston';
+import axios from 'axios';
+import qs from 'qs';
 import config from '../config';
-
-const { serveWithOptions } = require('swagger-ui-express');
-const { urlencoded } = require('body-parser');
-const { session } = require('passport');
-const { Slack } = require('../class/slack');
-const { util } = require('../modules/');
+import { Slack } from '../class/slack';
+import { util } from '../modules/';
 const authRouter = express.Router();
-
-function createClientSecret() {}
 
 authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
   // #swagger.summary = '로컬 회원가입'
@@ -72,7 +62,13 @@ authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
     );
   } catch (error) {
     console.error(error);
-    util.jsonResponse(res, 500, '[로컬 회원가입] POST /users/signup', false);
+    util.jsonResponse(
+      res,
+      500,
+      '[로컬 회원가입] POST /users/signup',
+      false,
+      {},
+    );
   }
 });
 
@@ -94,6 +90,7 @@ authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
           400,
           `로컬 로그인 실패 ${info.message}`,
           info,
+          {},
         );
       }
       return req.login(user, (loginError) => {

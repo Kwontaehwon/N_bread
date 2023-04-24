@@ -1,6 +1,5 @@
-const { logger } = require('../config/winston');
+import { logger } from '../config/winston';
 const jwt = require('jsonwebtoken');
-const { User } = require('../database/models');
 import { Request, Response, NextFunction } from 'express';
 import config from '../config';
 function jsonResponse(res, code, message, isSuccess) {

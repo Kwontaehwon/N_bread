@@ -1,9 +1,8 @@
-const passport = require('passport');
+import passport from 'passport';
 const AppleStrategy = require('@nicokaiser/passport-apple').Strategy;
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
-const User = require('../../database/models/user');
+import fs from 'fs';
+import path from 'path';
+import { User } from '../../database/models/user';
 import config from '../';
 const passportApple = () => {
   passport.use(

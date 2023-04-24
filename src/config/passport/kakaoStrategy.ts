@@ -1,8 +1,6 @@
-const passport = require('passport');
+import passport from 'passport';
 const KakaoStrategy = require('passport-kakao').Strategy;
-
-const Op = require('sequelize');
-const User = require('../../database/models/user');
+import {User} from '../../database/models/user';
 import config from '../';
 
 const passportKakao = () => {
