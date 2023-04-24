@@ -1,2 +1,2 @@
-const util = require('./util');
+import * as util from './util';
 export { util };
