@@ -1,7 +1,7 @@
-const { s3 } = require('../config/s3Config');
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const { DealImage } = require('../database/models');
+import { s3 } from '../config/s3Config';
+import multer from 'multer';
+import multerS3 from 'multer-s3';
+import { DealImage } from '../database/models';
 const dealImageUpload = multer({
   storage: multerS3({
     s3: s3,
