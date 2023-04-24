@@ -1,4 +1,3 @@
-
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
 import prisma from '../prisma';
@@ -29,15 +28,15 @@ const changeUserNick = async (id: number, nickName: string) => {
         code: statusCode.BAD_REQUEST,
       });
     }
-    const updateRes = await prisma.users.update({
+    await prisma.users.update({
       where: { id },
       data: {
         nick: nickName,
       },
     });
     const result = {
-      userId: updateRes.id,
-      nick: updateRes.nick,
+      userId: id,
+      nick: nickName,
     };
     return result;
   } catch (error) {
