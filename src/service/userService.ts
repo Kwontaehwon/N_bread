@@ -365,9 +365,12 @@ const getUserLocation = async (
     logger.info(
       `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
     );
-    res
-      .status(statusCode.OK)
-      .send(success(statusCode.OK, responseMessage.GET_LOCATION_SUCCESS, data));
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.GET_LOCATION_SUCCESS,
+      data,
+    );
   } catch (error) {
     logger.error(error);
     next(error);
@@ -384,11 +387,12 @@ const changeUserNick = async (req, res, next) => {
     logger.info(
       `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
     );
-    return res
-      .status(statusCode.OK)
-      .send(
-        success(statusCode.OK, responseMessage.NICKNAME_CHANGE_SUCESS, result),
-      );
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.NICKNAME_CHANGE_SUCESS,
+      result,
+    );
   } catch (error) {
     next(error);
   }
