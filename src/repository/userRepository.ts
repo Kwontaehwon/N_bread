@@ -12,7 +12,8 @@ const findUserById = async (id: number) => {
   if (!user) {
     throw errorGenerator({
       message: responseMessage.USER_NOT_FOUND,
-      code: 404,
+      //code: 404,
+      statusCode.NOT_FOUND
     });
   }
   return user;
