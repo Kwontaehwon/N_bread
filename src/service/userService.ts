@@ -383,6 +383,8 @@ const changeUserNick = async (req, res, next) => {
   try {
     const userId = req.params.userId;
     const { nick } = req.body;
+    await userRepository.findUserById(+userId);
+    await userRepository.isNicknameExist(nick);
     const result = await userRepository.changeUserNick(+userId, nick);
     logger.info(
       `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
