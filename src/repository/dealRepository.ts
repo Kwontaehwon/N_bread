@@ -1,8 +1,9 @@
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
 import { dealParam } from '../dto/deal/dealParam';
-import { users } from '@prisma/client';
+import { PrismaClient, users } from '@prisma/client';
 import prisma from '../prisma';
+import { userRepository, groupRepository, dealRepository } from '../repository';
 
 const findDealById = async (id: number) => {
   return prisma.deals.findUnique({
@@ -12,8 +13,15 @@ const findDealById = async (id: number) => {
   });
 };
 
-const createDeal = async (dealParam: dealParam, user: users) => {
-  return prisma.deals.create({
+const createDealInTransaction = async (
+  dealParam: dealParam,
+  user: users,
+  tx: Omit<
+    PrismaClient,
+    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
+  >,
+) => {
+  return tx.deals.create({
     data: {
       link: dealParam.link,
       title: dealParam.title,
@@ -32,4 +40,22 @@ const createDeal = async (dealParam: dealParam, user: users) => {
   });
 };
 
-export { findDealById, createDeal };
+const dealTransction = async (dealParam: dealParam, userId: number) => {
+  return await prisma.$transaction(async (tx) => {
+    const user = await userRepository.findUserById(userId);
+    const group = await groupRepository.createGroupInTransaction(
+      1,
+      user.id,
+      tx,
+    );
+    const deal = await dealRepository.createDealInTransaction(
+      dealParam,
+      user,
+      tx,
+    );
+    await groupRepository.updateDealIdInTransaction(group.id, deal.id, tx);
+    return deal;
+  });
+};
+
+export { findDealById, createDealInTransaction, dealTransction };
