@@ -8,7 +8,6 @@ import prisma from '../src/prisma';
 
 const { db } = require('../src/database/');
 
-// });
 
 // afterAll(async () => {
 //   await db.sequelize.sync({ force: true });
