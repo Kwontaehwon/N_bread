@@ -9,6 +9,7 @@ export default {
   USER_NOT_FOUND: '해당되는 유저가 없습니다',
   NICKNAME_DUPLICATED: '중복된 닉네임입니다.',
   NICKNAME_CHANGE_SUCESS: '닉네임 변경을 완료하였습니다.',
+  NICKNAME_CHANGE_FAIL: '닉네임 변경 중 오류가 발생하였습니다.',
 
   GET_LOCATION_SUCCESS: '지역 정보 조회에 성공하였습니다.',
 
