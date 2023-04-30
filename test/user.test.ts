@@ -1,7 +1,7 @@
 import { getUser, changeUserNick } from '../src/service/userService';
 import { User } from '../src/database/models/user';
 import { responseMessage, statusCode } from '../src/modules/constants';
-import { success, fail } from '../src/modules/util';
+import * as util from '../src/modules/util';
 import prisma from '../src/prisma';
 import { ErrorWithStatusCode } from '../src/modules/error/errorGenerator';
 
@@ -54,24 +54,22 @@ describe('[userService] changeUserNick 테스트', () => {
   };
 
   const next = jest.fn();
-  const res = {
-    status: jest.fn(() => res),
-    send: jest.fn(),
+  const res = jest.fn();
+  const expectedResult = {
+    userId: 1,
+    nick: expectedNickName,
   };
+
+  (util.success as any) = jest.fn();
+  const success = util.success;
   test('닉네임 변환 여부 테스트(정상 작동)', async () => {
     await changeUserNick(req, res, next);
 
-    const expectedResult = {
-      userId: 1,
-      nick: expectedNickName,
-    };
-    expect(res.status).toBeCalledWith(200);
-    expect(res.send).toBeCalledWith(
-      success(
-        statusCode.OK,
-        responseMessage.NICKNAME_CHANGE_SUCESS,
-        expectedResult,
-      ),
+    expect(success).toBeCalledWith(
+      res,
+      200,
+      responseMessage.NICKNAME_CHANGE_SUCESS,
+      expectedResult,
     );
   });
 
