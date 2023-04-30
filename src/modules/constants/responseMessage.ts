@@ -11,4 +11,7 @@ export default {
   NICKNAME_CHANGE_SUCESS: '닉네임 변경을 완료하였습니다.',
 
   GET_LOCATION_SUCCESS: '지역 정보 조회에 성공하였습니다.',
+
+  TOKEN_EXPIRED: '만료된 토큰입니다.',
+  TOKEN_INVALID: '잘못된 토큰입니다.',
 };
