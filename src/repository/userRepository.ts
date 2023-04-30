@@ -1,13 +1,21 @@
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
+
 import prisma from '../prisma';
 
 const findUserById = async (id: number) => {
-  return prisma.users.findUnique({
+  const user = await prisma.users.findUnique({
     where: {
       id: id,
     },
   });
+  if (!user) {
+    throw errorGenerator({
+      message: responseMessage.USER_NOT_FOUND,
+      statusCode.NOT_FOUND
+    });
+  }
+  return user;
 };
 
 const changeUserNick = async (id: number, nickName: string) => {

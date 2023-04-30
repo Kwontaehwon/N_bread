@@ -13,18 +13,9 @@ const createDeal = async (req, res, next) => {
   try {
     const dealParam: dealParam = req.body; // currentMember 수정 필요.
     const userId = req.decoded.id;
-    const user = await userRepository.findUserById(userId);
-    if (!user) {
-      throw errorGenerator({
-        message: responseMessage.NOT_FOUND,
-        code: 404,
-      });
-    }
-    const group = await groupRepository.createGroup(1, userId);
-    const deal = await dealRepository.createDeal(dealParam, user);
-    await groupRepository.updateDealId(group.id, deal.id);
+    const deal = await dealRepository.dealTransction(dealParam, userId);
     const fcmTokenJson = await axios.get(
-      `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`,
+      `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
     );
     if (Object.keys(fcmTokenJson.data).length !== 0) {
       const fcmToken = fcmTokenJson.data.Item.fcmToken;

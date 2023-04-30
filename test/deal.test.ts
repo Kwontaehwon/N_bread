@@ -3,11 +3,11 @@
 import { dealRepository } from '../src/repository/index';
 import { Deal } from '../src/database/models/deal';
 import { dealParam } from '../src/dto/deal/dealParam';
+import { mock } from 'node:test';
+import prisma from '../src/prisma';
+
 const { db } = require('../src/database/');
 
-beforeAll(async () => {
-  await db.sequelize.sync();
-});
 
 // afterAll(async () => {
 //   await db.sequelize.sync({ force: true });
@@ -27,15 +27,31 @@ describe('dealRepository.createDeal', () => {
   };
 
   test('거래 생성', async () => {
-    const user = await db.User.findOne({ where: { id: 1 } });
-    console.log(user);
-
     const mockedUser = {
       id: 1,
+      nick: '닉네임',
+      email: 'kygkth2011@gmail.com',
+      password: '1234',
+      provider: 'Naver',
+      snsId: 'snsId',
+      accessToken: 'AccessToken',
+      refreshToken: 'RefreshToken',
+      userStatus: '모집중',
       curLocation1: '경기도',
       curLocation2: '안산시',
       curLocation3: '상록구',
+      curLocationA: '경기도',
+      curLocationB: '안산시',
+      curLocationC: '상록구',
+      isNewUser: false,
+      kakaoNumber: '1234',
+      createdAt: new Date('2022-11-18 12:00'),
+      deletedAt: new Date('2022-11-18 12:00'),
+      updatedAt: new Date('2022-11-18 12:00'),
     };
+
+    const user = mockedUser;
+    console.log(user);
 
     const mockDeal = {
       id: 'mock-deal-id',
@@ -55,9 +71,10 @@ describe('dealRepository.createDeal', () => {
     };
 
     // Deal.create.mockReturnValue(Promise.resolve(mockDeal));
-    const createdDeal: Deal = await dealRepository.createDeal(
+    const createdDeal: Deal = await dealRepository.createDealInTransaction(
       dealParam,
       mockedUser,
+      prisma,
     );
 
     expect(createdDeal.link).toBe(dealParam.link);
