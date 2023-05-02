@@ -72,7 +72,7 @@ describe('[userService] changeUserNick 테스트', () => {
     expect(success).toBeCalledWith(
       res,
       200,
-      responseMessage.NICKNAME_CHANGE_SUCESS,
+      responseMessage.NICKNAME_CHANGE_SUCCESS,
       expectedResult,
     );
   });

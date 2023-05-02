@@ -392,7 +392,7 @@ const changeUserNick = async (req, res, next) => {
     return success(
       res,
       statusCode.OK,
-      responseMessage.NICKNAME_CHANGE_SUCESS,
+      responseMessage.NICKNAME_CHANGE_SUCCESS,
       result,
     );
   } catch (error) {
