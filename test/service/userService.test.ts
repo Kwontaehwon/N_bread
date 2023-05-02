@@ -75,6 +75,11 @@ describe('[userService] changeUserNick 테스트', () => {
       responseMessage.NICKNAME_CHANGE_SUCCESS,
       expectedResult,
     );
+    const rollback = {
+      body: { nick: "변경된 닉네임" },
+      params: { userId: 1 },
+    };
+    await changeUserNick(rollback, res, next);
   });
 
   test('중복된 닉네임으로 변경 시도', async () => {
