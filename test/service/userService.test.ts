@@ -67,19 +67,14 @@ describe('[userService] changeUserNick 테스트', () => {
   (util.success as any) = jest.fn();
   const success = util.success;
   test('닉네임 변환 여부 테스트(정상 작동)', async () => {
+    userRepository.changeUserNick = jest.fn().mockReturnValue(expectedResult);
     await changeUserNick(req, res, next);
-
     expect(success).toBeCalledWith(
       res,
       200,
       responseMessage.NICKNAME_CHANGE_SUCCESS,
       expectedResult,
     );
-    const rollback = {
-      body: { nick: '변경된 닉네임' },
-      params: { userId: 1 },
-    };
-    await changeUserNick(rollback, res, next);
   });
 
   test('유저가 존재하지 않을 때', async () => {
