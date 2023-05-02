@@ -76,10 +76,24 @@ describe('[userService] changeUserNick 테스트', () => {
       expectedResult,
     );
     const rollback = {
-      body: { nick: "변경된 닉네임" },
+      body: { nick: '변경된 닉네임' },
       params: { userId: 1 },
     };
     await changeUserNick(rollback, res, next);
+  });
+
+  test('유저가 존재하지 않을 때', async () => {
+    userRepository.findUserById = jest.fn().mockImplementation(() => {
+      throw errorGenerator({
+        message: responseMessage.USER_NOT_FOUND,
+        code: statusCode.NOT_FOUND,
+      });
+    });
+    await changeUserNick(req, res, next);
+    const error: ErrorWithStatusCode = new Error(
+      responseMessage.USER_NOT_FOUND,
+    );
+    expect(next).toBeCalledWith(error);
   });
 
   test('중복된 닉네임으로 변경 시도', async () => {
