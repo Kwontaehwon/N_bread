@@ -3,7 +3,11 @@ import { User } from '../../src/database/models/user';
 import { responseMessage, statusCode } from '../../src/modules/constants';
 import * as util from '../../src/modules/util';
 import prisma from '../../src/prisma';
-import { ErrorWithStatusCode } from '../../src/modules/error/errorGenerator';
+import {
+  errorGenerator,
+  ErrorWithStatusCode,
+} from '../../src/modules/error/errorGenerator';
+import { userRepository } from '../../src/repository';
 
 describe('getUser', () => {
   const req = {
@@ -74,6 +78,13 @@ describe('[userService] changeUserNick 테스트', () => {
   });
 
   test('중복된 닉네임으로 변경 시도', async () => {
+    userRepository.findUserById = jest.fn().mockReturnValue({});
+    userRepository.isNicknameExist = jest.fn().mockImplementation(() => {
+      throw errorGenerator({
+        message: responseMessage.NICKNAME_DUPLICATED,
+        code: statusCode.BAD_REQUEST,
+      });
+    });
     await changeUserNick(req, res, next);
     const error: ErrorWithStatusCode = new Error(
       responseMessage.NICKNAME_DUPLICATED,
