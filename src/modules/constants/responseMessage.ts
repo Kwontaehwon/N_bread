@@ -6,9 +6,16 @@ export default {
   INTERNAL_SERVER_ERROR: '서버에 에러가 발생했습니다.',
   SERVICE_NOT_AVAILABLE: '서버를 사용할 수 없습니다.',
 
+  SUCCESS: '성공적으로 반환 하였습니다',
+
   USER_NOT_FOUND: '해당되는 유저가 없습니다',
   NICKNAME_DUPLICATED: '중복된 닉네임입니다.',
   NICKNAME_CHANGE_SUCESS: '닉네임 변경을 완료하였습니다.',
+
+  // deal
+  DEAL_NOT_FOUND: '해당되는 거래가 없습니다',
+  DEAL_DELETE_NOT_AUTHORIZED: '글을 삭제할 권한이 없습니다.',
+  DEAL_ALREADY_PARTICIPATED: '참여자가 있으므로 거래를 삭제할 수 없습니다.',
 
   GET_LOCATION_SUCCESS: '지역 정보 조회에 성공하였습니다.',
 
