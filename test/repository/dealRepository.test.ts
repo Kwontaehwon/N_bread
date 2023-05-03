@@ -46,7 +46,6 @@ const mockedUser = {
 describe('createDeal : 거래 생성', () => {
   test('거래 생성', async () => {
     const user = mockedUser;
-    console.log(user);
 
     const mockDeal = {
       id: 'mock-deal-id',
