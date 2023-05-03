@@ -6,11 +6,18 @@ import prisma from '../prisma';
 import { userRepository, groupRepository, dealRepository } from '../repository';
 
 const findDealById = async (id: number) => {
-  return prisma.deals.findUnique({
+  const deal = await prisma.deals.findUnique({
     where: {
       id: id,
     },
   });
+  if (!deal) {
+    throw errorGenerator({
+      message: responseMessage.DEAL_NOT_FOUND,
+      code: statusCode.NOT_FOUND,
+    });
+  }
+  return deal;
 };
 
 const createDealInTransaction = async (
