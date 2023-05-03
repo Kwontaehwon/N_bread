@@ -12,7 +12,7 @@ const findUserById = async (id: number) => {
   if (!user) {
     throw errorGenerator({
       message: responseMessage.USER_NOT_FOUND,
-      statusCode.NOT_FOUND
+      code: statusCode.NOT_FOUND,
     });
   }
   return user;
