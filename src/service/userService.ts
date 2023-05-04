@@ -14,15 +14,6 @@ const getUser = async (req, res, next) => {
   try {
     const userId = req.params.userId;
     const user = await userRepository.findUserById(+userId);
-    if (!user) {
-      return util.jsonResponse(
-        res,
-        404,
-        'userId에 해당되는 유저가 없습니다.',
-        false,
-        null,
-      ); // #swagger.responses[404]
-    }
     const result = {
       createdAt: user.createdAt,
       nick: user.nick,
@@ -37,22 +28,11 @@ const getUser = async (req, res, next) => {
     logger.info(
       `GET users/:userId | userId : ${req.params.userId} 의 유저 정보를 반환합니다.`,
     );
-    return util.jsonResponse(
-      res,
-      200,
-      'userId의 정보를 반환합니다.',
-      true,
-      result,
-    ); // #swagger.responses[200]
+    return success(res, statusCode.OK, responseMessage.SUCCESS); // #swagger.responses[200]
   } catch (error) {
     logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[유저 정보 반환] GET users/:userId 서버 에러',
-      false,
-      {},
-    ); // #swagger.responses[500]
+    next(error);
+    // #swagger.responses[500]
   }
 };
 
