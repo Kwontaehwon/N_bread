@@ -1,10 +1,9 @@
 import prisma from '../../src/prisma';
 import { PrismaClient } from '@prisma/client';
 import { findUserById } from '../../src/repository/userRepository';
-import { prismaMock } from '../../src/singleton';
 const prismaForHardDelete = new PrismaClient();
 describe('find user by id', () => {
-  test('find mocked user ', async () => {
+  test('find user ', async () => {
     const user = {
       email: 'testUser@gmail.com',
       nick: '테스트유저',
@@ -56,5 +55,12 @@ describe('find user by id', () => {
     await prismaForHardDelete.users.delete({
       where: { id: id.id },
     });
+  });
+  test('when user is not exist', async () => {
+    try {
+      await findUserById(1000);
+    } catch (e) {
+      expect(e).toHaveProperty('statusCode', 400);
+    }
   });
 });
