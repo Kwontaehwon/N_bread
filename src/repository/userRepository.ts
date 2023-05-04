@@ -1,5 +1,6 @@
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
+
 import prisma from '../prisma';
 import { logger } from '../config/winston';
 

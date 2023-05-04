@@ -1,9 +1,17 @@
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
 import prisma from '../prisma';
+import { PrismaClient, PrismaPromise } from '@prisma/client';
 
-const createGroup = async (amount: number, userId: number) => {
-  return await prisma.groups.create({
+const createGroupInTransaction = async (
+  amount: number,
+  userId: number,
+  tx: Omit<
+    PrismaClient,
+    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
+  >,
+) => {
+  return await tx.groups.create({
     data: {
       amount: amount,
       userId: userId,
@@ -11,8 +19,15 @@ const createGroup = async (amount: number, userId: number) => {
   });
 };
 
-const updateDealId = async (id: number, dealId: number) => {
-  return await prisma.groups.update({
+const updateDealIdInTransaction = async (
+  id: number,
+  dealId: number,
+  tx: Omit<
+    PrismaClient,
+    '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
+  >,
+) => {
+  return await tx.groups.update({
     data: {
       dealId: dealId,
     },
@@ -22,4 +37,4 @@ const updateDealId = async (id: number, dealId: number) => {
   });
 };
 
-export { createGroup, updateDealId };
+export { createGroupInTransaction, updateDealIdInTransaction };

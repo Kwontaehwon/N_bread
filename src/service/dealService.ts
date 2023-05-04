@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { util } from '../modules/index';
+import { success, fail } from '../modules/util';
 import { userRepository, groupRepository, dealRepository } from '../repository';
 import { dealParam } from '../dto/deal/dealParam';
 import { logger } from '../config/winston';
 import { errorGenerator } from '../modules/error/errorGenerator';
-import { responseMessage } from '../modules/constants';
+import { responseMessage, statusCode } from '../modules/constants';
 import { dealDto } from '../dto/deal/dealDto';
 import prisma from '../prisma';
 const admin = require('firebase-admin');
@@ -13,18 +13,9 @@ const createDeal = async (req, res, next) => {
   try {
     const dealParam: dealParam = req.body; // currentMember 수정 필요.
     const userId = req.decoded.id;
-    const user = await userRepository.findUserById(userId);
-    if (!user) {
-      throw errorGenerator({
-        message: responseMessage.NOT_FOUND,
-        code: 404,
-      });
-    }
-    const group = await groupRepository.createGroup(1, userId);
-    const deal = await dealRepository.createDeal(dealParam, user);
-    await groupRepository.updateDealId(group.id, deal.id);
+    const deal = await dealRepository.dealTransction(dealParam, userId);
     const fcmTokenJson = await axios.get(
-      `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`,
+      `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
     );
     if (Object.keys(fcmTokenJson.data).length !== 0) {
       const fcmToken = fcmTokenJson.data.Item.fcmToken;
@@ -46,7 +37,7 @@ const createDeal = async (req, res, next) => {
       deal.loc3,
     );
     logger.info(`dealId : ${deal.id} 거래가 생성되었습니다.`);
-    return util.jsonResponse(res, 200, '거래가 생성되었습니다', true, dealDtos);
+    return success(res, statusCode.CREATED, responseMessage.SUCCESS, deal);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -58,35 +49,19 @@ const deleteDeal = async (req, res, next) => {
     console.log(req.params.dealId);
     const dealId: number = +req.params.dealId;
     const deal = await dealRepository.findDealById(dealId);
-
-    logger.info(dealId);
-
-    if (!deal) {
-      return util.jsonResponse(
-        res,
-        404,
-        'dealId에 매칭되는 deal를 찾을 수 없습니다.',
-        false,
-        null,
-      );
-    }
     if (deal.userId != req.decoded.id) {
-      return util.jsonResponse(
+      return fail(
         res,
-        403,
-        '글의 작성자만 거래를 삭제할 수 있습니다.',
-        false,
-        null,
+        statusCode.UNAUTHORIZED,
+        responseMessage.DEAL_DELETE_NOT_AUTHORIZED,
       );
     }
     const groups = await prisma.groups.findMany({ where: { dealId: deal.id } });
     if (groups.length > 1) {
-      return util.jsonResponse(
+      return fail(
         res,
-        400,
-        '참여자가 있으므로 거래를 삭제할 수 없습니다.',
-        false,
-        null,
+        statusCode.UNAUTHORIZED,
+        responseMessage.DEAL_ALREADY_PARTICIPATED,
       );
     }
     const deletedDeal = await prisma.deals.delete({
@@ -98,13 +73,7 @@ const deleteDeal = async (req, res, next) => {
     const reply = await prisma.replies.deleteMany({
       where: { dealId: dealId },
     });
-    return util.jsonResponse(
-      res,
-      200,
-      '정상적으로 거래를 삭제하였습니다.',
-      true,
-      null,
-    );
+    return success(res, statusCode.OK, responseMessage.SUCCESS, null);
   } catch (error) {
     logger.error(error);
     next(error);
