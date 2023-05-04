@@ -7,48 +7,6 @@ import {
   ErrorWithStatusCode,
 } from '../../src/modules/error/errorGenerator';
 import { userRepository } from '../../src/repository';
-
-describe('getUser', () => {
-  const req = {
-    params: { userId: +1 },
-  };
-  const res = {
-    status: jest.fn(() => res),
-    json: jest.fn(),
-  };
-  const next = jest.fn();
-
-  test('유저를 찾아 반환', async () => {
-    const queryResult = {
-      createdAt: '2022-07-30 22:00',
-      nick: 'Test Nick',
-      provider: 'local',
-      curLocation3: '역삼동',
-    };
-    const expectedResult = {
-      createdAt: '2022-07-30 22:00',
-      nick: 'Test Nick',
-      provider: 'local',
-      addr: '역삼동',
-    };
-    User.findOne.mockReturnValue(Promise.resolve(queryResult));
-    await getUser(req, res, next);
-    expect(res.status).toBeCalledWith(200);
-    expect(res.json).toBeCalledWith({
-      code: 200,
-      message: 'userId의 정보를 반환합니다.',
-      isSuccess: true,
-      result: expectedResult,
-    });
-  });
-
-  test('해당되는 유저 없음 (null)', async () => {
-    User.findOne.mockReturnValue(null);
-    await getUser(req, res, next);
-    expect(res.status).toBeCalledWith(404);
-  });
-});
-
 describe('[userService] changeUserNick 테스트', () => {
   const expectedNickName = 'newNick';
   const req = {
@@ -91,17 +49,15 @@ describe('[userService] changeUserNick 테스트', () => {
   });
 
   test('중복된 닉네임으로 변경 시도', async () => {
+    (util.fail as any) = jest.fn();
+    const fail = util.fail;
     userRepository.findUserById = jest.fn().mockReturnValue({});
-    userRepository.isNicknameExist = jest.fn().mockImplementation(() => {
-      throw errorGenerator({
-        message: responseMessage.NICKNAME_DUPLICATED,
-        code: statusCode.BAD_REQUEST,
-      });
-    });
+    userRepository.isNicknameExist = jest.fn().mockReturnValue(true);
     await changeUserNick(req, res, next);
-    const error: ErrorWithStatusCode = new Error(
+    expect(fail).toBeCalledWith(
+      res,
+      statusCode.BAD_REQUEST,
       responseMessage.NICKNAME_DUPLICATED,
     );
-    expect(next).toBeCalledWith(error);
   });
 });
