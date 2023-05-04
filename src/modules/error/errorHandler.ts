@@ -9,6 +9,7 @@ const errorHandler: ErrorRequestHandler = (
   next: NextFunction,
 ) => {
   if (error.statusCode == undefined) error.statusCode = 500; // customError를 발생시킨 것이 아닐 경우
+  if ((error.name = 'NotFoundError')) error.statusCode = 404;
   const { message, statusCode } = error;
   console.log(error);
   return fail(res, statusCode, message);
