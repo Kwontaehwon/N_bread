@@ -3,7 +3,7 @@ import axios from 'axios';
 import { logger } from '../config/winston';
 import config from '../config';
 import { util } from '../modules';
-import { success } from '../modules/util';
+import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 import { userRepository } from '../repository';
 import { NextFunction, Request, Response } from 'express';
@@ -384,16 +384,23 @@ const changeUserNick = async (req, res, next) => {
     const userId = req.params.userId;
     const { nick } = req.body;
     await userRepository.findUserById(+userId);
-    await userRepository.isNicknameExist(nick);
-    const result = await userRepository.changeUserNick(+userId, nick);
-    logger.info(
-      `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
-    );
-    return success(
+    const isExist = await userRepository.isNicknameExist(nick);
+    if (!isExist) {
+      const result = await userRepository.changeUserNick(+userId, nick);
+      logger.info(
+        `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
+      );
+      return success(
+        res,
+        statusCode.OK,
+        responseMessage.NICKNAME_CHANGE_SUCCESS,
+        result,
+      );
+    }
+    return fail(
       res,
-      statusCode.OK,
-      responseMessage.NICKNAME_CHANGE_SUCCESS,
-      result,
+      statusCode.BAD_REQUEST,
+      responseMessage.NICKNAME_DUPLICATED,
     );
   } catch (error) {
     next(error);
