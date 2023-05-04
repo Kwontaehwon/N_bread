@@ -18,12 +18,8 @@ const isNicknameExist = async (nickName: string) => {
   const isDuplicated = await prisma.users.findFirst({
     where: { nick: nickName },
   });
-  if (isDuplicated) {
-    throw errorGenerator({
-      message: responseMessage.NICKNAME_DUPLICATED,
-      code: statusCode.BAD_REQUEST,
-    });
-  }
+
+  return !!isDuplicated;
 };
 
 const changeUserNick = async (id: number, nickName: string) => {
