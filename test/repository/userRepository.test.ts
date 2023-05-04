@@ -60,7 +60,13 @@ describe('find user by id', () => {
   });
   test('when user is not exist', async () => {
     try {
-      await findUserById(1000);
+      const lastUser = await prisma.users.findMany({
+        orderBy: {
+          id: 'desc',
+        },
+        take: 1,
+      });
+      await findUserById(lastUser[0].id + 1);
     } catch (error) {
       expect(error).toHaveProperty('statusCode', statusCode.NOT_FOUND);
     }
