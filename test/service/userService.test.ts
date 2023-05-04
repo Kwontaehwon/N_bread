@@ -28,7 +28,7 @@ describe('[userService] changeUserNick 테스트', () => {
     await changeUserNick(req, res, next);
     expect(success).toBeCalledWith(
       res,
-      200,
+      statusCode.OK,
       responseMessage.NICKNAME_CHANGE_SUCCESS,
       expectedResult,
     );
