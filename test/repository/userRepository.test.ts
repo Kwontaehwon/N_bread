@@ -68,7 +68,7 @@ describe('find user by id', () => {
       });
       await findUserById(lastUser[0].id + 1);
     } catch (error) {
-      expect(error).toHaveProperty('statusCode', statusCode.NOT_FOUND);
+      expect(error).toHaveProperty('name', 'NotFoundError');
     }
   });
 });
