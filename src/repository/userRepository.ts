@@ -5,13 +5,7 @@ import prisma from '../prisma';
 import { logger } from '../config/winston';
 
 const findUserById = async (id: number) => {
-  const user = await prisma.users.findFirst({ where: { id: id } });
-  if (!user) {
-    throw errorGenerator({
-      message: responseMessage.USER_NOT_FOUND,
-      code: statusCode.NOT_FOUND,
-    });
-  }
+  const user = await prisma.users.findFirstOrThrow({ where: { id: id } });
   return user;
 };
 
