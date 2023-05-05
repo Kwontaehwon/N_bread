@@ -1,4 +1,10 @@
-# ChocoBread
+![header](https://capsule-render.vercel.app/api?type=wave&color=5C36EE&height=150&section=header)
+
+<div align="center">
+<h1>Choco Bread 🥐</h1>
+  <h3>동네 기반 소분거래 플랫폼, N빵</h3>
+<br/>
+</div>
 
 ## 📌commit convention
 코드|내용|
