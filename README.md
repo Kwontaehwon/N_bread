@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src='https://capsule-render.vercel.app/api?type=wave&color=5C36EE&height=150&section=header'/>
+  <img src='https://capsule-render.vercel.app/api?type=waving&&color=0:4e6fff,100:49077c&height=150&section=header&text=N빵&desc=By&nbsp;ChocoBread&animation=fadeIn&fontAlign=50&fontAlignY=30&descAlign=90'/>
 
 <h1>Choco Bread 🥐</h1>
   <h3>동네 기반 소분거래 플랫폼, N빵</h3>
