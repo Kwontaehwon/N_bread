@@ -345,7 +345,12 @@ const getUserLocation = async (
     logger.info(
       `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
     );
-    return success(res, statusCode.OK, responseMessage.SUCCESS, data);
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      data,
+    );
   } catch (error) {
     logger.error(error);
     next(error);
@@ -365,7 +370,12 @@ const changeUserNick = async (req, res, next) => {
       logger.info(
         `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
       );
-      return success(res, statusCode.OK, responseMessage.SUCCESS, result);
+      return success(
+        res,
+        statusCode.OK,
+        responseMessage.SUCCESS,
+        result,
+      );
     }
     return fail(
       res,
