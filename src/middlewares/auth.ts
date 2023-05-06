@@ -22,7 +22,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (!userId) {
       return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
     }
-    req.decoded.id = userId;
+    console.log('userId입니다', userId);
+    req.decoded = userId;
     next();
   } catch (error) {
     console.log(error);
