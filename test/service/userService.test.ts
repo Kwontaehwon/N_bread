@@ -29,7 +29,7 @@ describe('[userService] changeUserNick 테스트', () => {
     expect(success).toBeCalledWith(
       res,
       statusCode.OK,
-      responseMessage.NICKNAME_CHANGE_SUCCESS,
+      responseMessage.SUCCESS,
       expectedResult,
     );
   });
