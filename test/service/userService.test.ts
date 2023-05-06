@@ -1,5 +1,4 @@
-import { getUser, changeUserNick } from '../../src/service/userService';
-import { User } from '../../src/database/models/user';
+import { changeUserNick } from '../../src/service/userService';
 import { responseMessage, statusCode } from '../../src/modules/constants';
 import * as util from '../../src/modules/util';
 import {
