@@ -16,7 +16,6 @@ import config from '../config';
 import { Slack } from '../class/slack';
 import { util } from '../modules/';
 import { authService } from '../service';
-import auth from '../middlewares/auth';
 const authRouter: Router = express.Router();
 
 authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
@@ -124,7 +123,7 @@ authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
   )(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
 
-authRouter.get('/logout', auth, authService.logout);
+authRouter.get('/logout', isLoggedIn, authService.logout);
 
 authRouter.get(
   // #swagger.summary = '카카오 웹뷰 로그인'
