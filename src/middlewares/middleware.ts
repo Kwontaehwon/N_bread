@@ -14,10 +14,9 @@ function jsonResponse(res, code, message, isSuccess) {
 
 const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
-    console.log('로그인 된 상태입니다.');
     next();
   } else {
-    jsonResponse(res, 401, '로그인이 필요한 서비스입니다.', false);
+    fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
   }
 };
 
@@ -25,7 +24,7 @@ const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (!req.isAuthenticated()) {
     next();
   } else {
-    jsonResponse(res, 401, '로그인 한 상태입니다.', false);
+    fail(res, statusCode.FORBIDDEN, responseMessage.FORBIDDEN);
   }
 };
 
