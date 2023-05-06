@@ -12,7 +12,8 @@
 ## 🛠️ 핵심 기능
 
 
-## 📑 API 
+## 📑 API 명세서
+
 
 
 ## 📌commit convention
