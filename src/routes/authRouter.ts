@@ -1,4 +1,4 @@
-const express = require('express');
+import express, { Router } from 'express';
 const passport = require('passport');
 import bcrypt from 'bcrypt';
 import {
@@ -15,7 +15,8 @@ import qs from 'qs';
 import config from '../config';
 import { Slack } from '../class/slack';
 import { util } from '../modules/';
-const authRouter = express.Router();
+import { authService } from '../service';
+const authRouter: Router = express.Router();
 
 authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
   // #swagger.summary = '로컬 회원가입'
@@ -122,12 +123,7 @@ authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
   )(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
 });
 
-authRouter.get('/logout', verifyToken, (req, res) => {
-  // #swagger.summary = '로컬 로그아웃'
-  req.logout();
-  req.session.destroy();
-  return util.jsonResponse(res, 200, '로그아웃에 성공하였습니다.', true, null);
-});
+authRouter.get('/logout', verifyToken, authService.logout);
 
 authRouter.get(
   // #swagger.summary = '카카오 웹뷰 로그인'
