@@ -44,4 +44,20 @@ const changeUserNick = async (id: number, nickName: string) => {
   }
 };
 
-export { findUserById, isNicknameExist, isEmailExist, changeUserNick };
+const createUser = async (email: string, nick: string, password: string) => {
+  await prisma.users.create({
+    data: {
+      email,
+      nick,
+      password,
+    },
+  });
+};
+
+export {
+  findUserById,
+  isNicknameExist,
+  isEmailExist,
+  changeUserNick,
+  createUser,
+};
