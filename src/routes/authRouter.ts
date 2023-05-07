@@ -18,60 +18,7 @@ import { util } from '../modules/';
 import { authService } from '../service';
 const authRouter: Router = express.Router();
 
-authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
-  // #swagger.summary = '로컬 회원가입'
-  try {
-    const { email, nick, password } = req.body;
-    const exUser = await User.findOne({ where: { email } });
-    const exNick = await User.findOne({ where: { nick } });
-    if (exUser) {
-      return util.jsonResponse(
-        res,
-        409,
-        '이미 존재하는 이메일 입니다.',
-        false,
-        null,
-      );
-    }
-    if (exNick) {
-      return util.jsonResponse(
-        res,
-        409,
-        '이미 존재하는 닉네임 입니다.',
-        false,
-        null,
-      );
-    }
-    const hash = await bcrypt.hash(password, 12);
-    const user = await User.create({
-      email,
-      nick,
-      password: hash,
-    });
-    const curUser = await User.findOne({ where: { email } });
-    console.log(curUser.id);
-    // var url = `http://localhost:${config.port}/users/location/`;
-    // axios.post(url).then(async (Response)=>{
-    //   console.log(Response.data);
-    // }).catch((err)=>console.log(err));
-    return util.jsonResponse(
-      res,
-      200,
-      '로컬 회원가입에 성공하였습니다.',
-      true,
-      user,
-    );
-  } catch (error) {
-    console.error(error);
-    util.jsonResponse(
-      res,
-      500,
-      '[로컬 회원가입] POST /users/signup',
-      false,
-      {},
-    );
-  }
-});
+authRouter.post('/signup', isNotLoggedIn, authService.localSignUp);
 
 authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
   // #swagger.summary = '로컬 로그인'
