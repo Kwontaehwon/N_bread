@@ -53,6 +53,17 @@ const createUser = async (email: string, nick: string, password: string) => {
     },
   });
 };
+const findUserByEmail = async (email: string) => {
+  try {
+    const user = await prisma.users.findFirst({ where: { email } });
+    return user;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
 
 export {
   findUserById,
@@ -60,4 +71,5 @@ export {
   isEmailExist,
   changeUserNick,
   createUser,
+  findUserByEmail,
 };
