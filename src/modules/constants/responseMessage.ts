@@ -10,6 +10,7 @@ export default {
 
   USER_NOT_FOUND: '해당되는 유저가 없습니다',
   NICKNAME_DUPLICATED: '중복된 닉네임입니다.',
+  EMAIL_DUPLICATED: '중복된 이메일입니다.',
   NICKNAME_CHANGE_FAIL: '닉네임 변경 중 오류가 발생하였습니다.',
 
   // deal
