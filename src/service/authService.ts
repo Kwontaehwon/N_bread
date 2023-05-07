@@ -15,19 +15,30 @@ const logout = async (req: Request, res: Response) => {
 
 const localSignUp = async (req: Request, res: Response) => {
   const { email, nick, password } = req.body;
-  const isEmailExist = await userRepository.isEmailExist(email);
-  if (isEmailExist) {
-    fail(res, statusCode.BAD_REQUEST, responseMessage.EMAIL_DUPLICATED);
-  }
-  const isNicknameExist = await userRepository.isNicknameExist(nick);
-  if (isNicknameExist) {
-    fail(res, statusCode.BAD_REQUEST, responseMessage.NICKNAME_DUPLICATED);
-  }
+  try {
+    const isEmailExist = await userRepository.isEmailExist(email);
+    if (isEmailExist) {
+      return fail(
+        res,
+        statusCode.BAD_REQUEST,
+        responseMessage.EMAIL_DUPLICATED,
+      );
+    }
+    const isNicknameExist = await userRepository.isNicknameExist(nick);
+    if (isNicknameExist) {
+      return fail(
+        res,
+        statusCode.BAD_REQUEST,
+        responseMessage.NICKNAME_DUPLICATED,
+      );
+    }
+    const hash = await bcrypt.hash(password, 12);
+    await userRepository.createUser(email, nick, hash);
 
-  const hash = await bcrypt.hash(password, 12);
-  await userRepository.createUser(email, nick, hash);
-
-  success(res, statusCode.OK, responseMessage.SUCCESS);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export { logout, localSignUp };
