@@ -1,8 +1,10 @@
 import passport from 'passport';
-const LocalStrategy = require('passport-local').Strategy;
+import passport_local from 'passport-local';
 import bcrypt from 'bcrypt';
 
 import { User } from '../../database/models';
+const LocalStrategy = passport_local.Strategy;
+
 const passportLocal = () => {
   passport.use(
     new LocalStrategy(
