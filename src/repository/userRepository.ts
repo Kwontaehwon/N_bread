@@ -17,6 +17,11 @@ const isNicknameExist = async (nickName: string) => {
   return !!isDuplicated;
 };
 
+const isEmailExist = async (email: string) => {
+  const isDuplicated = await prisma.users.findFirst({ where: { email } });
+  return !!isDuplicated;
+};
+
 const changeUserNick = async (id: number, nickName: string) => {
   try {
     await prisma.users.update({
@@ -39,4 +44,4 @@ const changeUserNick = async (id: number, nickName: string) => {
   }
 };
 
-export { findUserById, isNicknameExist, changeUserNick };
+export { findUserById, isNicknameExist, isEmailExist, changeUserNick };
