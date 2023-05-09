@@ -1,7 +1,8 @@
 import { util } from '../../src/modules';
 import responseMessage from '../../src/modules/constants/responseMessage';
 import statusCode from '../../src/modules/constants/statusCode';
-import { logout } from '../../src/service/authService';
+import { userRepository } from '../../src/repository';
+import { localSignUp, logout } from '../../src/service/authService';
 describe('[authService] logout 테스트', () => {
   const res = {
     status: jest.fn(() => res),
@@ -28,5 +29,31 @@ describe('[authService] logout 테스트', () => {
       responseMessage.SUCCESS,
       {},
     );
+  });
+});
+
+describe('[authService] localSignUp 테스트', () => {
+  const req: any = {
+    body: {
+      email: 'test@test.com',
+      nick: 'testNickname',
+      password: 'testPassword',
+    },
+  };
+  const res: any = {
+    send: jest.fn(),
+    status: jest.fn(() => res),
+  };
+
+  test('닉네임 중복 시 로컬 회원가입', async () => {
+    userRepository.isEmailExist = jest.fn().mockReturnValue(true);
+    await localSignUp(req, res);
+    expect(res.status).toBeCalledWith(statusCode.BAD_REQUEST);
+    const fail_result = {
+      code: statusCode.BAD_REQUEST,
+      success: false,
+      message: responseMessage.EMAIL_DUPLICATED,
+    };
+    expect(res.send).toBeCalledWith(fail_result);
   });
 });
