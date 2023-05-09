@@ -48,6 +48,18 @@ describe('[authService] localSignUp 테스트', () => {
     send: jest.fn(),
   };
 
+  const fail_email = {
+    code: statusCode.BAD_REQUEST,
+    success: false,
+    message: responseMessage.EMAIL_DUPLICATED,
+  };
+
+  const fail_nickname = {
+    code: statusCode.BAD_REQUEST,
+    success: false,
+    message: responseMessage.NICKNAME_DUPLICATED,
+  };
+
   test('로컬 회원가입 정상 작동 테스트', async () => {
     userRepository.isEmailExist = jest.fn().mockReturnValue(false);
     userRepository.isNicknameExist = jest.fn().mockReturnValue(false);
@@ -56,36 +68,25 @@ describe('[authService] localSignUp 테스트', () => {
 
     await localSignUp(req, res);
 
-    const success_result = {
-      code: statusCode.OK,
-      success: true,
-      message: responseMessage.SUCCESS,
-    };
     expect(success).toBeCalledWith(res, statusCode.OK, responseMessage.SUCCESS);
   });
 
   test('이메일 중복 시 로컬 회원가입', async () => {
     userRepository.isEmailExist = jest.fn().mockReturnValue(true);
+
     await localSignUp(req, res);
+
     expect(res.status).toBeCalledWith(statusCode.BAD_REQUEST);
-    const fail_result = {
-      code: statusCode.BAD_REQUEST,
-      success: false,
-      message: responseMessage.EMAIL_DUPLICATED,
-    };
-    expect(res.send).toBeCalledWith(fail_result);
+    expect(res.send).toBeCalledWith(fail_email);
   });
 
   test('닉네임 중복 시 로컬 회원가입', async () => {
     userRepository.isEmailExist = jest.fn().mockReturnValue(false);
     userRepository.isNicknameExist = jest.fn().mockReturnValue(true);
+
     await localSignUp(req, res);
-    const fail_result = {
-      code: statusCode.BAD_REQUEST,
-      success: false,
-      message: responseMessage.NICKNAME_DUPLICATED,
-    };
+
     expect(res.status).toBeCalledWith(statusCode.BAD_REQUEST);
-    expect(res.send).toBeCalledWith(fail_result);
+    expect(res.send).toBeCalledWith(fail_nickname);
   });
 });
