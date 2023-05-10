@@ -178,7 +178,7 @@ describe('[userRepository] FindUserByEmail 테스트', () => {
   });
 
   test('findUserByEmail prisma오류 테스트', async () => {
-    prisma.users.update = jest.fn(() => {
+    prisma.users.findFirst = jest.fn(() => {
       throw error;
     });
     try {
