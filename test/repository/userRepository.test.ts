@@ -7,6 +7,7 @@ import {
   findUserById,
   isEmailExist,
   isNicknameExist,
+  saveRefresh,
 } from '../../src/repository/userRepository';
 import { responseMessage, statusCode } from '../../src/modules/constants';
 import { error } from 'console';
@@ -170,6 +171,22 @@ describe('[userRepository] FindUserByEmail 테스트', () => {
     expect(findUserByEmail(createUserEmail)).resolves.toHaveProperty(
       'nick',
       createUserNick,
+    );
+    await prismaForHardDelete.users.delete({
+      where: { id: createData.id },
+    });
+  });
+});
+
+describe('[userRepository] saveRefresh 테스트', () => {
+  const refreshToken = 'testRefreshToken';
+  
+  test('saveRefresh 정상 작동 테스트', async () => {
+    const createData = await prisma.users.create({ data: user });
+    await saveRefresh(createData.id, refreshToken);
+    expect(findUserById(createData.id)).resolves.toHaveProperty(
+      'refreshToken',
+      refreshToken,
     );
     await prismaForHardDelete.users.delete({
       where: { id: createData.id },
