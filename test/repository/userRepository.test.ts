@@ -6,7 +6,9 @@ import {
   isEmailExist,
   isNicknameExist,
 } from '../../src/repository/userRepository';
-import { statusCode } from '../../src/modules/constants';
+import { responseMessage, statusCode } from '../../src/modules/constants';
+import { error } from 'console';
+import { errorGenerator } from '../../src/modules/error/errorGenerator';
 const prismaForHardDelete = new PrismaClient();
 
 const user = {
@@ -125,6 +127,18 @@ describe('changeNick', () => {
       await prismaForHardDelete.users.delete({
         where: { id: createData.id },
       });
+      expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
+    }
+  });
+
+  test('닉네임 변경 시 prismaError테스트', async () => {
+    try {
+      prisma.users.update = jest.fn().mockImplementation(() => {
+        throw error;
+      });
+      await changeUserNick(1, newNickname);
+    } catch (error) {
+      expect(error.message).toBe(responseMessage.NICKNAME_CHANGE_FAIL);
       expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
     }
   });
