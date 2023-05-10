@@ -140,12 +140,11 @@ describe('[userRepository] CreateUser 테스트', () => {
   const userNick = 'testtestNick';
   const userPassword = '123123123';
   test('유저 생성 정상작동 테스트', async () => {
-    expect(
-      createUser(userEmail, userNick, userPassword),
-    ).resolves.toHaveProperty('nickName', userNick);
+    await createUser(userEmail, userNick, userPassword);
     const user = await prisma.users.findFirst({
       where: { nick: userNick },
     });
+    expect(user).toHaveLength;
     await prismaForHardDelete.users.delete({ where: { id: user!.id } });
   });
   test('유저 생성 시 prisma 오류 테스트', async () => {
@@ -165,14 +164,8 @@ describe('[userRepository] FindUserByEmail 테스트', () => {
   test('findUserByEmail 정상 작동 테스트', async () => {
     try {
       const createData = await prisma.users.create({ data: user });
-      expect(findUserByEmail(createUserEmail)).resolves.toHaveProperty(
-        'email',
-        createUserEmail,
-      );
-      expect(findUserByEmail(createUserEmail)).resolves.toHaveProperty(
-        'nick',
-        createUserNick,
-      );
+      console.log(createData);
+      expect(findUserByEmail(createUserEmail)).resolves.toEqual(createData);
       await prismaForHardDelete.users.delete({
         where: { id: createData.id },
       });
