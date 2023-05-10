@@ -204,4 +204,16 @@ describe('[userRepository] saveRefresh 테스트', () => {
       where: { id: createData.id },
     });
   });
+
+  test('saveRefresh prisma 오류 테스트', async () => {
+    prisma.users.update = jest.fn(() => {
+      throw error;
+    });
+    try {
+      await saveRefresh(1, refreshToken);
+    } catch (error) {
+      expect(error).toHaveProperty('statusCode', statusCode.NOT_FOUND);
+      expect(error.message).toEqual(responseMessage.NOT_FOUND);
+    }
+  });
 });
