@@ -49,13 +49,9 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
     'local',
     { session: false },
     (authError, user, info) => {
-      if (authError || !user) {
-        logger.error(`로컬 로그인 실패 : ${info.message}`);
-        return fail(res, statusCode.NOT_FOUND, responseMessage.USER_NOT_FOUND);
-      }
       if (!user) {
-        logger.error(`로컬 로그인 실패 : ${info.message}`);
-        return fail(res, statusCode.FORBIDDEN, responseMessage.WRONG_PASSWORD);
+        logger.error(`로컬 로그인 실패2 : ${info.message}`);
+        return fail(res, statusCode.FORBIDDEN, responseMessage.LOGIN_FAILED);
       }
       return req.login(user, async (loginError) => {
         if (loginError) {
