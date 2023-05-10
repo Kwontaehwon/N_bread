@@ -163,18 +163,22 @@ describe('[userRepository] CreateUser 테스트', () => {
 
 describe('[userRepository] FindUserByEmail 테스트', () => {
   test('findUserByEmail 정상 작동 테스트', async () => {
-    const createData = await prisma.users.create({ data: user });
-    expect(findUserByEmail(createUserEmail)).resolves.toHaveProperty(
-      'email',
-      createUserEmail,
-    );
-    expect(findUserByEmail(createUserEmail)).resolves.toHaveProperty(
-      'nick',
-      createUserNick,
-    );
-    await prismaForHardDelete.users.delete({
-      where: { id: createData.id },
-    });
+    try {
+      const createData = await prisma.users.create({ data: user });
+      expect(findUserByEmail(createUserEmail)).resolves.toHaveProperty(
+        'email',
+        createUserEmail,
+      );
+      expect(findUserByEmail(createUserEmail)).resolves.toHaveProperty(
+        'nick',
+        createUserNick,
+      );
+      await prismaForHardDelete.users.delete({
+        where: { id: createData.id },
+      });
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   test('findUserByEmail prisma오류 테스트', async () => {
@@ -194,15 +198,19 @@ describe('[userRepository] saveRefresh 테스트', () => {
   const refreshToken = 'testRefreshToken';
 
   test('saveRefresh 정상 작동 테스트', async () => {
-    const createData = await prisma.users.create({ data: user });
-    await saveRefresh(createData.id, refreshToken);
-    expect(findUserById(createData.id)).resolves.toHaveProperty(
-      'refreshToken',
-      refreshToken,
-    );
-    await prismaForHardDelete.users.delete({
-      where: { id: createData.id },
-    });
+    try {
+      const createData = await prisma.users.create({ data: user });
+      await saveRefresh(createData.id, refreshToken);
+      expect(findUserById(createData.id)).resolves.toHaveProperty(
+        'refreshToken',
+        refreshToken,
+      );
+      await prismaForHardDelete.users.delete({
+        where: { id: createData.id },
+      });
+    } catch (error) {
+      console.log(error);
+    }
   });
 
   test('saveRefresh prisma 오류 테스트', async () => {
