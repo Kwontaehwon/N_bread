@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import {
   changeUserNick,
   findUserById,
+  isEmailExist,
   isNicknameExist,
 } from '../../src/repository/userRepository';
 import { statusCode } from '../../src/modules/constants';
@@ -81,6 +82,21 @@ describe('isNicknameExist test', () => {
   test('중복된 닉네임일 경우', async () => {
     const createData = await prisma.users.create({ data: user });
     await expect(isNicknameExist('테스트유저')).resolves.toEqual(true);
+    await prismaForHardDelete.users.delete({
+      where: { id: createData.id },
+    });
+  });
+});
+
+describe('isEmailExist test', () => {
+  test('중복된 이메일이 없을 때', async () => {
+    await expect(isEmailExist('없는 이메일')).resolves.toEqual(false);
+  });
+
+  test('중복된 이메일일 경우', async () => {
+    const createData = await prisma.users.create({ data: user });
+    await expect(isEmailExist('testUser@gmail.com')).resolves.toEqual(true);
+    console.log(createData.id);
     await prismaForHardDelete.users.delete({
       where: { id: createData.id },
     });
