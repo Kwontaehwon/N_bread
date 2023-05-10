@@ -68,11 +68,10 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
         await userRepository.saveRefresh(user.id, refreshToken);
         console.log(accessToken);
         res.cookie('accessToken', accessToken);
-        // return res.json("로그인 성공!");
-        return success(res, statusCode.OK, responseMessage.SUCCESS, req.user);
+        return success(res, statusCode.OK, responseMessage.SUCCESS);
       });
     },
-  )(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
+  )(req, res, next); 
 };
 
 export { logout, localSignUp, localLogin };
