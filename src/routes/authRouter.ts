@@ -20,55 +20,7 @@ const authRouter: Router = express.Router();
 
 authRouter.post('/signup', isNotLoggedIn, authService.localSignUp);
 
-authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
-  // #swagger.summary = '로컬 로그인'
-  passport.authenticate(
-    'local',
-    { session: false },
-    (authError, user, info) => {
-      console.log('USER : ' + user);
-      if (authError) {
-        console.error(authError);
-        return next(authError);
-      }
-      if (!user) {
-        logger.error(`로컬 로그인 실패 : ${info.message}`);
-        return util.jsonResponse(
-          res,
-          400,
-          `로컬 로그인 실패 ${info.message}`,
-          info,
-          {},
-        );
-      }
-      return req.login(user, (loginError) => {
-        if (loginError) {
-          console.error(loginError);
-          return next(loginError);
-        }
-        const payload = {
-          id: user.id,
-          nick: user.nick,
-          provider: user.provider,
-        };
-        const accessToken = jwt.sign(payload, config.jwtSecret, {
-          algorithm: 'HS256',
-          issuer: 'chocoBread',
-        });
-        console.log(accessToken);
-        res.cookie('accessToken', accessToken);
-        // return res.json("로그인 성공!");
-        return util.jsonResponse(
-          res,
-          200,
-          '로컬 로그인에 성공하였습니다.',
-          true,
-          req.user,
-        );
-      });
-    },
-  )(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
-});
+authRouter.post('/login', isNotLoggedIn, authService.localLogin);
 
 authRouter.get('/logout', isLoggedIn, authService.logout);
 
