@@ -45,13 +45,21 @@ const changeUserNick = async (id: number, nickName: string) => {
 };
 
 const createUser = async (email: string, nick: string, password: string) => {
-  await prisma.users.create({
-    data: {
-      email,
-      nick,
-      password,
-    },
-  });
+  try {
+    const data = await prisma.users.create({
+      data: {
+        email,
+        nick,
+        password,
+      },
+    });
+    return data;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.CREATE_USER_FAILED,
+    });
+  }
 };
 
 const findUserByEmail = async (email: string) => {
