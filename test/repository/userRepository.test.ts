@@ -142,4 +142,15 @@ describe('[userRepository] CreateUser 테스트', () => {
     });
     await prismaForHardDelete.users.delete({ where: { id: user!.id } });
   });
+  test('유저 생성 시 prisma 오류 테스트', async () => {
+    prisma.users.create = jest.fn(() => {
+      throw error;
+    });
+    try {
+      await createUser('test@testtest.com', 'testtestNick', '123123123');
+    } catch (error) {
+      expect(error.message).toEqual(responseMessage.CREATE_USER_FAILED);
+      expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
+    }
+  });
 });
