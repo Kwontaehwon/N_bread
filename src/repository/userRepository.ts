@@ -46,19 +46,13 @@ const changeUserNick = async (id: number, nickName: string) => {
 
 const createUser = async (email: string, nick: string, password: string) => {
   try {
-    const user = await prisma.users.create({
+    await prisma.users.create({
       data: {
         email,
         nick,
         password,
       },
     });
-    const data = {
-      id: user.id,
-      email: user.email,
-      nickName: user.nick,
-    };
-    return data;
   } catch (error) {
     throw errorGenerator({
       code: statusCode.BAD_REQUEST,
@@ -70,6 +64,7 @@ const createUser = async (email: string, nick: string, password: string) => {
 const findUserByEmail = async (email: string) => {
   try {
     const user = await prisma.users.findFirst({ where: { email } });
+    console.log(user);
     return user;
   } catch (error) {
     throw errorGenerator({
