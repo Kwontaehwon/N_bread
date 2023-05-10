@@ -2,10 +2,10 @@ import jwt from 'jsonwebtoken';
 import config from '../config';
 import { responseMessage } from './constants';
 
-const sign = (userId: number, email: string) => {
+const sign = (userId: number, nick: string) => {
   const payload = {
     id: userId,
-    email: email,
+    nickName: nick,
   };
   const accessToken = jwt.sign(payload, config.jwtSecret, { expiresIn: '1h' });
   return accessToken;
