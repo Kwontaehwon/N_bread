@@ -13,6 +13,7 @@ export default {
   EMAIL_DUPLICATED: '중복된 이메일입니다.',
   NICKNAME_CHANGE_FAIL: '닉네임 변경 중 오류가 발생하였습니다.',
   LOGIN_FAILED: '로그인에 실패하였습니다.',
+  CREATE_USER_FAILED: '유저 생성에 실패하였습니다',
 
   // deal
   DEAL_NOT_FOUND: '해당되는 거래가 없습니다',
