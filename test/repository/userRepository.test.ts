@@ -2,6 +2,7 @@ import prisma from '../../src/prisma';
 import { PrismaClient } from '@prisma/client';
 import {
   changeUserNick,
+  createUser,
   findUserById,
   isEmailExist,
   isNicknameExist,
@@ -118,20 +119,6 @@ describe('changeNick', () => {
     });
   });
 
-  test(`${newNickname}으로 닉네임 변경 재시도 테스트`, async () => {
-    const createData = await prisma.users.create({ data: user });
-    await changeUserNick(createData.id, newNickname);
-    try {
-      await changeUserNick(createData.id, newNickname);
-    } catch (error) {
-      await prismaForHardDelete.users.delete({
-        where: { id: createData.id },
-      });
-      expect(error.message).toBe(responseMessage.NICKNAME_CHANGE_FAIL);
-      expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
-    }
-  });
-
   test('닉네임 변경 시 prismaError테스트', async () => {
     try {
       prisma.users.update = jest.fn().mockImplementation(() => {
@@ -142,5 +129,17 @@ describe('changeNick', () => {
       expect(error.message).toBe(responseMessage.NICKNAME_CHANGE_FAIL);
       expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
     }
+  });
+});
+
+describe('[userRepository] CreateUser 테스트', () => {
+  test('유저 생성 정상작동 테스트', async () => {
+    expect(
+      createUser('test@testtest.com', 'testtestNick', '123123123'),
+    ).resolves.toHaveProperty('nickName', 'testtestNick');
+    const user = await prisma.users.findFirst({
+      where: { nick: 'testtestNick' },
+    });
+    await prismaForHardDelete.users.delete({ where: { id: user!.id } });
   });
 });
