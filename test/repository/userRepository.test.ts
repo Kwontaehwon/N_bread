@@ -127,6 +127,7 @@ describe('changeNick', () => {
       await prismaForHardDelete.users.delete({
         where: { id: createData.id },
       });
+      expect(error.message).toBe(responseMessage.NICKNAME_CHANGE_FAIL);
       expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
     }
   });
