@@ -66,7 +66,7 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
             responseMessage.LOGIN_FAILED,
           );
         }
-        const accessToken = jwtHandler.sign(user.id, user.nick);
+        const accessToken = jwtHandler.sign(user.id);
         const refreshToken = jwtHandler.createRefresh();
 
         await userRepository.saveRefresh(user.id, refreshToken);
