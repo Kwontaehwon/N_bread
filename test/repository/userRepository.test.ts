@@ -176,11 +176,23 @@ describe('[userRepository] FindUserByEmail 테스트', () => {
       where: { id: createData.id },
     });
   });
+
+  test('findUserByEmail prisma오류 테스트', async () => {
+    prisma.users.update = jest.fn(() => {
+      throw error;
+    });
+    try {
+      await findUserByEmail(createUserEmail);
+    } catch (error) {
+      expect(error).toHaveProperty('statusCode', statusCode.NOT_FOUND);
+      expect(error.message).toEqual(responseMessage.NOT_FOUND);
+    }
+  });
 });
 
 describe('[userRepository] saveRefresh 테스트', () => {
   const refreshToken = 'testRefreshToken';
-  
+
   test('saveRefresh 정상 작동 테스트', async () => {
     const createData = await prisma.users.create({ data: user });
     await saveRefresh(createData.id, refreshToken);
