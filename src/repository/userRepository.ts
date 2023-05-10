@@ -46,13 +46,18 @@ const changeUserNick = async (id: number, nickName: string) => {
 
 const createUser = async (email: string, nick: string, password: string) => {
   try {
-    const data = await prisma.users.create({
+    const user = await prisma.users.create({
       data: {
         email,
         nick,
         password,
       },
     });
+    const data = {
+      id: user.id,
+      email: user.email,
+      nickName: user.nick,
+    };
     return data;
   } catch (error) {
     throw errorGenerator({
