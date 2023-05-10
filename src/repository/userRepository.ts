@@ -53,9 +53,25 @@ const createUser = async (email: string, nick: string, password: string) => {
     },
   });
 };
+
 const findUserByEmail = async (email: string) => {
   try {
     const user = await prisma.users.findFirst({ where: { email } });
+    return user;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+const saveRefresh = async (userId: number, refreshToken: string) => {
+  try {
+    const user = await prisma.users.update({
+      where: { id: userId },
+      data: { refreshToken },
+    });
     return user;
   } catch (error) {
     throw errorGenerator({
@@ -72,4 +88,5 @@ export {
   changeUserNick,
   createUser,
   findUserByEmail,
+  saveRefresh,
 };
