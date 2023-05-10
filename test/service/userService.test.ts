@@ -1,5 +1,4 @@
-import { getUser, changeUserNick } from '../../src/service/userService';
-import { User } from '../../src/database/models/user';
+import { changeUserNick } from '../../src/service/userService';
 import { responseMessage, statusCode } from '../../src/modules/constants';
 import * as util from '../../src/modules/util';
 import {
@@ -29,7 +28,7 @@ describe('[userService] changeUserNick 테스트', () => {
     expect(success).toBeCalledWith(
       res,
       statusCode.OK,
-      responseMessage.NICKNAME_CHANGE_SUCCESS,
+      responseMessage.SUCCESS,
       expectedResult,
     );
   });

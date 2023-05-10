@@ -348,7 +348,7 @@ const getUserLocation = async (
     return success(
       res,
       statusCode.OK,
-      responseMessage.GET_LOCATION_SUCCESS,
+      responseMessage.SUCCESS,
       data,
     );
   } catch (error) {
@@ -373,7 +373,7 @@ const changeUserNick = async (req, res, next) => {
       return success(
         res,
         statusCode.OK,
-        responseMessage.NICKNAME_CHANGE_SUCCESS,
+        responseMessage.SUCCESS,
         result,
       );
     }

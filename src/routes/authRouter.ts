@@ -1,4 +1,4 @@
-const express = require('express');
+import express, { Router } from 'express';
 const passport = require('passport');
 import bcrypt from 'bcrypt';
 import {
@@ -15,119 +15,14 @@ import qs from 'qs';
 import config from '../config';
 import { Slack } from '../class/slack';
 import { util } from '../modules/';
-const authRouter = express.Router();
+import { authService } from '../service';
+const authRouter: Router = express.Router();
 
-authRouter.post('/signup', isNotLoggedIn, async (req, res, next) => {
-  // #swagger.summary = '로컬 회원가입'
-  try {
-    const { email, nick, password } = req.body;
-    const exUser = await User.findOne({ where: { email } });
-    const exNick = await User.findOne({ where: { nick } });
-    if (exUser) {
-      return util.jsonResponse(
-        res,
-        409,
-        '이미 존재하는 이메일 입니다.',
-        false,
-        null,
-      );
-    }
-    if (exNick) {
-      return util.jsonResponse(
-        res,
-        409,
-        '이미 존재하는 닉네임 입니다.',
-        false,
-        null,
-      );
-    }
-    const hash = await bcrypt.hash(password, 12);
-    const user = await User.create({
-      email,
-      nick,
-      password: hash,
-    });
-    const curUser = await User.findOne({ where: { email } });
-    console.log(curUser.id);
-    // var url = `http://localhost:${config.port}/users/location/`;
-    // axios.post(url).then(async (Response)=>{
-    //   console.log(Response.data);
-    // }).catch((err)=>console.log(err));
-    return util.jsonResponse(
-      res,
-      200,
-      '로컬 회원가입에 성공하였습니다.',
-      true,
-      user,
-    );
-  } catch (error) {
-    console.error(error);
-    util.jsonResponse(
-      res,
-      500,
-      '[로컬 회원가입] POST /users/signup',
-      false,
-      {},
-    );
-  }
-});
+authRouter.post('/signup', isNotLoggedIn, authService.localSignUp);
 
-authRouter.post('/login', isNotLoggedIn, (req, res, next) => {
-  // #swagger.summary = '로컬 로그인'
-  passport.authenticate(
-    'local',
-    { session: false },
-    (authError, user, info) => {
-      console.log('USER : ' + user);
-      if (authError) {
-        console.error(authError);
-        return next(authError);
-      }
-      if (!user) {
-        logger.error(`로컬 로그인 실패 : ${info.message}`);
-        return util.jsonResponse(
-          res,
-          400,
-          `로컬 로그인 실패 ${info.message}`,
-          info,
-          {},
-        );
-      }
-      return req.login(user, (loginError) => {
-        if (loginError) {
-          console.error(loginError);
-          return next(loginError);
-        }
-        const payload = {
-          id: user.id,
-          nick: user.nick,
-          provider: user.provider,
-        };
-        const accessToken = jwt.sign(payload, config.jwtSecret, {
-          algorithm: 'HS256',
-          issuer: 'chocoBread',
-        });
-        console.log(accessToken);
-        res.cookie('accessToken', accessToken);
-        // return res.json("로그인 성공!");
-        return util.jsonResponse(
-          res,
-          200,
-          '로컬 로그인에 성공하였습니다.',
-          true,
-          req.user,
-        );
-      });
-    },
-  )(req, res, next); // 미들웨어 내의 미들웨어에는 (req, res, next)를 붙입니다.
-});
+authRouter.post('/login', isNotLoggedIn, authService.localLogin);
 
-authRouter.get('/logout', verifyToken, (req, res) => {
-  // #swagger.summary = '로컬 로그아웃'
-  req.logout();
-  req.session.destroy();
-  return util.jsonResponse(res, 200, '로그아웃에 성공하였습니다.', true, null);
-});
+authRouter.get('/logout', isLoggedIn, authService.logout);
 
 authRouter.get(
   // #swagger.summary = '카카오 웹뷰 로그인'
@@ -338,84 +233,84 @@ authRouter.get(
     );
   };
 
-authRouter.get(
-  // #swagger.summary = '애플 로그인'
-  '/apple',
-  passport.authenticate('apple'),
-);
+// authRouter.get(
+//   // #swagger.summary = '애플 로그인'
+//   '/apple',
+//   passport.authenticate('apple'),
+// );
 
-authRouter.post(
-  // #swagger.summary = '애플 로그인 CallBack'
-  '/apple/callback',
-  express.urlencoded({ extended: false }),
-  passport.authenticate('apple'),
-  (req, res) => {
-    console.log('apple Signout : ' + req.appleSignout);
-    console.log('req.refresh : ' + req.refresh);
-    const payload = {
-      id: req.user.id,
-      provider: req.user.provider,
-    };
-    const accessToken = jwt.sign(payload, config.jwtSecret, {
-      algorithm: 'HS256',
-      issuer: 'chocoBread',
-    });
-    res.cookie('accessToken', accessToken);
-    logger.info(`[애플로그인] ${req.user.id} 의 nick : ${req.user.nick} `);
-    if (req.user.nick == null) {
-      logger.info(
-        `[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.`,
-      );
-      Slack.sendMessage({
-        color: Slack.Colors.success,
-        title: '[회원가입]',
-        text: `[apple] ${req.user.id}번 유저가 회원가입하였습니다.`,
-      });
-      return util.jsonResponse(
-        res,
-        300,
-        '[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.',
-        true,
-        null,
-      );
-    } else {
-      logger.info(
-        `[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        200,
-        '[애플 로그인] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.',
-        true,
-        null,
-      );
-    }
-  },
-);
+// authRouter.post(
+//   // #swagger.summary = '애플 로그인 CallBack'
+//   '/apple/callback',
+//   express.urlencoded({ extended: false }),
+//   passport.authenticate('apple'),
+//   (req, res) => {
+//     console.log('apple Signout : ' + req.appleSignout);
+//     console.log('req.refresh : ' + req.refresh);
+//     const payload = {
+//       id: req.user.id,
+//       provider: req.user.provider,
+//     };
+//     const accessToken = jwt.sign(payload, config.jwtSecret, {
+//       algorithm: 'HS256',
+//       issuer: 'chocoBread',
+//     });
+//     res.cookie('accessToken', accessToken);
+//     logger.info(`[애플로그인] ${req.user.id} 의 nick : ${req.user.nick} `);
+//     if (req.user.nick == null) {
+//       logger.info(
+//         `[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.`,
+//       );
+//       Slack.sendMessage({
+//         color: Slack.Colors.success,
+//         title: '[회원가입]',
+//         text: `[apple] ${req.user.id}번 유저가 회원가입하였습니다.`,
+//       });
+//       return util.jsonResponse(
+//         res,
+//         300,
+//         '[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.',
+//         true,
+//         null,
+//       );
+//     } else {
+//       logger.info(
+//         `[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.`,
+//       );
+//       return util.jsonResponse(
+//         res,
+//         200,
+//         '[애플 로그인] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.',
+//         true,
+//         null,
+//       );
+//     }
+//   },
+// );
 
-authRouter.get('/success', isLoggedIn, async (req, res, next) => {
-  // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
-  // #swagger.summary = '로그인 성공시 토큰 반환'
-  console.log(req.exUser);
-  const user = await User.findOne({ where: { id: req.user.id } });
-  req.logout();
-  req.session.destroy();
-  const payload = {
-    id: user.id,
-    nick: user.nick,
-    provider: user.provider,
-  };
-  const accessToken = jwt.sign(payload, config.jwtSecret, {
-    algorithm: 'HS256',
-    issuer: 'chocoBread',
-  });
-  res.cookie('accessToken', accessToken);
-  logger.info(
-    `User Id ${user.id} 님이 ${user.provider} 로그인에 성공하였습니다.`,
-  );
-  logger.info(`jwt Token을 발행합니다.`);
-  return res.status(200).send();
-});
+// authRouter.get('/success', isLoggedIn, async (req, res, next) => {
+//   // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
+//   // #swagger.summary = '로그인 성공시 토큰 반환'
+//   console.log(req.exUser);
+//   const user = await User.findOne({ where: { id: req.user.id } });
+//   req.logout();
+//   req.session.destroy();
+//   const payload = {
+//     id: user.id,
+//     nick: user.nick,
+//     provider: user.provider,
+//   };
+//   const accessToken = jwt.sign(payload, config.jwtSecret, {
+//     algorithm: 'HS256',
+//     issuer: 'chocoBread',
+//   });
+//   res.cookie('accessToken', accessToken);
+//   logger.info(
+//     `User Id ${user.id} 님이 ${user.provider} 로그인에 성공하였습니다.`,
+//   );
+//   logger.info(`jwt Token을 발행합니다.`);
+//   return res.status(200).send();
+// });
 
 authRouter.get('/error', (req, res, next) => {
   // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
