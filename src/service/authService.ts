@@ -53,6 +53,10 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
         logger.error(`로컬 로그인 실패 : ${info.message}`);
         return fail(res, statusCode.NOT_FOUND, responseMessage.USER_NOT_FOUND);
       }
+      if (!user) {
+        logger.error(`로컬 로그인 실패 : ${info.message}`);
+        return fail(res, statusCode.FORBIDDEN, responseMessage.WRONG_PASSWORD);
+      }
       return req.login(user, async (loginError) => {
         if (loginError) {
           logger.error(loginError);
@@ -71,7 +75,7 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
         return success(res, statusCode.OK, responseMessage.SUCCESS);
       });
     },
-  )(req, res, next); 
+  )(req, res, next);
 };
 
 export { logout, localSignUp, localLogin };
