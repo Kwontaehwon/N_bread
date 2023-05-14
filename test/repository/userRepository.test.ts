@@ -2,15 +2,22 @@ import prisma from '../../src/prisma';
 import { PrismaClient } from '@prisma/client';
 import {
   changeUserNick,
+  createUser,
+  findUserByEmail,
   findUserById,
+  isEmailExist,
   isNicknameExist,
+  saveRefresh,
 } from '../../src/repository/userRepository';
-import { statusCode } from '../../src/modules/constants';
+import { responseMessage, statusCode } from '../../src/modules/constants';
+import { error } from 'console';
 const prismaForHardDelete = new PrismaClient();
 
+const createUserEmail = 'testUser@gmail.com';
+const createUserNick = '테스트유저';
 const user = {
-  email: 'testUser@gmail.com',
-  nick: '테스트유저',
+  email: createUserEmail,
+  nick: createUserNick,
   password: 'test',
   provider: 'local',
   snsId: null,
@@ -80,7 +87,22 @@ describe('isNicknameExist test', () => {
 
   test('중복된 닉네임일 경우', async () => {
     const createData = await prisma.users.create({ data: user });
-    await expect(isNicknameExist('테스트유저')).resolves.toEqual(true);
+    await expect(isNicknameExist(createUserNick)).resolves.toEqual(true);
+    await prismaForHardDelete.users.delete({
+      where: { id: createData.id },
+    });
+  });
+});
+
+describe('isEmailExist test', () => {
+  test('중복된 이메일이 없을 때', async () => {
+    await expect(isEmailExist('없는 이메일')).resolves.toEqual(false);
+  });
+
+  test('중복된 이메일일 경우', async () => {
+    const createData = await prisma.users.create({ data: user });
+    await expect(isEmailExist(createUserEmail)).resolves.toEqual(true);
+    console.log(createData.id);
     await prismaForHardDelete.users.delete({
       where: { id: createData.id },
     });
@@ -100,16 +122,99 @@ describe('changeNick', () => {
     });
   });
 
-  test(`${newNickname}으로 닉네임 변경 재시도 테스트`, async () => {
-    const createData = await prisma.users.create({ data: user });
-    await changeUserNick(createData.id, newNickname);
+  test('닉네임 변경 시 prismaError테스트', async () => {
     try {
-      await changeUserNick(createData.id, newNickname);
+      prisma.users.update = jest.fn().mockImplementation(() => {
+        throw error;
+      });
+      await changeUserNick(1, newNickname);
     } catch (error) {
+      expect(error.message).toBe(responseMessage.NICKNAME_CHANGE_FAIL);
+      expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
+    }
+  });
+});
+
+describe('[userRepository] CreateUser 테스트', () => {
+  const userEmail = 'test@testtest.com';
+  const userNick = 'testtestNick';
+  const userPassword = '123123123';
+  test('유저 생성 정상작동 테스트', async () => {
+    await createUser(userEmail, userNick, userPassword);
+    const user = await prisma.users.findFirst({
+      where: { nick: userNick },
+    });
+    expect(user).toHaveLength;
+    await prismaForHardDelete.users.delete({ where: { id: user!.id } });
+  });
+  test('유저 생성 시 prisma 오류 테스트', async () => {
+    prisma.users.create = jest.fn(() => {
+      throw error;
+    });
+    try {
+      await createUser(userEmail, userNick, userPassword);
+    } catch (error) {
+      expect(error.message).toEqual(responseMessage.CREATE_USER_FAILED);
+      expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
+    }
+  });
+});
+
+describe('[userRepository] FindUserByEmail 테스트', () => {
+  test('findUserByEmail 정상 작동 테스트', async () => {
+    try {
+      const createData = await prisma.users.create({ data: user });
+      console.log(createData);
+      expect(findUserByEmail(createUserEmail)).resolves.toEqual(createData);
       await prismaForHardDelete.users.delete({
         where: { id: createData.id },
       });
-      expect(error).toHaveProperty('statusCode', statusCode.BAD_REQUEST);
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  test('findUserByEmail prisma오류 테스트', async () => {
+    prisma.users.findFirst = jest.fn(() => {
+      throw error;
+    });
+    try {
+      await findUserByEmail(createUserEmail);
+    } catch (error) {
+      expect(error).toHaveProperty('statusCode', statusCode.NOT_FOUND);
+      expect(error.message).toEqual(responseMessage.NOT_FOUND);
+    }
+  });
+});
+
+describe('[userRepository] saveRefresh 테스트', () => {
+  const refreshToken = 'testRefreshToken';
+
+  test('saveRefresh 정상 작동 테스트', async () => {
+    try {
+      const createData = await prisma.users.create({ data: user });
+      await saveRefresh(createData.id, refreshToken);
+      expect(findUserById(createData.id)).resolves.toHaveProperty(
+        'refreshToken',
+        refreshToken,
+      );
+      await prismaForHardDelete.users.delete({
+        where: { id: createData.id },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  test('saveRefresh prisma 오류 테스트', async () => {
+    prisma.users.update = jest.fn(() => {
+      throw error;
+    });
+    try {
+      await saveRefresh(1, refreshToken);
+    } catch (error) {
+      expect(error).toHaveProperty('statusCode', statusCode.NOT_FOUND);
+      expect(error.message).toEqual(responseMessage.NOT_FOUND);
     }
   });
 });

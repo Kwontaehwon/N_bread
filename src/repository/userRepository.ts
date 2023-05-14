@@ -17,6 +17,11 @@ const isNicknameExist = async (nickName: string) => {
   return !!isDuplicated;
 };
 
+const isEmailExist = async (email: string) => {
+  const isDuplicated = await prisma.users.findFirst({ where: { email } });
+  return !!isDuplicated;
+};
+
 const changeUserNick = async (id: number, nickName: string) => {
   try {
     await prisma.users.update({
@@ -39,4 +44,57 @@ const changeUserNick = async (id: number, nickName: string) => {
   }
 };
 
-export { findUserById, isNicknameExist, changeUserNick };
+const createUser = async (email: string, nick: string, password: string) => {
+  try {
+    await prisma.users.create({
+      data: {
+        email,
+        nick,
+        password,
+      },
+    });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.CREATE_USER_FAILED,
+    });
+  }
+};
+
+const findUserByEmail = async (email: string) => {
+  try {
+    const user = await prisma.users.findFirst({ where: { email } });
+    console.log(user);
+    return user;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+const saveRefresh = async (userId: number, refreshToken: string) => {
+  try {
+    const user = await prisma.users.update({
+      where: { id: userId },
+      data: { refreshToken },
+    });
+    return user;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+export {
+  findUserById,
+  isNicknameExist,
+  isEmailExist,
+  changeUserNick,
+  createUser,
+  findUserByEmail,
+  saveRefresh,
+};

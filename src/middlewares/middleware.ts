@@ -1,7 +1,9 @@
-import { logger } from '../config/winston';
-const jwt = require('jsonwebtoken');
 import { Request, Response, NextFunction } from 'express';
-import config from '../config';
+import statusCode from '../modules/constants/statusCode';
+import responseMessage from '../modules/constants/responseMessage';
+import { fail } from '../modules/util';
+import { jwtHandler } from '../modules';
+import { JwtPayload } from 'jsonwebtoken';
 function jsonResponse(res, code, message, isSuccess) {
   res.status(code).json({
     code: code,
@@ -12,10 +14,9 @@ function jsonResponse(res, code, message, isSuccess) {
 
 const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
-    console.log('로그인 된 상태입니다.');
     next();
   } else {
-    jsonResponse(res, 401, '로그인이 필요한 서비스입니다.', false);
+    fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
   }
 };
 
@@ -23,24 +24,39 @@ const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (!req.isAuthenticated()) {
     next();
   } else {
-    jsonResponse(res, 401, '로그인 한 상태입니다.', false);
+    fail(res, statusCode.FORBIDDEN, responseMessage.FORBIDDEN);
   }
 };
 
-const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
+  }
+
   try {
-    req.decoded = jwt.verify(req.headers.authorization, config.jwtSecret);
-    return next();
-  } catch (error) {
-    logger.error(error);
-    if (error.name === `TokenExpiredError`) {
-      logger.info('토큰이 만료되었습니다.');
-      // const expiredToken = jwt.verify(req.headers.authorization, config.jwtSecret, {ignoreExpiration : true});
-      // console.log(expiredToken);
-      return jsonResponse(res, 419, `토큰이 만료됬습니다.`, false);
+    const decoded = jwtHandler.verify(token);
+    if (
+      decoded === responseMessage.TOKEN_INVALID ||
+      decoded === responseMessage.TOKEN_EXPIRED
+    ) {
+      return fail(res, statusCode.UNAUTHORIZED, decoded);
     }
-    logger.info('유효하지 않은 토큰 입니다.');
-    return jsonResponse(res, 401, `유효하지 않은 토큰입니다.`, false);
+    const userId = (decoded as JwtPayload).id;
+    if (!userId) {
+      return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
+    }
+    console.log('userId입니다', userId);
+    req.decoded.id = userId;
+    next();
+  } catch (error) {
+    console.log(error);
+    return fail(
+      res,
+      statusCode.UNAUTHORIZED,
+      responseMessage.INTERNAL_SERVER_ERROR,
+    );
   }
 };
+
 export { isLoggedIn, isNotLoggedIn, verifyToken };
