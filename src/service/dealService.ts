@@ -46,7 +46,6 @@ const createDeal = async (req, res, next) => {
 
 const deleteDeal = async (req, res, next) => {
   try {
-    console.log(req.params.dealId);
     const dealId: number = +req.params.dealId;
     const deal = await dealRepository.findDealById(dealId);
     if (deal.userId != req.decoded.id) {
