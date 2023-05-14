@@ -1,14 +1,15 @@
-// jest.mock('../src/database/models');
-import { dealRepository } from '../../src/repository/index';
+import { PrismaClient } from '@prisma/client';
+import {
+  dealRepository,
+  groupRepository,
+  userRepository,
+} from '../../src/repository/index';
 import { Deal } from '../../src/database/models/deal';
 import { dealParam } from '../../src/dto/deal/dealParam';
 import prisma from '../../src/prisma';
-import {
-  createDealInTransaction,
-  dealTransction,
-} from '../../src/repository/dealRepository';
+const prismaForHardDelete = new PrismaClient();
 
-const dealParam: dealParam = {
+const testDealParam: dealParam = {
   title: '광동 비타 500',
   link: '',
   totalPrice: 32000,
@@ -20,28 +21,41 @@ const dealParam: dealParam = {
   content: '1+1 레깅스 같이사실분!! 색깔이랑 옵션은 채팅으로 논의해요~',
 };
 
-const mockedUser = {
-  id: 1,
-  nick: '닉네임',
-  email: 'kygkth2011@gmail.com',
-  password: '1234',
-  provider: 'Naver',
-  snsId: 'snsId',
-  accessToken: 'AccessToken',
-  refreshToken: 'RefreshToken',
-  userStatus: '모집중',
-  curLocation1: '경기도',
-  curLocation2: '안산시',
-  curLocation3: '상록구',
-  curLocationA: '경기도',
-  curLocationB: '안산시',
-  curLocationC: '상록구',
-  isNewUser: false,
-  kakaoNumber: '1234',
-  createdAt: new Date('2022-11-18 12:00'),
-  deletedAt: new Date('2022-11-18 12:00'),
-  updatedAt: new Date('2022-11-18 12:00'),
-};
+let mockedUser;
+
+beforeAll(async () => {
+  mockedUser = await prisma.users.create({
+    data: {
+      nick: '닉네임',
+      email: 'kygkth2011@gmail.com',
+      password: '1234',
+      provider: 'Naver',
+      snsId: 'snsId',
+      accessToken: 'AccessToken',
+      refreshToken: 'RefreshToken',
+      userStatus: '모집중',
+      curLocation1: '경기도',
+      curLocation2: '안산시',
+      curLocation3: '상록구',
+      curLocationA: '경기도',
+      curLocationB: '안산시',
+      curLocationC: '상록구',
+      isNewUser: false,
+      kakaoNumber: '1234',
+      createdAt: new Date('2022-11-18 12:00'),
+      deletedAt: new Date('2022-11-18 12:00'),
+      updatedAt: new Date('2022-11-18 12:00'),
+    },
+  });
+});
+
+afterAll(async () => {
+  await prismaForHardDelete.users.delete({
+    where: {
+      id: mockedUser.id,
+    },
+  });
+});
 
 describe('createDeal : 거래 생성', () => {
   test('거래 생성', async () => {
@@ -66,19 +80,19 @@ describe('createDeal : 거래 생성', () => {
 
     // Deal.create.mockReturnValue(Promise.resolve(mockDeal));
     const createdDeal: Deal = await dealRepository.createDealInTransaction(
-      dealParam,
+      testDealParam,
       mockedUser,
       prisma,
     );
 
-    expect(createdDeal.link).toBe(dealParam.link);
-    expect(createdDeal.title).toBe(dealParam.title);
-    expect(createdDeal.content).toBe(dealParam.content);
-    expect(createdDeal.totalPrice).toBe(+dealParam.totalPrice);
-    expect(createdDeal.personalPrice).toBe(+dealParam.personalPrice);
-    expect(createdDeal.totalMember).toBe(+dealParam.totalMember);
-    expect(createdDeal.dealDate).toEqual(new Date(dealParam.dealDate));
-    expect(createdDeal.dealPlace).toBe(dealParam.place);
+    expect(createdDeal.link).toBe(testDealParam.link);
+    expect(createdDeal.title).toBe(testDealParam.title);
+    expect(createdDeal.content).toBe(testDealParam.content);
+    expect(createdDeal.totalPrice).toBe(+testDealParam.totalPrice);
+    expect(createdDeal.personalPrice).toBe(+testDealParam.personalPrice);
+    expect(createdDeal.totalMember).toBe(+testDealParam.totalMember);
+    expect(createdDeal.dealDate).toEqual(new Date(testDealParam.dealDate));
+    expect(createdDeal.dealPlace).toBe(testDealParam.place);
     expect(createdDeal.currentMember).toBe(1);
     expect(createdDeal.userId).toBe(mockedUser.id);
     expect(createdDeal.loc1).toBe(mockedUser.curLocation1);
@@ -91,7 +105,7 @@ describe('createDeal : 거래 생성', () => {
 describe('deleteDeal : 거래 삭제', () => {
   test('거래 삭제 soft Delete', async () => {
     const deal = await dealRepository.createDealInTransaction(
-      dealParam,
+      testDealParam,
       mockedUser,
       prisma,
     );
@@ -107,7 +121,12 @@ describe('dealTransaction : 거래 생성 Transaction', () => {
     const exGroupCount = await prisma.groups.count();
     const exDealCount = await prisma.deals.count();
 
-    await dealRepository.dealTransction(dealParam, 1);
+    userRepository.findUserById = jest.fn().mockResolvedValue(mockedUser);
+    groupRepository.createGroupInTransaction;
+    dealRepository.createDealInTransaction;
+    groupRepository.updateDealIdInTransaction;
+
+    await dealRepository.dealTransction(testDealParam, 1);
 
     const curGroupCount = await prisma.groups.count();
     const curDealCount = await prisma.deals.count();
@@ -124,7 +143,7 @@ describe('dealTransaction : 거래 생성 Transaction', () => {
     );
     createDealMock.mockRejectedValue(new Error('TEST'));
     try {
-      const deal = await dealRepository.dealTransction(dealParam, 1);
+      const deal = await dealRepository.dealTransction(testDealParam, 1);
       console.log(deal);
     } catch (error) {
       const curGroupCount = await prisma.groups.count();
@@ -138,7 +157,7 @@ describe('dealTransaction : 거래 생성 Transaction', () => {
     const exGroupCount = await prisma.groups.count();
     const exDealCount = await prisma.deals.count();
 
-    await dealRepository.dealTransction(dealParam, 1);
+    await dealRepository.dealTransction(testDealParam, 1);
 
     const curGroupCount = await prisma.groups.count();
     const curDealCount = await prisma.deals.count();

@@ -1,0 +1,25 @@
+# Set the version of docker compose to use
+version: '3.9'
+
+# The containers that compose the project
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    container_name: nbread-docker-test
+    ports:
+      - '3307:3306' # 외부 포트 : 내부 포트 (내부는 무조건 3306)
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: '990809kth'
+      MYSQL_ROOT_PASSWORD: '990809kth'
+      MYSQL_DATABASE: 'nBread_Docker'
+    expose:
+      - '3306'
+    volumes:
+      - my-db:/var/lib/mysql
+volumes:
+  my-db:

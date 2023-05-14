@@ -1,4 +1,4 @@
-import { changeUserNick } from '../../src/service/userService';
+import { getUser, changeUserNick } from '../../src/service/userService';
 import { responseMessage, statusCode } from '../../src/modules/constants';
 import * as util from '../../src/modules/util';
 import {
@@ -20,9 +20,32 @@ describe('[userService] changeUserNick 테스트', () => {
     nick: expectedNickName,
   };
 
+  const mockedUser = {
+    email: 'testUser@gmail.com',
+    nick: '테스트유저',
+    password: 'test',
+    provider: 'local',
+    snsId: null,
+    accessToken: null,
+    curLocation1: 'test1',
+    curLocation2: 'test2',
+    curLocation3: 'test3',
+    curLocationA: null,
+    curLocationB: null,
+    curLocationC: null,
+    userStatus: null,
+    refreshToken: null,
+    isNewUser: true,
+    kakaoNumber: null,
+    createdAt: new Date(Date.parse('2022-05-04T12:47:04.000Z')),
+    updatedAt: new Date(Date.parse('2022-05-04T12:47:04.000Z')),
+    deletedAt: null,
+  };
+
   (util.success as any) = jest.fn();
   const success = util.success;
   test('닉네임 변환 여부 테스트(정상 작동)', async () => {
+    userRepository.findUserById = jest.fn().mockReturnValue(mockedUser);
     userRepository.changeUserNick = jest.fn().mockReturnValue(expectedResult);
     await changeUserNick(req, res, next);
     expect(success).toBeCalledWith(
