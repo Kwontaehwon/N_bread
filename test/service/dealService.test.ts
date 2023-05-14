@@ -1,3 +1,4 @@
+import prisma from '../../src/prisma';
 import { dealRepository } from '../../src/repository/index';
 import { dealService } from '../../src/service/index';
 import { prismaMock } from '../../src/singleton';
@@ -37,7 +38,7 @@ describe('거래 삭제 : deleteDeal', () => {
     };
     const next = jest.fn();
 
-    prismaMock.deals.create.mockResolvedValue(mockDeal);
+    dealRepository.findDealById = jest.fn().mockResolvedValue(mockDeal);
     await dealService.deleteDeal(req, res, next);
     expect(res.status).toBeCalledWith(401);
   });
@@ -72,11 +73,14 @@ describe('거래 삭제 : deleteDeal', () => {
       updatedAt: new Date('2022-11-18 12:00'),
     };
 
-    prismaMock.groups.findMany.mockResolvedValue([
-      writerGroup,
-      participantGroup,
-    ]);
-    prismaMock.deals.create.mockResolvedValue(mockDeal);
+    // prismaMock.groups.findMany.mockResolvedValue([
+    //   writerGroup,
+    //   participantGroup,
+    // ]);
+
+    prisma.groups.findMany = jest
+      .fn()
+      .mockResolvedValue([writerGroup, participantGroup]);
 
     await dealService.deleteDeal(req, res, next);
     expect(res.status).toBeCalledWith(401);
