@@ -5,10 +5,14 @@
   "main": "app.js",
   "scripts": {
     "start": "tsc && node dist/app.js",
-    "test": "jest",
     "build": "tsc",
     "tsnode": "ts-node src/app",
-    "coverage":"jest --coverage"
+    "coverage": "jest --coverage",
+    "docker:up": "docker-compose up -d --build",
+    "docker:down": "docker-compose down",
+    "test-docker-logic": "yarn docker:up && sleep 1 && npx prisma migrate deploy && jest -i && yarn docker:down",
+    "test-docker": "dotenv -e .env.test -- npm run test-docker-logic",
+    "test": "jest"
   },
   "author": "Kwon TaeHyun",
   "license": "ISC",
@@ -27,7 +31,6 @@
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
-    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-rate-limit": "^6.4.0",
     "express-session": "^1.17.1",
@@ -65,6 +68,7 @@
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.3",
+    "dotenv": "^16.0.3",
     "jest": "^29.5.0",
     "jest-mock-extended": "^3.0.4",
     "nodemon": "^2.0.3",
