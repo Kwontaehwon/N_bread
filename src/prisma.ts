@@ -1,6 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
-const prisma:PrismaClient = new PrismaClient();
+const prisma: PrismaClient = new PrismaClient();
 
 prisma.$use(async (params, next) => {
   if (params.action === 'findUnique' || params.action === 'findFirst') {
@@ -47,15 +47,12 @@ prisma.$use(async (params, next) => {
 prisma.$use(async (params, next) => {
   // Check incoming query type
   const nowDate = new Date();
-    if (params.action == 'delete') {
-      console.log('my datetime : ' + new Date());
-
-      // Delete queries
-      // Change action to an update
-      params.action = 'update';
-      params.args['data'] = { deletedAt: nowDate };
-      console.log('action : ' + params.action);
-    }
+  if (params.action == 'delete') {
+    // Delete queries
+    // Change action to an update
+    params.action = 'update';
+    params.args['data'] = { deletedAt: nowDate };
+  }
   if (params.action == 'deleteMany') {
     // Delete many queries
     params.action = 'updateMany';
