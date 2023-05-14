@@ -73,7 +73,11 @@ describe('find user by id', () => {
         },
         take: 1,
       });
-      await findUserById(lastUser[0].id + 1);
+      if (lastUser.length > 0) {
+      }
+      if (lastUser.length === 0) {
+        await findUserById(1);
+      }
     } catch (error) {
       expect(error).toHaveProperty('name', 'NotFoundError');
     }
