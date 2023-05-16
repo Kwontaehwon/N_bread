@@ -89,6 +89,20 @@ const saveRefresh = async (userId: number, refreshToken: string) => {
   }
 };
 
+const findGroupByUserId = async (userId: number) => {
+  try {
+    const group = await prisma.groups.findMany({
+      where: { userId },
+    });
+    return group;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
 export {
   findUserById,
   isNicknameExist,
@@ -97,4 +111,5 @@ export {
   createUser,
   findUserByEmail,
   saveRefresh,
+  findGroupByUserId,
 };
