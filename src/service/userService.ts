@@ -40,8 +40,9 @@ const getUser = async (req, res, next) => {
 const getMypageDeals = async (req, res, next) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
-    const user = await userRepository.findUserById(+req.decoded.id);
-    const refDeal = await Group.findAll({ where: { userId: req.decoded.id } });
+    const userId = req.query.id;
+    const user = await userRepository.findUserById(+userId);
+    const refDeal = await userRepository.findGroupByUserId(+userId);
     console.log('refDeal : ' + refDeal);
     if (refDeal.length === 0) {
       console.log('refDeal is null');
@@ -345,12 +346,7 @@ const getUserLocation = async (
     logger.info(
       `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
     );
-    return success(
-      res,
-      statusCode.OK,
-      responseMessage.SUCCESS,
-      data,
-    );
+    return success(res, statusCode.OK, responseMessage.SUCCESS, data);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -370,12 +366,7 @@ const changeUserNick = async (req, res, next) => {
       logger.info(
         `PUT users/:userId | userId : ${result.userId} 님이 새로운 닉네임 ${result.nick} 으로 변경되었습니다.`,
       );
-      return success(
-        res,
-        statusCode.OK,
-        responseMessage.SUCCESS,
-        result,
-      );
+      return success(res, statusCode.OK, responseMessage.SUCCESS, result);
     }
     return fail(
       res,
