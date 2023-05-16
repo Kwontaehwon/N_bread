@@ -1,12 +1,20 @@
 import express, { Express, Request, Response, Router } from 'express';
 import { verifyToken } from '../middlewares/middleware';
 import { userService } from '../service';
+import { param } from 'express-validator';
+import { errorValidator } from '../modules/error/errorValidator';
 const userRouter: Router = Router();
 
 userRouter.use(express.json());
 
 // 마이페이지 거래 내역:수정중
-userRouter.get('/deals/:userId', verifyToken, userService.getMypageDeals);
+userRouter.get(
+  '/deals/:userId',
+  verifyToken,
+  [param('userId').isNumeric()],
+  errorValidator,
+  userService.getMypageDeals,
+);
 
 // 유저 현재 위치 등록 (naver GeoLocation) -> verifyToken?
 userRouter.post(
