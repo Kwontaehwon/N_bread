@@ -1,4 +1,4 @@
-import { User, UserReport } from '../database/models';
+import { User } from '../database/models';
 import axios from 'axios';
 import { logger } from '../config/winston';
 import config from '../config';
@@ -7,7 +7,7 @@ import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 import { userRepository } from '../repository';
 import { NextFunction, Request, Response, response } from 'express';
-import { UserDto } from '../dto/userDto';
+import { UserDto } from '../dto/user/userDto';
 import { mypageDto } from '../dto/deal/mypageDto';
 import { objectListToValueList } from '../modules/lib';
 import {
@@ -16,6 +16,7 @@ import {
   _setUserStatus,
 } from '../modules/userModule';
 import { findUserById } from '../repository/userRepository';
+import { reportInfoDto } from '../dto/user/reportInfoDto';
 // GET users/:userId
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '유저 정보 반환'
@@ -298,93 +299,41 @@ const checkUserNick = async (
   }
 };
 
-const postReportUser = async (req, res, next) => {
+const postReportUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.summary = '유저 신고'
   try {
     const { title, content } = req.body;
-    if (title === undefined || content === undefined) {
-      logger.info(`Body에 빠진 정보가 있습니다.`);
-      return util.jsonResponse(
-        res,
-        400,
-        `req.body에 빠진 정보가 있습니다`,
-        false,
-        null,
-      );
-    }
-    if (req.params.userId == ':userId') {
-      return util.jsonResponse(
-        res,
-        404,
-        `parameter :userId가 필요합니다.`,
-        false,
-        null,
-      );
-    }
-    const reporter = await User.findOne({ where: { Id: req.decoded.id } });
-    const reportedUser = await User.findOne({
-      where: { Id: req.params.userId },
-    });
+    const reportUserId = req.query.userId;
+    const reportedUserId = req.params.userId;
 
-    if (!reporter) {
-      logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
-      return util.jsonResponse(
+    await findUserById(+reportUserId);
+    await findUserById(+reportedUserId);
+
+    if (+reportUserId === +reportedUserId) {
+      return fail(
         res,
-        404,
-        `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`,
-        false,
-        null,
+        statusCode.BAD_REQUEST,
+        responseMessage.CANNOT_REPORT_MYSELF,
       );
     }
-    if (!reportedUser) {
-      logger.info(
-        `userId : ${req.params.userId} 에 해당되는 유저가 없어 신고할 수 없습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        `userId : ${req.params.userId} 에 유저가 없어 신고할 수 없습니다.`,
-        false,
-        null,
-      );
-    }
-    if (reporter.id === reportedUser.id) {
-      logger.info(
-        `userId : ${req.decoded.id} 자기 자신을 신고 할 수 없습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        403,
-        `userId : ${req.decoded.id} 자기 자신을 신고 할 수 없습니다.`,
-        false,
-        null,
-      );
-    }
-    const userReport = await UserReport.create({
-      title: title,
-      content: content,
-      reportedUserId: req.params.userId,
-      reporterId: req.decoded.id,
-    });
+
+    const reportInfo: reportInfoDto = new reportInfoDto(
+      title,
+      content,
+      +reportUserId,
+      +reportedUserId,
+    );
+    await userRepository.saveReportInfo(reportInfo);
     logger.info(
-      `${req.params.userId} 님이 userId : ${req.params.userId}을 신고 하였습니다.`,
+      `${reportUserId} 님이 userId : ${reportedUserId}을 신고 하였습니다.`,
     );
-    return util.jsonResponse(
-      res,
-      200,
-      `${req.params.userId} 님이 userId : ${req.params.userId}을 신고 하였습니다.`,
-      true,
-      userReport,
-    );
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
-    console.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[유저신고] /report/:userId 서버 에러',
-      false,
-      null,
-    );
+    next(error);
   }
 };
 
