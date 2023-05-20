@@ -69,7 +69,7 @@ const getMypageDeals = async (
     for (let i = 0; i < participatedDealData.length; i++) {
       data.push(participatedDealData[i] as mypageDto);
       let toSetStatus = data[i];
-      setStatus(data[i]);
+      _setDealStatus(data[i]);
       if (suggesterId.includes(data[i]['id'])) {
         participatedDealData[i]['mystatus'] = '제안자';
       } else {
@@ -83,7 +83,7 @@ const getMypageDeals = async (
   }
 };
 
-const setStatus = (dataObject: mypageDto) => {
+const _setDealStatus = (dataObject: mypageDto) => {
   let dDate = new Date(dataObject['dealDate']);
   dDate.setHours(dDate.getHours() + 9);
   dataObject['dealDate'] = dDate;
