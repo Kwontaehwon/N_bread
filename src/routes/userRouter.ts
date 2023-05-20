@@ -19,7 +19,7 @@ userRouter.get(
 // 유저 현재 위치 등록 (naver GeoLocation) -> verifyToken?
 userRouter.post(
   '/location/:userId/:latitude/:longitude',
-  userService.getNaverGeoLocation,
+  userService.saveLocationBycoordinate,
 );
 
 // 유저 DB에서 저장된 위치 GET -> verifyToken 삭제?

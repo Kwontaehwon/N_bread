@@ -11,6 +11,7 @@ import { UserDto } from '../dto/userDto';
 import { mypageDto } from '../dto/deal/mypageDto';
 import { objectListToValueList } from '../modules/lib';
 import { _setDealStatus, _setUserStatus } from '../modules/userModule';
+import { findUserById } from '../repository/userRepository';
 // GET users/:userId
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '유저 정보 반환'
@@ -77,22 +78,13 @@ const getMypageDeals = async (
   }
 };
 
-// GET users/location/:userId/:latitude/:longitude
-const getNaverGeoLocation = async (req, res) => {
+// GET users/location/:latitude/:longitude
+const saveLocationBycoordinate = async (req, res) => {
   // #swagger.summary = '네이버 GeoLocation으로 현 위치 저장'
   try {
-    const longitude = req.params.longitude;
-    const latitude = req.params.latitude;
-    const user = await User.findOne({ where: { id: req.params.userId } });
-    if (!user) {
-      return util.jsonResponse(
-        res,
-        404,
-        'userId에 해당되는 유저가 없습니다.',
-        false,
-        null,
-      );
-    }
+    const { longitude, latitude } = req.params;
+    const { userId } = req.query;
+    const user = await findUserById(userId);
 
     const url = `https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=legalcode&output=json`;
 
@@ -669,7 +661,7 @@ const addLocation = async (req, res, next) => {
 export {
   getUser,
   getMypageDeals,
-  getNaverGeoLocation,
+  saveLocationBycoordinate,
   getUserLocation,
   changeUserNick,
   checkUserNick,
