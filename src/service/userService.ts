@@ -8,6 +8,7 @@ import { responseMessage, statusCode } from '../modules/constants';
 import { userRepository } from '../repository';
 import { NextFunction, Request, Response } from 'express';
 import { UserDto } from '../dto/userDto';
+import { mypageDto } from '../dto/deal/mypageDto';
 // GET users/:userId
 const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
@@ -37,96 +38,62 @@ const getUser = async (req, res, next) => {
 };
 
 // GET users/deals/:userId
-const getMypageDeals = async (req, res, next) => {
+const getMypageDeals = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
     const userId = req.query.id;
-    const user = await userRepository.findUserById(+userId);
-    const refDeal = await userRepository.findGroupByUserId(+userId);
-    console.log('refDeal : ' + refDeal);
-    if (refDeal.length === 0) {
-      console.log('refDeal is null');
-      logger.info(
-        `users/deals/:userId | userId : ${req.decoded.id}의 마이페이지에 [] 을 반환합니다.`,
-      );
-      return util.jsonResponse(res, 200, '마이페이지 글 리스트', true, []);
-    } else {
-      // const [tmpres, metadata] = await sequelize.sequelize.query(
-      //   `select id from deals where id in (select dealId from nBread.groups where userId = ?) or deals.userId = ?`,
-      //   {
-      //     replacements: [user.id, user.id],
-      //     type: sequelize.select,
-      //   },
-      // );
 
-      var suggesterId = [];
-      var memberId = [];
+    /** 참가한 거래 내역 추출 */
+    const participationObject = await userRepository.findGroupsByUserId(
+      +userId,
+    );
+    const participatedIds = participationObject.map((element) => {
+      return Object.values(element)[0];
+    });
+    const participatedDealData = await userRepository.findDealsByDealIds(
+      participatedIds,
+    );
 
-      const suggesterDeal = await Deal.findAll({
-        where: { userId: user!.id },
-      });
-      // for (let i = 0; i < suggesterDeal.length; i++) {
-      //   suggesterId.push(suggesterDeal[i]['id']);
-      // }
-      //logger.debug()
-      console.log('suggesterId : ', suggesterId);
+    /** 제안한 거래 내역 추출 */
+    const suggesterDeal = await userRepository.findDealsByUserId(+userId);
+    const suggesterId = suggesterDeal.map((deal) => {
+      return Object.values(deal)[0];
+    });
 
-      // for (let i = 0; i < tmpres.length; i++) {
-      //   memberId.push(tmpres[i]['id']);
-      // }
-      console.log(memberId);
-      const deal = await Deal.findAll({
-        where: { id: memberId },
-        include: [
-          {
-            model: DealImage,
-            attributes: ['dealImage', 'id'],
-          },
-          {
-            model: User,
-            attributes: ['nick', 'curLocation3'],
-            paranoid: false,
-          },
-        ],
-      });
-      //mystatus처리
-      for (let i = 0; i < deal.length; i++) {
-        var toSetStatus = deal[i];
-        var dDate = new Date(toSetStatus['dealDate']);
-        dDate.setHours(dDate.getHours() + 9);
-        toSetStatus['dealDate'] = dDate;
-        toSetStatus['mystatus'] = 'user';
+    let data: mypageDto[] = [];
+    /**거래 상태 설정 */
+    for (let i = 0; i < participatedDealData.length; i++) {
+      data.push(participatedDealData[i] as mypageDto);
+      let toSetStatus = data[i];
+      let dDate = new Date(toSetStatus['dealDate']);
+      dDate.setHours(dDate.getHours() + 9);
+      toSetStatus['dealDate'] = dDate;
+      toSetStatus['mystatus'] = 'user';
 
-        if (toSetStatus['dealDate'] < new Date(Date.now())) {
-          if (toSetStatus['currentMember'] === toSetStatus['totalMember'])
-            toSetStatus['status'] = '거래완료';
-          else toSetStatus['status'] = '모집실패';
-        } else {
-          if (toSetStatus['currentMember'] === toSetStatus['totalMember'])
-            toSetStatus['status'] = '모집완료';
-          else toSetStatus['status'] = '모집중';
-        }
-
-        // if (suggesterId.includes(deal[i]['id'])) {
-        //   deal[i]['mystatus'] = '제안자';
-        // } else {
-        //   deal[i]['mystatus'] = '참여자';
-        // }
+      if (toSetStatus['dealDate'] < new Date(Date.now())) {
+        if (toSetStatus['currentMember'] === toSetStatus['totalMember'])
+          toSetStatus['status'] = '거래완료';
+        else toSetStatus['status'] = '모집실패';
+      } else {
+        if (toSetStatus['currentMember'] === toSetStatus['totalMember'])
+          toSetStatus['status'] = '모집완료';
+        else toSetStatus['status'] = '모집중';
       }
-      logger.info(
-        `users/deals/:userId | userId : ${req.params.userId}의 마이페이지에 글을 반환합니다.`,
-      );
-      return util.jsonResponse(res, 200, '전체 글 리스트', true, deal);
+
+      if (suggesterId.includes(data[i]['id'])) {
+        participatedDealData[i]['mystatus'] = '제안자';
+      } else {
+        data[i]['mystatus'] = '참여자';
+      }
     }
+    return success(res, statusCode.OK, responseMessage.SUCCESS, data);
   } catch (error) {
     logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[마이페이지 거래내역] /users/deals/:userId 서버 에러',
-      false,
-      {},
-    );
+    next(error);
   }
 };
 
