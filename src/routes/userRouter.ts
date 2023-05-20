@@ -27,17 +27,17 @@ userRouter.post(
   userService.saveLocationByCoordinate,
 );
 
-// 유저 DB에서 저장된 위치 GET -> verifyToken 삭제?
+/**유저 DB에서 저장된 위치*/
 userRouter.get('/location', verifyToken, userService.getUserLocation);
 
-// 유저 정보 GET
+/**유저 정보 GET*/
 userRouter.get('/:userId', userService.getUser);
 
-// 유저 닉네임 변경
+/**유저 닉네임 PUT*/
 userRouter.put('/:userId', userService.changeUserNick);
 
-//유저 닉네임 중복체크
-userRouter.get('/check/:userId/:nick', userService.checkUserNick); // 닉네임 중복체크를 하는데 userId가 필요한 이유는?
+/**유저 닉네임 중복체크*/
+userRouter.get('/check/:userId/:nick', userService.checkUserNick);
 
 // 유저 신고
 userRouter.post('/report/:userId', verifyToken, userService.postReportUser);

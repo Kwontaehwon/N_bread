@@ -6,7 +6,7 @@ import { util } from '../modules';
 import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 import { userRepository } from '../repository';
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response, response } from 'express';
 import { UserDto } from '../dto/userDto';
 import { mypageDto } from '../dto/deal/mypageDto';
 import { objectListToValueList } from '../modules/lib';
@@ -20,7 +20,7 @@ import { findUserById } from '../repository/userRepository';
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '유저 정보 반환'
   try {
-    const userId = req.params.userId;
+    const { userId } = req.query;
     const user = await userRepository.findUserById(+userId);
     const result = {
       createdAt: user.createdAt,
@@ -267,50 +267,34 @@ const changeUserNick = async (req, res, next) => {
   }
 };
 
-const checkUserNick = async (req, res, next) => {
+const checkUserNick = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.summary = '닉네임 중복 확인'
   try {
-    const nick = req.params.nick;
-    const user = await User.findOne({ where: { Id: req.params.userId } });
-    if (!user) {
-      logger.info(`userId : ${req.params.userId}에 해당되는 유저가 없습니다.`);
-      return util.jsonResponse(
-        res,
-        404,
-        `userId : ${req.params.userId}에 해당되는 유저가 없습니다.`,
-        false,
-        null,
-      );
-    }
-    const isDuplicated = await User.findOne({ where: { nick: nick } });
+    const { userId, nick } = req.params;
+    await findUserById(+userId);
+    const isDuplicated = await userRepository.isNicknameExist(nick);
+
     if (isDuplicated) {
-      logger.info(`중복된 닉네임 (${nick})이 이미 존재합니다.`);
-      return util.jsonResponse(
+      return fail(
         res,
-        409,
-        `중복된 닉네임 (${nick})이 이미 존재합니다.`,
-        false,
-        null,
-      );
-    } else {
-      return util.jsonResponse(
-        res,
-        200,
-        `(${nick})은 사용가능한 닉네임입니다.`,
-        true,
-        null,
+        statusCode.BAD_REQUEST,
+        responseMessage.NICKNAME_DUPLICATED,
       );
     }
-  } catch (error) {
-    console.log(error);
-    logger.error(error);
-    return util.jsonResponse(
+
+    return success(
       res,
-      500,
-      `[닉네임 중복 체크] /check/:userId/:nick 서버 에러`,
-      false,
-      {},
+      statusCode.OK,
+      responseMessage.VALID_NICKNAME,
+      isDuplicated,
     );
+  } catch (error) {
+    logger.error(error);
+    next(error);
   }
 };
 
