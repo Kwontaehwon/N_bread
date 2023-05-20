@@ -67,14 +67,10 @@ const getMypageDeals = async (
     let data: mypageDto[] = [];
     for (let i = 0; i < participatedDealData.length; i++) {
       data.push(participatedDealData[i] as mypageDto);
-      let toSetStatus = data[i];
-      /**거래 상태 설정 */
+      /**거래 상태 설정: 거래완료, 모집실패, 모집중, 모집 완료*/
       _setDealStatus(data[i]);
-      if (suggesterId.includes(data[i]['id'])) {
-        participatedDealData[i]['mystatus'] = '제안자';
-      } else {
-        data[i]['mystatus'] = '참여자';
-      }
+      /**유저 상태 설정: 제안자, 참여자 */
+      _setUserStatus(data[i], suggesterId);
     }
     return success(res, statusCode.OK, responseMessage.SUCCESS, data);
   } catch (error) {
@@ -97,6 +93,14 @@ const _setDealStatus = (dataObject: mypageDto) => {
     if (dataObject['currentMember'] === dataObject['totalMember'])
       dataObject['status'] = '모집완료';
     else dataObject['status'] = '모집중';
+  }
+};
+
+const _setUserStatus = (dataObject: mypageDto, suggestedDealId: number[]) => {
+  if (suggestedDealId.includes(dataObject['id'])) {
+    dataObject['mystatus'] = '제안자';
+  } else {
+    dataObject['mystatus'] = '참여자';
   }
 };
 
