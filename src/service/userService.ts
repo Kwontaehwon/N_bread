@@ -69,21 +69,7 @@ const getMypageDeals = async (
     for (let i = 0; i < participatedDealData.length; i++) {
       data.push(participatedDealData[i] as mypageDto);
       let toSetStatus = data[i];
-      let dDate = new Date(toSetStatus['dealDate']);
-      dDate.setHours(dDate.getHours() + 9);
-      toSetStatus['dealDate'] = dDate;
-      toSetStatus['mystatus'] = 'user';
-
-      if (toSetStatus['dealDate'] < new Date(Date.now())) {
-        if (toSetStatus['currentMember'] === toSetStatus['totalMember'])
-          toSetStatus['status'] = '거래완료';
-        else toSetStatus['status'] = '모집실패';
-      } else {
-        if (toSetStatus['currentMember'] === toSetStatus['totalMember'])
-          toSetStatus['status'] = '모집완료';
-        else toSetStatus['status'] = '모집중';
-      }
-
+      setStatus(data[i]);
       if (suggesterId.includes(data[i]['id'])) {
         participatedDealData[i]['mystatus'] = '제안자';
       } else {
@@ -94,6 +80,23 @@ const getMypageDeals = async (
   } catch (error) {
     logger.error(error);
     next(error);
+  }
+};
+
+const setStatus = (dataObject: mypageDto) => {
+  let dDate = new Date(dataObject['dealDate']);
+  dDate.setHours(dDate.getHours() + 9);
+  dataObject['dealDate'] = dDate;
+  dataObject['mystatus'] = 'user';
+
+  if (dataObject['dealDate'] < new Date(Date.now())) {
+    if (dataObject['currentMember'] === dataObject['totalMember'])
+      dataObject['status'] = '거래완료';
+    else dataObject['status'] = '모집실패';
+  } else {
+    if (dataObject['currentMember'] === dataObject['totalMember'])
+      dataObject['status'] = '모집완료';
+    else dataObject['status'] = '모집중';
   }
 };
 
