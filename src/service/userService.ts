@@ -65,10 +65,10 @@ const getMypageDeals = async (
     });
 
     let data: mypageDto[] = [];
-    /**거래 상태 설정 */
     for (let i = 0; i < participatedDealData.length; i++) {
       data.push(participatedDealData[i] as mypageDto);
       let toSetStatus = data[i];
+      /**거래 상태 설정 */
       _setDealStatus(data[i]);
       if (suggesterId.includes(data[i]['id'])) {
         participatedDealData[i]['mystatus'] = '제안자';
