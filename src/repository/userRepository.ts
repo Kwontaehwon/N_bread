@@ -93,7 +93,7 @@ const findGroupsByUserId = async (userId: number) => {
   try {
     const group = await prisma.groups.findMany({
       where: { userId },
-      select: { id: true },
+      select: { dealId: true },
     });
     return group;
   } catch (error) {
@@ -104,16 +104,21 @@ const findGroupsByUserId = async (userId: number) => {
   }
 };
 
+
 const findDealsByDealIds = async (dealIds: Array<number>) => {
   try {
-    await prisma.deals.findMany({
+    const dealData = await prisma.deals.findMany({
       where: {
         id: {
           in: dealIds,
         },
       },
-      select: { id: true },
+      include: {
+        users: { select: { nick: true, curLocation3: true } },
+        dealImages: { select: { id: true, dealImage: true } },
+      },
     });
+    return dealData;
   } catch (error) {
     throw errorGenerator({
       code: statusCode.NOT_FOUND,
@@ -122,6 +127,20 @@ const findDealsByDealIds = async (dealIds: Array<number>) => {
   }
 };
 
+const findDealsByUserId = async (userId: number) => {
+  try {
+    const suggestedDealId = await prisma.deals.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    return suggestedDealId;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
 
 export {
   findUserById,
@@ -133,4 +152,5 @@ export {
   saveRefresh,
   findGroupsByUserId,
   findDealsByDealIds,
+  findDealsByUserId,
 };
