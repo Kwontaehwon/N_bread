@@ -5,6 +5,7 @@ export default {
   FORBIDDEN: '권한이 없습니다.',
   INTERNAL_SERVER_ERROR: '서버에 에러가 발생했습니다.',
   SERVICE_NOT_AVAILABLE: '서버를 사용할 수 없습니다.',
+  ERROR_VALIDATOR_ERROR:'Error Validator에서 오류가 발생하였습니다',
 
   SUCCESS: '성공적으로 반환 하였습니다.',
   VALID_NICKNAME: '사용할 수 있는 닉네임입니다.',
@@ -17,6 +18,7 @@ export default {
   CREATE_USER_FAILED: '유저 생성에 실패하였습니다.',
   SAVE_USER_LOCATION_FAILED: '유저 위치 저장에 실패하였습니다.',
   CANNOT_REPORT_MYSELF: '자기 자신을 신고할 수 없습니다.',
+  SAVE_USER_REPORT_INFO_FAILED: '유저 신고 정보 저장에 실패하였습니다.',
 
   // deal
   DEAL_NOT_FOUND: '해당되는 거래가 없습니다.',
