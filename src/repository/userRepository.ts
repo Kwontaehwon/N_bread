@@ -3,6 +3,7 @@ import { responseMessage, statusCode } from '../modules/constants';
 
 import prisma from '../prisma';
 import { logger } from '../config/winston';
+import { reportInfoDto } from '../dto/user/reportInfoDto';
 
 const findUserById = async (id: number) => {
   const user = await prisma.users.findFirstOrThrow({ where: { id: id } });
@@ -160,6 +161,16 @@ const saveUserLocation = async (
   }
 };
 
+const saveReportInfo = async (reportInfo: reportInfoDto) => {
+  try {
+    await prisma.userReports.create({ data: reportInfo });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.SAVE_USER_REPORT_INFO_FAILED,
+    });
+  }
+};
 export {
   findUserById,
   isNicknameExist,
@@ -172,4 +183,5 @@ export {
   findDealsByDealIds,
   findDealsByUserId,
   saveUserLocation,
+  saveReportInfo,
 };
