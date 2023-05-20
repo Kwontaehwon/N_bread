@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, Router } from 'express';
+import express, { Router } from 'express';
 import { verifyToken } from '../middlewares/middleware';
 import { userService } from '../service';
 import { param } from 'express-validator';
