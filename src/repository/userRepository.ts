@@ -104,7 +104,6 @@ const findGroupsByUserId = async (userId: number) => {
   }
 };
 
-
 const findDealsByDealIds = async (dealIds: Array<number>) => {
   try {
     const dealData = await prisma.deals.findMany({
@@ -142,6 +141,25 @@ const findDealsByUserId = async (userId: number) => {
   }
 };
 
+const saveUserLocation = async (
+  userId: number,
+  curLocation1: string,
+  curLocation2: string,
+  curLocation3: string,
+) => {
+  try {
+    await prisma.users.update({
+      where: { id: userId },
+      data: { curLocation1, curLocation2, curLocation3 },
+    });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.SAVE_USER_LOCATION_FAILED,
+    });
+  }
+};
+
 export {
   findUserById,
   isNicknameExist,
@@ -153,4 +171,5 @@ export {
   findGroupsByUserId,
   findDealsByDealIds,
   findDealsByUserId,
+  saveUserLocation,
 };
