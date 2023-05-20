@@ -46,7 +46,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     if (!userId) {
       return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
     }
-    req.query.id = userId;
+    req.query.userId = userId;
     next();
   } catch (error) {
     console.log(error);

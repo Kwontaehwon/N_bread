@@ -52,7 +52,7 @@ const getMypageDeals = async (
 ) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
-    const userId = req.query.id;
+    const { userId } = req.query;
 
     /** 참가한 거래 내역 추출 */
     const participationObject = await userRepository.findGroupsByUserId(
