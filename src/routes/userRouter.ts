@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import { verifyToken } from '../middlewares/middleware';
 import { userService } from '../service';
-import { param } from 'express-validator';
+import { body, param } from 'express-validator';
 import { errorValidator } from '../modules/error/errorValidator';
 const userRouter: Router = Router();
 
@@ -55,7 +55,17 @@ userRouter.get(
 );
 
 // 유저 신고
-userRouter.post('/report/:userId', verifyToken, userService.postReportUser);
+userRouter.post(
+  '/report/:userId',
+  [
+    param('userId').isNumeric(),
+    body('title').notEmpty(),
+    body('content').notEmpty(),
+  ],
+  errorValidator,
+  verifyToken,
+  userService.postReportUser,
+);
 
 //회원가입 완료 여부
 userRouter.get('/check/:userId', userService.isSetNickname);
