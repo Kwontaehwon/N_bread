@@ -27,7 +27,7 @@ userRouter.post(
   userService.saveLocationByCoordinate,
 );
 
-/**유저 DB에서 저장된 위치*/
+/**유저 DB에서 저장된 위치 GET*/
 userRouter.get('/location', verifyToken, userService.getUserLocation);
 
 /**유저 정보 GET*/
@@ -46,7 +46,7 @@ userRouter.put(
   userService.changeUserNick,
 );
 
-/**유저 닉네임 중복체크*/
+/**유저 닉네임 중복체크 GET*/
 userRouter.get(
   '/check/:userId/:nick',
   [param('useId').isNumeric(), param('nick').notEmpty()],
@@ -54,7 +54,7 @@ userRouter.get(
   userService.checkUserNick,
 );
 
-// 유저 신고
+/**유저 신고 POST*/
 userRouter.post(
   '/report/:userId',
   [
