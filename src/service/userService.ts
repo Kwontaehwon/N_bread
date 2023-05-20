@@ -9,6 +9,7 @@ import { userRepository } from '../repository';
 import { NextFunction, Request, Response } from 'express';
 import { UserDto } from '../dto/userDto';
 import { mypageDto } from '../dto/deal/mypageDto';
+import { objectListToValueList } from '../modules/lib';
 // GET users/:userId
 const getUser = async (req, res, next) => {
   // #swagger.summary = '유저 정보 반환'
@@ -51,18 +52,14 @@ const getMypageDeals = async (
     const participationObject = await userRepository.findGroupsByUserId(
       +userId,
     );
-    const participatedIds = participationObject.map((element) => {
-      return Object.values(element)[0];
-    });
+    const participatedIds = objectListToValueList(participationObject!);
     const participatedDealData = await userRepository.findDealsByDealIds(
       participatedIds,
     );
 
     /** 제안한 거래 내역 추출 */
     const suggesterDeal = await userRepository.findDealsByUserId(+userId);
-    const suggesterId = suggesterDeal.map((deal) => {
-      return Object.values(deal)[0];
-    });
+    const suggesterId = objectListToValueList(suggesterDeal);
 
     let data: mypageDto[] = [];
     for (let i = 0; i < participatedDealData.length; i++) {
