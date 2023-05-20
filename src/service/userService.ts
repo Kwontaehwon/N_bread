@@ -1,4 +1,4 @@
-import { User, Group, Deal, DealImage, UserReport } from '../database/models';
+import { User, UserReport } from '../database/models';
 import axios from 'axios';
 import { logger } from '../config/winston';
 import config from '../config';
@@ -10,8 +10,9 @@ import { NextFunction, Request, Response } from 'express';
 import { UserDto } from '../dto/userDto';
 import { mypageDto } from '../dto/deal/mypageDto';
 import { objectListToValueList } from '../modules/lib';
+import { _setDealStatus, _setUserStatus } from '../modules/userModule';
 // GET users/:userId
-const getUser = async (req, res, next) => {
+const getUser = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '유저 정보 반환'
   try {
     const userId = req.params.userId;
@@ -30,7 +31,7 @@ const getUser = async (req, res, next) => {
     logger.info(
       `GET users/:userId | userId : ${req.params.userId} 의 유저 정보를 반환합니다.`,
     );
-    return success(res, statusCode.OK, responseMessage.SUCCESS); // #swagger.responses[200]
+    return success(res, statusCode.OK, responseMessage.SUCCESS, result); // #swagger.responses[200]
   } catch (error) {
     logger.error(error);
     next(error);
@@ -73,31 +74,6 @@ const getMypageDeals = async (
   } catch (error) {
     logger.error(error);
     next(error);
-  }
-};
-
-const _setDealStatus = (dataObject: mypageDto) => {
-  let dDate = new Date(dataObject['dealDate']);
-  dDate.setHours(dDate.getHours() + 9);
-  dataObject['dealDate'] = dDate;
-  dataObject['mystatus'] = 'user';
-
-  if (dataObject['dealDate'] < new Date(Date.now())) {
-    if (dataObject['currentMember'] === dataObject['totalMember'])
-      dataObject['status'] = '거래완료';
-    else dataObject['status'] = '모집실패';
-  } else {
-    if (dataObject['currentMember'] === dataObject['totalMember'])
-      dataObject['status'] = '모집완료';
-    else dataObject['status'] = '모집중';
-  }
-};
-
-const _setUserStatus = (dataObject: mypageDto, suggestedDealId: number[]) => {
-  if (suggestedDealId.includes(dataObject['id'])) {
-    dataObject['mystatus'] = '제안자';
-  } else {
-    dataObject['mystatus'] = '참여자';
   }
 };
 
