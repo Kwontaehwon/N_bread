@@ -10,7 +10,11 @@ import { NextFunction, Request, Response } from 'express';
 import { UserDto } from '../dto/userDto';
 import { mypageDto } from '../dto/deal/mypageDto';
 import { objectListToValueList } from '../modules/lib';
-import { _setDealStatus, _setUserStatus } from '../modules/userModule';
+import {
+  _getLocationByCoordinate,
+  _setDealStatus,
+  _setUserStatus,
+} from '../modules/userModule';
 import { findUserById } from '../repository/userRepository';
 // GET users/:userId
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -79,83 +83,29 @@ const getMypageDeals = async (
 };
 
 // GET users/location/:latitude/:longitude
-const saveLocationBycoordinate = async (req, res) => {
+const saveLocationByCoordinate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // #swagger.summary = '네이버 GeoLocation으로 현 위치 저장'
   try {
     const { longitude, latitude } = req.params;
     const { userId } = req.query;
-    const user = await findUserById(userId);
+    await findUserById(+userId);
+    const data = _getLocationByCoordinate(+longitude, +latitude);
 
-    const url = `https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=legalcode&output=json`;
+    const loc1 = data['area1']['name'];
+    const loc2 = data['area2']['name'];
+    const loc33 = data['area3']['name'];
 
-    axios
-      .get(url, {
-        headers: {
-          'X-NCP-APIGW-API-KEY-ID': config.naverClientId!,
-          'X-NCP-APIGW-API-KEY': config.NaverClientSecret!,
-        },
-      })
-      .then(async (Response) => {
-        if (Response.data['status']['code'] === 200) {
-          util.jsonResponse(
-            res,
-            401,
-            'Naver ClientKey, Naver ClientSecretKey가 필요합니다.',
-            false,
-            null,
-          );
-        } else if (Response.data['status']['code'] === 100) {
-          util.jsonResponse(
-            res,
-            400,
-            '좌표가 유효하지 않습니다. 올바른 좌표를 넣어주세요.',
-            false,
-            null,
-          );
-        } else {
-          const tmpdata = Response.data;
-          const data = tmpdata['results'][0]['region'];
-          console.log(['area1']['name']);
-          //console.log(data.geoLocation.r2);
-          user.update({
-            curLocation1: data['area1']['name'],
-            curLocation2: data['area2']['name'],
-            curLocation3: data['area3']['name'],
-          });
-          util.jsonResponse(
-            res,
-            200,
-            `현재 위치 저장이 완료되었습니다. 현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${data['area3']['name']}입니다. `,
-            true,
-            {
-              location1: data['area1']['name'],
-              location2: data['area2']['name'],
-              location3: data['area3']['name'],
-            },
-          );
-        }
-      })
-      .catch((err) => {
-        console.log('err : ' + err);
-        logger.error(err);
-        return util.jsonResponse(
-          res,
-          500,
-          '[Naver GeoLocation] users/location/:userId/:latitude/:longitude 내부 서버 에러',
-          false,
-          err,
-        );
-      });
-    //makeSignature();
+    await userRepository.saveUserLocation(+userId, loc1, loc2, loc33);
+
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
+    //makeSignature();
     logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[Naver GeoLocation] users/location/:userId/:latitude/:longitude 서버 에러',
-      false,
-      {},
-    );
+    next(error);
   }
 };
 
@@ -661,7 +611,7 @@ const addLocation = async (req, res, next) => {
 export {
   getUser,
   getMypageDeals,
-  saveLocationBycoordinate,
+  saveLocationByCoordinate,
   getUserLocation,
   changeUserNick,
   checkUserNick,
