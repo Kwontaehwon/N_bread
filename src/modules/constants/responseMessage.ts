@@ -16,6 +16,7 @@ export default {
   LOGIN_FAILED: '로그인에 실패하였습니다.',
   CREATE_USER_FAILED: '유저 생성에 실패하였습니다.',
   SAVE_USER_LOCATION_FAILED: '유저 위치 저장에 실패하였습니다.',
+  CANNOT_REPORT_MYSELF: '자기 자신을 신고할 수 없습니다.',
 
   // deal
   DEAL_NOT_FOUND: '해당되는 거래가 없습니다.',
