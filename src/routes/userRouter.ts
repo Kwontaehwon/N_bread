@@ -31,13 +31,28 @@ userRouter.post(
 userRouter.get('/location', verifyToken, userService.getUserLocation);
 
 /**유저 정보 GET*/
-userRouter.get('/:userId', userService.getUser);
+userRouter.get(
+  '/:userId',
+  [param('useId').isNumeric()],
+  errorValidator,
+  userService.getUser,
+);
 
 /**유저 닉네임 PUT*/
-userRouter.put('/:userId', userService.changeUserNick);
+userRouter.put(
+  '/:userId',
+  [param('useId').isNumeric()],
+  errorValidator,
+  userService.changeUserNick,
+);
 
 /**유저 닉네임 중복체크*/
-userRouter.get('/check/:userId/:nick', userService.checkUserNick);
+userRouter.get(
+  '/check/:userId/:nick',
+  [param('useId').isNumeric(), param('nick').notEmpty()],
+  errorValidator,
+  userService.checkUserNick,
+);
 
 // 유저 신고
 userRouter.post('/report/:userId', verifyToken, userService.postReportUser);
