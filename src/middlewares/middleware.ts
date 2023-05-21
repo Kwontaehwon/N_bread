@@ -46,8 +46,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     if (!userId) {
       return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
     }
-    console.log('userId입니다', userId);
-    req.decoded.id = userId;
+    req.query.userId = userId;
     next();
   } catch (error) {
     console.log(error);

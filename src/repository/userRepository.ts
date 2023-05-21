@@ -3,6 +3,7 @@ import { responseMessage, statusCode } from '../modules/constants';
 
 import prisma from '../prisma';
 import { logger } from '../config/winston';
+import { reportInfoDto } from '../dto/user/reportInfoDto';
 
 const findUserById = async (id: number) => {
   const user = await prisma.users.findFirstOrThrow({ where: { id: id } });
@@ -89,6 +90,87 @@ const saveRefresh = async (userId: number, refreshToken: string) => {
   }
 };
 
+const findGroupsByUserId = async (userId: number) => {
+  try {
+    const group = await prisma.groups.findMany({
+      where: { userId },
+      select: { dealId: true },
+    });
+    return group;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+const findDealsByDealIds = async (dealIds: Array<number>) => {
+  try {
+    const dealData = await prisma.deals.findMany({
+      where: {
+        id: {
+          in: dealIds,
+        },
+      },
+      include: {
+        users: { select: { nick: true, curLocation3: true } },
+        dealImages: { select: { id: true, dealImage: true } },
+      },
+    });
+    return dealData;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+const findDealsByUserId = async (userId: number) => {
+  try {
+    const suggestedDealId = await prisma.deals.findMany({
+      where: { userId },
+      select: { id: true },
+    });
+    return suggestedDealId;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+const saveUserLocation = async (
+  userId: number,
+  curLocation1: string,
+  curLocation2: string,
+  curLocation3: string,
+) => {
+  try {
+    await prisma.users.update({
+      where: { id: userId },
+      data: { curLocation1, curLocation2, curLocation3 },
+    });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.SAVE_USER_LOCATION_FAILED,
+    });
+  }
+};
+
+const saveReportInfo = async (reportInfo: reportInfoDto) => {
+  try {
+    await prisma.userReports.create({ data: reportInfo });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.SAVE_USER_REPORT_INFO_FAILED,
+    });
+  }
+};
 export {
   findUserById,
   isNicknameExist,
@@ -97,4 +179,9 @@ export {
   createUser,
   findUserByEmail,
   saveRefresh,
+  findGroupsByUserId,
+  findDealsByDealIds,
+  findDealsByUserId,
+  saveUserLocation,
+  saveReportInfo,
 };

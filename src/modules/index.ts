@@ -1,3 +1,4 @@
 import * as util from './util';
 import * as jwtHandler from './jwtHandler';
-export { util, jwtHandler };
+import * as lib from './lib';
+export { util, jwtHandler, lib };
