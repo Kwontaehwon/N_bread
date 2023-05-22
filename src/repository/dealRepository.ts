@@ -4,6 +4,7 @@ import { dealParam } from '../dto/deal/dealParam';
 import { PrismaClient, users } from '@prisma/client';
 import prisma from '../prisma';
 import { userRepository, groupRepository, dealRepository } from '../repository';
+import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 
 const findDealById = async (id: number) => {
   const deal = await prisma.deals.findUnique({
@@ -65,4 +66,21 @@ const dealTransction = async (dealParam: dealParam, userId: number) => {
   });
 };
 
-export { findDealById, createDealInTransaction, dealTransction };
+const updateDeal = async (dealId: number, param: DealUpdateParam) => {
+  await prisma.deals.update({
+    where: { id: dealId },
+    data: {
+      link: param.link,
+      title: param.title,
+      content: param.content,
+      totalPrice: +param.totalPrice,
+      personalPrice: +param.personalPrice,
+      totalMember: +param.totalMember,
+      dealDate: new Date(param.dealDate),
+      dealPlace: param.place,
+      currentMember: 1,
+    },
+  });
+};
+
+export { findDealById, createDealInTransaction, dealTransction, updateDeal };
