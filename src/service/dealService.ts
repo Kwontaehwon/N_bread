@@ -8,6 +8,8 @@ import { responseMessage, statusCode } from '../modules/constants';
 import { DealDto } from '../dto/deal/dealDto';
 import prisma from '../prisma';
 import { GroupDto } from '../dto/groupDto';
+import fcmMessage from '../modules/constants/fcmMessage';
+import { fcmHandler } from '../modules';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
@@ -15,14 +17,7 @@ const createDeal = async (req, res, next) => {
     const dealParam: dealParam = req.body; // currentMember 수정 필요.
     const userId = req.decoded.id;
     const deal = await dealRepository.dealTransction(dealParam, userId);
-    const fcmTokenJson = await axios.get(
-      `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
-    );
-    if (Object.keys(fcmTokenJson.data).length !== 0) {
-      const fcmToken = fcmTokenJson.data.Item.fcmToken;
-      const fcmTopicName = `dealFcmTopic` + deal.id;
-      await admin.messaging().subscribeToTopic(fcmToken, fcmTopicName);
-    }
+    await fcmHandler.dealSubscribe(userId, deal.id);
     const dealDtos = new DealDto(deal);
     logger.info(`dealId : ${deal.id} 거래가 생성되었습니다.`);
     return success(res, statusCode.CREATED, responseMessage.SUCCESS, deal);
@@ -97,29 +92,24 @@ const joinDeal = async (req, res, next) => {
     where: { id: deal.id },
   });
 
-  const fcmTopicName = `dealFcmTopic` + deal.id;
   // 그룹에 있는 모든 유저들에게
-  const message = {
-    notification: {
-      title: `N빵 신규 참여 알림`,
-      body: `${user.nick}님이 N빵에 참여하여 인원이 ${deal.currentMember} / ${deal.totalMember} 가 되었습니다!`,
-    },
-    data: {
-      type: 'deal',
-      dealId: `${deal.id}`,
-    },
-    topic: fcmTopicName,
+  const fcmNotification: FcmNotification = {
+    title: fcmMessage.NEW_PARTICIPANT,
+    body: `${user.nick}님이 N빵에 참여하여 인원이 ${deal.currentMember} / ${deal.totalMember} 가 되었습니다!`,
   };
-  await admin.messaging().send(message);
 
-  const fcmTokenJson = await axios.get(
-    `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${user.id}`,
-  ); // ${user.id}
-  if (Object.keys(fcmTokenJson.data).length !== 0) {
-    const fcmToken = fcmTokenJson.data.Item.fcmToken;
-    logger.info(`fcmToken : ${fcmToken}`);
-    await admin.messaging().subscribeToTopic(fcmToken, fcmTopicName);
-  }
+  const fcmData: FcmData = {
+    type: 'deal',
+    dealId: dealId,
+  };
+
+  const fcmTopic = 'dealFcmTopic' + deal.id;
+
+  const topicMessage = new TopicMessage(fcmNotification, fcmData, fcmTopic);
+
+  await fcmHandler.sendToSub(topicMessage);
+  await fcmHandler.dealSubscribe(userId, dealId);
+
   const groupDto = new GroupDto(group);
   const dealDto = new DealDto(deal);
 

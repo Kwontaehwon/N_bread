@@ -25,4 +25,4 @@ const createNotifiation = async (title: string, body: string) => {
 
 // const createData = async (type : string, )
 
-export { subscribe, sendToSub, createNotifiation };
+export { dealSubscribe, sendToSub, createNotifiation };
