@@ -14,7 +14,7 @@ import { DealDto } from '../dto/deal/dealDto';
 import prisma from '../prisma';
 import { GroupDto } from '../dto/groupDto';
 import fcmMessage from '../modules/constants/fcmMessage';
-import { fcmHandler } from '../modules';
+import { dealModule, fcmHandler } from '../modules';
 import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
 const admin = require('firebase-admin');
@@ -22,7 +22,9 @@ const admin = require('firebase-admin');
 const createDeal = async (req, res, next) => {
   try {
     const dealParam: dealParam = req.body; // currentMember 수정 필요.
-    const userId = req.query.userId;
+    const userId = +req.query.userId;
+    await dealModule._verifyDealDate(res, dealParam);
+
     const deal = await dealRepository.dealTransction(dealParam, userId);
     await fcmHandler.dealSubscribe(userId, deal.id);
     const dealDtos = new DealDto(deal);
@@ -112,8 +114,8 @@ const updateDeal = async (req, res, next) => {
 };
 
 const joinDeal = async (req, res, next) => {
-  const userId = req.params.userId;
-  const dealId = req.params.dealId;
+  const userId = +req.params.userId;
+  const dealId = +req.params.dealId;
 
   const user = await userRepository.findUserById(userId);
   const deal = await dealRepository.findDealById(dealId);
@@ -149,7 +151,7 @@ const joinDeal = async (req, res, next) => {
 
   const fcmData: FcmData = {
     type: 'deal',
-    dealId: dealId,
+    dealId: dealId.toString(),
   };
 
   const fcmTopic = 'dealFcmTopic' + deal.id;
@@ -196,9 +198,54 @@ const reportDeal = async (req, res, next) => {
     logger.info(`${userId}님이 dealId : ${dealId}글을 신고 하였습니다.`);
     return success(res, statusCode.OK, responseMessage.SUCCESS, dealReportDto);
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     next(error);
   }
 };
 
-export { createDeal, deleteDeal, updateDeal, joinDeal, reportDeal };
+const userStatusInDeal = async (req, res, next) => {
+  try {
+    const userId = +req.params.userId;
+    const dealId = +req.params.dealId;
+    const isValidUser = await userRepository.findUserById(userId);
+    const group = await groupRepository.findGroupByUserIdAndDealId(
+      userId,
+      dealId,
+    );
+
+    let status, description;
+    if (!group) {
+      description = '참여하지 않음';
+      status = 0;
+    } else {
+      const deal = await dealRepository.findDealById(dealId);
+      if (deal.userId == userId) {
+        //deal.userId는 number 형이고 req.params.userId는 string형 이므로 == 를 사용해야함.
+        description = '제안자';
+        status = 2;
+      } else {
+        description = '참여자';
+        status = 1;
+      }
+    }
+    const result = {
+      participation: status,
+      description: description,
+      userId: userId,
+      dealId: dealId,
+    };
+    return success(res, statusCode.OK, responseMessage.SUCCESS, result);
+  } catch (error) {
+    logger.log(error);
+    next(error);
+  }
+};
+
+export {
+  createDeal,
+  deleteDeal,
+  updateDeal,
+  joinDeal,
+  reportDeal,
+  userStatusInDeal,
+};

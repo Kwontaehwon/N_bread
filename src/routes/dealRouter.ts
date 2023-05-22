@@ -688,60 +688,7 @@ dealRouter.post(
 // 거래에 대응되는 userId에 대해 제안자, 참여자 여부
 dealRouter.get('/:dealId/users/:userId', async (req, res, next) => {
   // #swagger.summary = '거래 유저 상태(참여자, 제안자, 참여하지 않음)'
-  try {
-    const user = await User.findOne({ where: { Id: req.params.userId } });
-    if (!user) {
-      return util.jsonResponse(
-        res,
-        404,
-        'userId에 해당되는 유저를 찾을 수 없습니다.',
-        false,
-        null,
-      );
-    }
-    let status, description;
-    const group = await Group.findOne({
-      where: { userId: req.params.userId, dealId: req.params.dealId },
-    });
-    if (!group) {
-      description = '참여하지 않음';
-      status = 0;
-    } else {
-      const deal = await group.getDeal();
-      // console.log("deal.userId : " + typeof deal.userId);
-      // console.log("req.params.userId : " + typeof req.params.userId);
-      if (deal.userId == req.params.userId) {
-        //deal.userId는 number 형이고 req.params.userId는 string형 이므로 == 를 사용해야함.
-        description = '제안자';
-        status = 2;
-      } else {
-        description = '참여자';
-        status = 1;
-      }
-    }
-    const result = {
-      participation: status,
-      description: description,
-      userId: req.params.userId,
-      dealId: req.params.dealId,
-    };
-    return util.jsonResponse(
-      res,
-      200,
-      '거래에 대한 상태를 반환합니다.',
-      true,
-      result,
-    );
-  } catch (error) {
-    logger.log(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[거래 유저 상태] GET deals/:dealId/users/:userId 서버 에러',
-      false,
-      null,
-    );
-  }
+  await dealService.userStatusInDeal(req, res, next);
 });
 
 dealRouter.post(

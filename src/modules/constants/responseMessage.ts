@@ -33,6 +33,7 @@ export default {
   DEAL_UPDATE_NOT_AUTHORIZED: '글 작성자만 업데이트 할 수 있습니다.',
 
   DEAL_REPORT_NOT_AUTHORIZED: '자신이 작성한 글을 신고 할 수 없습니다.',
+  DEAL_DATE_VALIDATION_ERROR: '거래 날짜에는 과거 날짜를 기입할 수 없습니다.',
 
   GET_LOCATION_SUCCESS: '지역 정보 조회에 성공하였습니다.',
   NAVER_UNAUTHORIZED: 'Naver ClientKey, Naver ClientSecretKey가 필요합니다.',
