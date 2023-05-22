@@ -7,17 +7,11 @@ import { userRepository, groupRepository, dealRepository } from '../repository';
 import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 
 const findDealById = async (id: number) => {
-  const deal = await prisma.deals.findUnique({
+  const deal = await prisma.deals.findFirstOrThrow({
     where: {
       id: id,
     },
   });
-  if (!deal) {
-    throw errorGenerator({
-      message: responseMessage.DEAL_NOT_FOUND,
-      code: statusCode.NOT_FOUND,
-    });
-  }
   return deal;
 };
 
