@@ -19,21 +19,9 @@ dealRouter.post(
   '/:dealId/img/coupang',
   param('dealId').isNumeric(),
   errorValidator,
-  async (req, res) => {
+  async (req, res, next) => {
     // #swagger.summary = '쿠팡 썸네일 이미지 업로드'
-    try {
-    } catch (error) {
-      logger.error(
-        `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang ${error}`,
-      );
-      util.jsonResponse(
-        res,
-        500,
-        '[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang',
-        false,
-        {},
-      );
-    }
+    await dealService.createCoupangImage(req, res, next);
   },
 );
 

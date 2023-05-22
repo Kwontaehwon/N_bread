@@ -5,6 +5,7 @@ import {
   groupRepository,
   dealRepository,
   dealReportRepository,
+  dealImageRepository,
 } from '../repository';
 import { dealParam } from '../dto/deal/dealParam';
 import { logger } from '../config/winston';
@@ -256,6 +257,22 @@ const createDealImage = async (req, res, next) => {
   }
 };
 
+const createCoupangImage = async (req, res, next) => {
+  try {
+    const { url } = req.body;
+    const dealId = +req.params.dealId;
+    const targetDeal = await dealRepository.findDealById(dealId);
+    const coupangImage = await dealImageRepository.createDealImage(url, dealId);
+    logger.info(
+      `dealId : ${dealId}에 dealImageId : ${coupangImage.id} 가 생성되었습니다.`,
+    );
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
 export {
   createDeal,
   deleteDeal,
@@ -264,4 +281,5 @@ export {
   reportDeal,
   userStatusInDeal,
   createDealImage,
+  createCoupangImage,
 };
