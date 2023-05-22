@@ -5,7 +5,6 @@ const _createDealImage = async (req, dealId: number) => {
   const result = [];
   for (let i of req.files) {
     const originalUrl = i.location;
-    // const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
     result.push(originalUrl);
   }
   if (result.length > 0) {
