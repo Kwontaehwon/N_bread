@@ -142,7 +142,7 @@ const joinDeal = async (req, res, next) => {
 
   const group = await groupRepository.createGroup(userId, dealId);
 
-  await prisma.deals.update({
+  const updatedDeal = await prisma.deals.update({
     data: { currentMember: deal.currentMember + 1 },
     where: { id: deal.id },
   });
@@ -150,7 +150,7 @@ const joinDeal = async (req, res, next) => {
   // 그룹에 있는 모든 유저들에게
   const fcmNotification: FcmNotification = {
     title: fcmMessage.NEW_PARTICIPANT,
-    body: `${user.nick}님이 N빵에 참여하여 인원이 ${deal.currentMember} / ${deal.totalMember} 가 되었습니다!`,
+    body: `${user.nick}님이 N빵에 참여하여 인원이 ${updatedDeal.currentMember} / ${updatedDeal.totalMember} 가 되었습니다!`,
   };
 
   const fcmData: FcmData = {
