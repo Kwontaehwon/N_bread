@@ -1,6 +1,11 @@
 import axios from 'axios';
 import { success, fail } from '../modules/util';
-import { userRepository, groupRepository, dealRepository } from '../repository';
+import {
+  userRepository,
+  groupRepository,
+  dealRepository,
+  dealReportRepository,
+} from '../repository';
 import { dealParam } from '../dto/deal/dealParam';
 import { logger } from '../config/winston';
 import { errorGenerator } from '../modules/error/errorGenerator';
@@ -11,6 +16,7 @@ import { GroupDto } from '../dto/groupDto';
 import fcmMessage from '../modules/constants/fcmMessage';
 import { fcmHandler } from '../modules';
 import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
+import { DealReportDto } from '../dto/dealReport/dealReportDto';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
@@ -160,4 +166,39 @@ const joinDeal = async (req, res, next) => {
   return success(res, statusCode.OK, responseMessage.SUCCESS, returnJson);
 };
 
-export { createDeal, deleteDeal, updateDeal, joinDeal };
+const reportDeal = async (req, res, next) => {
+  try {
+    const { title, content } = req.body;
+    const dealId = +req.params.dealId;
+    const userId = +req.query.userId;
+
+    const user = await userRepository.findUserById(userId);
+    const deal = await dealRepository.findDealById(dealId);
+
+    if (user.id === deal.userId) {
+      logger.info(`userId : ${userId} 자신이 작성한 글을 신고 할 수 없습니다.`);
+      return fail(
+        res,
+        statusCode.FORBIDDEN,
+        responseMessage.DEAL_REPORT_NOT_AUTHORIZED,
+      );
+    }
+
+    const dealReport = await dealReportRepository.createDealReport(
+      title,
+      content,
+      userId,
+      dealId,
+    );
+
+    const dealReportDto = new DealReportDto(dealReport);
+
+    logger.info(`${userId}님이 dealId : ${dealId}글을 신고 하였습니다.`);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, dealReportDto);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+export { createDeal, deleteDeal, updateDeal, joinDeal, reportDeal };

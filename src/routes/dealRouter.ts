@@ -1,15 +1,15 @@
 import { dealImageUpload } from '../middlewares/upload';
 
 const express = require('express');
-import axios from 'axios';
 import admin from 'firebase-admin';
 import { dealService } from '../service';
-
+import { body, param } from 'express-validator';
 import { User, Group, Deal, DealImage, DealReport } from '../database/models';
 import { verifyToken } from '../middlewares/middleware';
 import { Op, Sequelize } from 'sequelize';
 import { logger } from '../config/winston';
 import { util } from '../modules';
+import { errorValidator } from '../modules/error/errorValidator';
 const dealRouter = express.Router();
 
 dealRouter.post('/:dealId/img/coupang', async (req, res) => {
@@ -672,7 +672,6 @@ dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
 // 거래 삭제
 dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
   // #swagger.summary = '거래 삭제'
-  logger.info('router dealid : ' + req.params.dealId);
   dealService.deleteDeal(req, res, next);
 });
 
@@ -682,18 +681,7 @@ dealRouter.post(
   verifyToken,
   async (req, res, next) => {
     // #swagger.summary = '거래 참여'
-    try {
-      await dealService.joinDeal(req, res, next);
-    } catch (error) {
-      logger.error(error);
-      return util.jsonResponse(
-        res,
-        500,
-        `[거래 참여] deals/:dealId/join/:userId 서버 에러`,
-        false,
-        null,
-      );
-    }
+    await dealService.joinDeal(req, res, next);
   },
 );
 
@@ -756,81 +744,16 @@ dealRouter.get('/:dealId/users/:userId', async (req, res, next) => {
   }
 });
 
-dealRouter.post('/:dealId/report', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '거래 신고'
-  try {
-    const { title, content } = req.body;
-    if (req.params.dealId == ':dealId') {
-      return util.jsonResponse(
-        res,
-        404,
-        `parameter :dealId가 필요합니다.`,
-        false,
-        null,
-      );
-    }
-    const user = await User.findOne({ where: { Id: req.decoded.id } });
-    const deal = await Deal.findOne({ where: { Id: req.params.dealId } });
-
-    if (!user) {
-      logger.info(`userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`);
-      return util.jsonResponse(
-        res,
-        404,
-        `userId : ${req.decoded.id}에 매칭되는 유저가 없습니다.`,
-        false,
-        null,
-      );
-    }
-    if (!deal) {
-      logger.info(`dealId : ${req.params.dealId} 에 해당되는 거래가 없습니다.`);
-      return util.jsonResponse(
-        res,
-        404,
-        `dealId : ${req.params.dealId} 에 해당되는 거래가 없습니다.`,
-        false,
-        null,
-      );
-    }
-    if (user.id === deal.userId) {
-      logger.info(
-        `userId : ${req.decoded.id} 자신이 작성한 글을 신고 할 수 없습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        403,
-        `userId : ${req.decoded.id} 자신이 작성한 글을 신고 할 수 없습니다.`,
-        false,
-        null,
-      );
-    }
-    const dealReport = await DealReport.create({
-      title: title,
-      content: content,
-      reporterId: req.decoded.id,
-      dealId: req.params.dealId,
-    });
-    logger.info(
-      `${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`,
-    );
-    return util.jsonResponse(
-      res,
-      200,
-      `${req.decoded.id}님이 dealId : ${req.params.dealId}글을 신고 하였습니다.`,
-      true,
-      dealReport,
-    );
-  } catch (error) {
-    console.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[거래 신고] deals/:dealId/report 서버 에러',
-      false,
-      null,
-    );
-  }
-});
+dealRouter.post(
+  '/:dealId/report',
+  verifyToken,
+  [param('dealId').isNumeric()],
+  errorValidator,
+  async (req, res, next) => {
+    // #swagger.summary = '거래 신고'
+    await dealService.reportDeal(req, res, next);
+  },
+);
 
 dealRouter.post('/:dealId/endRecruit', verifyToken, async (req, res, next) => {
   // #swagger.summary = '모집 마감하기'
