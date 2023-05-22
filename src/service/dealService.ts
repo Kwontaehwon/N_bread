@@ -103,10 +103,13 @@ const updateDeal = async (req, res, next) => {
       );
     }
 
-    await dealRepository.updateDeal(dealId, dealUpdateParam);
+    const updatedDeal = await dealRepository.updateDeal(
+      dealId,
+      dealUpdateParam,
+    );
     logger.info(`${dealId} 의 거래를 수정하였습니다.`);
 
-    const dealDto: DealDto = new DealDto(deal);
+    const dealDto: DealDto = new DealDto(updatedDeal);
     success(res, statusCode.OK, responseMessage.SUCCESS, dealDto);
   } catch (error) {
     logger.error(error);

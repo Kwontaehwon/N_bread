@@ -559,20 +559,34 @@ dealRouter.get('/:dealId', verifyToken, async (req, res, next) => {
 });
 
 // 거래 수정하기
-dealRouter.put('/:dealId', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '거래 수정'
-  await dealService.updateDeal(req, res, next);
-});
+dealRouter.put(
+  '/:dealId',
+  [param('dealId').isNumeric()],
+  errorValidator,
+  verifyToken,
+  async (req, res, next) => {
+    // #swagger.summary = '거래 수정'
+    await dealService.updateDeal(req, res, next);
+  },
+);
 
 // 거래 삭제
-dealRouter.delete('/:dealId', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '거래 삭제'
-  dealService.deleteDeal(req, res, next);
-});
+dealRouter.delete(
+  '/:dealId',
+  [param('dealId').isNumeric()],
+  errorValidator,
+  verifyToken,
+  async (req, res, next) => {
+    // #swagger.summary = '거래 삭제'
+    dealService.deleteDeal(req, res, next);
+  },
+);
 
 // 참여자 : 거래 참여하기
 dealRouter.post(
   '/:dealId/join/:userId',
+  [param('dealId').isNumeric(), param('userId').isNumeric],
+  errorValidator,
   verifyToken,
   async (req, res, next) => {
     // #swagger.summary = '거래 참여'
@@ -581,10 +595,15 @@ dealRouter.post(
 );
 
 // 거래에 대응되는 userId에 대해 제안자, 참여자 여부
-dealRouter.get('/:dealId/users/:userId', async (req, res, next) => {
-  // #swagger.summary = '거래 유저 상태(참여자, 제안자, 참여하지 않음)'
-  await dealService.userStatusInDeal(req, res, next);
-});
+dealRouter.get(
+  '/:dealId/users/:userId',
+  [param('dealId').isNumeric(), param('userId').isNumeric],
+  errorValidator,
+  async (req, res, next) => {
+    // #swagger.summary = '거래 유저 상태(참여자, 제안자, 참여하지 않음)'
+    await dealService.userStatusInDeal(req, res, next);
+  },
+);
 
 dealRouter.post(
   '/:dealId/report',
