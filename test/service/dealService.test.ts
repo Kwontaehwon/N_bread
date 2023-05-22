@@ -29,7 +29,7 @@ describe('거래 삭제 : deleteDeal', () => {
 
   test('작성자가 아닌 사람이 삭제를 요청 했을 경우', async () => {
     const req = {
-      decoded: { id: 2 },
+      query: { userId: 2 },
       params: { dealId: 1 },
     };
     const res = {
@@ -45,7 +45,7 @@ describe('거래 삭제 : deleteDeal', () => {
 
   test('거래에 참여자가 이미 있는 경우', async () => {
     const req = {
-      decoded: { id: 1 },
+      query: { userId: 1 },
       params: { dealId: 1 },
     };
     const res = {
