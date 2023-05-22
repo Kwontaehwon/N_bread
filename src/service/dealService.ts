@@ -10,12 +10,13 @@ import prisma from '../prisma';
 import { GroupDto } from '../dto/groupDto';
 import fcmMessage from '../modules/constants/fcmMessage';
 import { fcmHandler } from '../modules';
+import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
   try {
     const dealParam: dealParam = req.body; // currentMember 수정 필요.
-    const userId = req.decoded.id;
+    const userId = req.query.userId;
     const deal = await dealRepository.dealTransction(dealParam, userId);
     await fcmHandler.dealSubscribe(userId, deal.id);
     const dealDtos = new DealDto(deal);
@@ -31,7 +32,7 @@ const deleteDeal = async (req, res, next) => {
   try {
     const dealId: number = +req.params.dealId;
     const deal = await dealRepository.findDealById(dealId);
-    if (deal.userId != req.decoded.id) {
+    if (deal.userId != req.query.userId) {
       return fail(
         res,
         statusCode.UNAUTHORIZED,
@@ -56,6 +57,48 @@ const deleteDeal = async (req, res, next) => {
       where: { dealId: dealId },
     });
     return success(res, statusCode.OK, responseMessage.SUCCESS, null);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+const updateDeal = async (req, res, next) => {
+  try {
+    const dealId: number = +req.params.dealId;
+    const dealUpdateParam: DealUpdateParam = req.body;
+    const deal = await dealRepository.findDealById(dealId);
+
+    if (deal.userId != req.query.userId) {
+      logger.info(
+        `userId : ${req.query.userId}는 거래를 수정할 권한이 없습니다.`,
+      );
+      return fail(
+        res,
+        statusCode.FORBIDDEN,
+        responseMessage.DEAL_DELETE_NOT_AUTHORIZED,
+      );
+    }
+
+    const groups = await prisma.groups.findMany({
+      where: { dealId: dealId },
+    });
+    if (groups.length > 1) {
+      logger.info(
+        `참여자가 ${groups.length - 1}명 있으므로 거래를 수정 할 수 없습니다.`,
+      );
+      return fail(
+        res,
+        statusCode.BAD_REQUEST,
+        responseMessage.DEAL_ALREADY_PARTICIPATED,
+      );
+    }
+
+    await dealRepository.updateDeal(dealId, dealUpdateParam);
+    logger.info(`${dealId} 의 거래를 수정하였습니다.`);
+
+    const dealDto: DealDto = new DealDto(deal);
+    success(res, statusCode.OK, responseMessage.SUCCESS, dealDto);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -117,4 +160,4 @@ const joinDeal = async (req, res, next) => {
   return success(res, statusCode.OK, responseMessage.SUCCESS, returnJson);
 };
 
-export { createDeal, deleteDeal, joinDeal };
+export { createDeal, deleteDeal, updateDeal, joinDeal };
