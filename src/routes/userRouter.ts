@@ -33,7 +33,7 @@ userRouter.get('/location', verifyToken, userService.getUserLocation);
 /**유저 정보 GET*/
 userRouter.get(
   '/:userId',
-  [param('useId').isNumeric()],
+  [param('userId').isNumeric()],
   errorValidator,
   userService.getUser,
 );
@@ -41,7 +41,7 @@ userRouter.get(
 /**유저 닉네임 PUT*/
 userRouter.put(
   '/:userId',
-  [param('useId').isNumeric()],
+  [param('userId').isNumeric()],
   errorValidator,
   userService.changeUserNick,
 );
@@ -49,7 +49,7 @@ userRouter.put(
 /**유저 닉네임 중복체크 GET*/
 userRouter.get(
   '/check/:userId/:nick',
-  [param('useId').isNumeric(), param('nick').notEmpty()],
+  [param('userId').isNumeric(), param('nick').notEmpty()],
   errorValidator,
   userService.checkUserNick,
 );
