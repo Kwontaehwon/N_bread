@@ -61,7 +61,7 @@ const dealTransction = async (dealParam: dealParam, userId: number) => {
 };
 
 const updateDeal = async (dealId: number, param: DealUpdateParam) => {
-  await prisma.deals.update({
+  return await prisma.deals.update({
     where: { id: dealId },
     data: {
       link: param.link,
