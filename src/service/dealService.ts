@@ -14,7 +14,7 @@ import { DealDto } from '../dto/deal/dealDto';
 import prisma from '../prisma';
 import { GroupDto } from '../dto/groupDto';
 import fcmMessage from '../modules/constants/fcmMessage';
-import { dealModule, fcmHandler } from '../modules';
+import { dealImageModule, dealModule, fcmHandler } from '../modules';
 import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
 const admin = require('firebase-admin');
@@ -241,6 +241,21 @@ const userStatusInDeal = async (req, res, next) => {
   }
 };
 
+const createDealImage = async (req, res, next) => {
+  try {
+    const dealId = +req.params.dealId;
+    const targetDeal = await dealRepository.findDealById(dealId);
+    const result = await dealImageModule._createDealImage(req, dealId);
+    logger.info(
+      `dealId : ${dealId}에 ${result.length}개의 이미지가 생성되었습니다.`,
+    );
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    logger.error(`[거래 이미지 생성] POST /deals/:dealId/img ${error}`);
+    next(error);
+  }
+};
+
 export {
   createDeal,
   deleteDeal,
@@ -248,4 +263,5 @@ export {
   joinDeal,
   reportDeal,
   userStatusInDeal,
+  createDealImage,
 };

@@ -10,134 +10,41 @@ import { Op, Sequelize } from 'sequelize';
 import { logger } from '../config/winston';
 import { util } from '../modules';
 import { errorValidator } from '../modules/error/errorValidator';
+import { dealImageRepository, dealRepository } from '../repository';
+import { success } from '../modules/util';
+import { responseMessage, statusCode } from '../modules/constants';
 const dealRouter = express.Router();
 
-dealRouter.post('/:dealId/img/coupang', async (req, res) => {
-  // #swagger.summary = '쿠팡 썸네일 이미지 업로드'
-  try {
-    const { url } = req.body;
-    const dealId = parseInt(req.params.dealId);
-    if (Number.isNaN(dealId)) {
-      logger.info(
-        `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang 에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        400,
-        `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang 에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-        false,
-        {},
-      );
-    }
-    const targetDeal = await Deal.findOne({ where: { id: dealId } });
-    if (targetDeal === null) {
-      logger.info(
-        `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-        false,
-        {},
-      );
-    }
-    const coupangImage = await DealImage.create({
-      dealImage: url,
-      dealId: dealId,
-    });
-    logger.info(
-      `dealId : ${dealId}에 dealImageId : ${coupangImage.id} 가 생성되었습니다.`,
-    );
-    return util.jsonResponse(
-      res,
-      200,
-      `dealId : ${dealId}에 쿠팡 썸네일 이미지가 생성되었습니다.`,
-      true,
-      null,
-    );
-  } catch (error) {
-    logger.error(
-      `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang ${error}`,
-    );
-    util.jsonResponse(
-      res,
-      500,
-      '[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang',
-      false,
-      {},
-    );
-  }
-});
-
 dealRouter.post(
-  '/:dealId/img',
-  dealImageUpload.array('img'),
+  '/:dealId/img/coupang',
+  param('dealId').isNumeric(),
+  errorValidator,
   async (req, res) => {
-    // #swagger.summary = 'S3 이미지(Array) 업로드'
+    // #swagger.summary = '쿠팡 썸네일 이미지 업로드'
     try {
-      const dealId = parseInt(req.params.dealId);
-      if (Number.isNaN(dealId)) {
-        logger.info(
-          `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-        );
-        return util.jsonResponse(
-          res,
-          400,
-          `[거래 이미지 생성] POST /deals/:dealId/img의 :dealId에 잘못된 값 ${req.params.dealId}가 입력되었습니다.`,
-          false,
-          {},
-        );
-      }
-      const targetDeal = await Deal.findOne({ where: { id: dealId } });
-      if (targetDeal === null) {
-        logger.info(
-          `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-        );
-        return util.jsonResponse(
-          res,
-          404,
-          `[거래 이미지 생성] POST /deals/:dealId/img의 dealId : ${dealId}에 해당되는 거래를 찾을 수 없습니다.`,
-          false,
-          {},
-        );
-      }
-      const result = [];
-      for (let i of req.files) {
-        console.log(i);
-        const originalUrl = i.location;
-        // const newUrl = originalUrl.replace(/\/original\//, '/thumb/');
-        result.push(originalUrl);
-      }
-      if (result.length > 0) {
-        for (let url of result) {
-          console.log(url);
-          const tmpImage = await DealImage.create({
-            dealImage: url,
-            dealId: dealId,
-          });
-          logger.info(
-            `dealId : ${dealId}에 dealImageId : ${tmpImage.id} 가 생성되었습니다.`,
-          );
-        }
-      }
-      return util.jsonResponse(
-        res,
-        200,
-        `dealId : ${dealId}에 ${result.length}개의 이미지가 생성되었습니다.`,
-        true,
-        `${result}`,
-      );
     } catch (error) {
-      logger.error(`[거래 이미지 생성] POST /deals/:dealId/img ${error}`);
+      logger.error(
+        `[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang ${error}`,
+      );
       util.jsonResponse(
         res,
         500,
-        '[거래 이미지 생성] POST /deals/:dealId/img',
+        '[쿠팡 썸네일 이미지 생성] POST /deals/:dealId/img/coupang',
         false,
         {},
       );
     }
+  },
+);
+
+dealRouter.post(
+  '/:dealId/img',
+  [param('dealId').isNumeric()],
+  errorValidator,
+  dealImageUpload.array('img'),
+  async (req, res, next) => {
+    dealService.createDealImage(req, res, next);
+    // #swagger.summary = 'S3 이미지(Array) 업로드'
   },
 );
 
