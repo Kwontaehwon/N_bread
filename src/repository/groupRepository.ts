@@ -37,4 +37,35 @@ const updateDealIdInTransaction = async (
   });
 };
 
-export { createGroupInTransaction, updateDealIdInTransaction };
+const findAlreadyJoin = async (userId: number, dealId: number) => {
+  return await prisma.groups.findFirst({
+    where: { userId: userId, dealId: dealId },
+  });
+};
+
+const createGroup = async (userId: number, dealId: number) => {
+  return await prisma.groups.create({
+    data: {
+      amount: 1,
+      userId: userId,
+      dealId: dealId,
+    },
+  });
+};
+
+const findGroupByUserIdAndDealId = async (userId: number, dealId: number) => {
+  return await prisma.groups.findFirst({
+    where: {
+      userId: userId,
+      dealId: dealId,
+    },
+  });
+};
+
+export {
+  createGroupInTransaction,
+  createGroup,
+  updateDealIdInTransaction,
+  findAlreadyJoin,
+  findGroupByUserIdAndDealId,
+};

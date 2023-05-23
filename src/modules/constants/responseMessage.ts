@@ -5,7 +5,7 @@ export default {
   FORBIDDEN: '권한이 없습니다.',
   INTERNAL_SERVER_ERROR: '서버에 에러가 발생했습니다.',
   SERVICE_NOT_AVAILABLE: '서버를 사용할 수 없습니다.',
-  ERROR_VALIDATOR_ERROR:'Error Validator에서 오류가 발생하였습니다',
+  ERROR_VALIDATOR_ERROR: '에서 Validation 오류가 발생하였습니다.',
 
   SUCCESS: '성공적으로 반환 하였습니다.',
   VALID_NICKNAME: '사용할 수 있는 닉네임입니다.',
@@ -23,8 +23,19 @@ export default {
   // deal
   DEAL_NOT_FOUND: '해당되는 거래가 없습니다.',
   DEAL_DELETE_NOT_AUTHORIZED: '글을 삭제할 권한이 없습니다.',
-  DEAL_ALREADY_PARTICIPATED: '참여자가 있으므로 거래를 삭제할 수 없습니다.',
+  DEAL_ALREADY_PARTICIPATED:
+    '참여자가 있으므로 거래를 삭제/수정할 수 없습니다.',
 
+  DEAL_ALREADY_JOINED: '이미 참여한 거래이므로 다시 참여할 수 없습니다.',
+  DEAL_DATE_EXPIRED: '거래 모집 기간이 지났으므로 참여할 수 없습니다.',
+  DEAL_REQUEST_OUT_OF_STOCK: '구매 가능 한 수량 내의 수를 입력해야 합니다.',
+
+  DEAL_UPDATE_NOT_AUTHORIZED: '글 작성자만 업데이트 할 수 있습니다.',
+
+  DEAL_REPORT_NOT_AUTHORIZED: '자신이 작성한 글을 신고 할 수 없습니다.',
+  DEAL_DATE_VALIDATION_ERROR: '거래 날짜에는 과거 날짜를 기입할 수 없습니다.',
+
+  GET_LOCATION_SUCCESS: '지역 정보 조회에 성공하였습니다.',
   NAVER_UNAUTHORIZED: 'Naver ClientKey, Naver ClientSecretKey가 필요합니다.',
   NAVER_INVALID_COORDINATE: '좌표가 유효하지 않습니다.',
 

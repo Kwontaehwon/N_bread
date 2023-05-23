@@ -1,4 +1,6 @@
-class dealDto {
+import { deals } from '@prisma/client';
+
+class DealDto {
   id: Number;
   link: String;
   title: String;
@@ -12,33 +14,20 @@ class dealDto {
   loc2: String;
   loc3: String;
 
-  constructor(
-    id: Number,
-    link: String,
-    title: String,
-    content: String,
-    totalPrice: Number,
-    personalPrice: Number,
-    totalMember: Number,
-    dealDate: Date,
-    dealPlace: String,
-    loc1: String,
-    loc2: String,
-    loc3: String,
-  ) {
-    this.id = id;
-    this.link = link;
-    this.title = title;
-    this.content = content;
-    this.totalPrice = totalPrice;
-    this.personalPrice = personalPrice;
-    this.totalMember = totalMember;
-    this.dealDate = dealDate;
-    this.dealPlace = dealPlace;
-    this.loc1 = loc1;
-    this.loc2 = loc2;
-    this.loc3 = loc3;
+  constructor(deal: deals) {
+    this.id = deal.id;
+    this.link = deal.link;
+    this.title = deal.title;
+    this.content = deal.content;
+    this.totalPrice = deal.totalPrice;
+    this.personalPrice = deal.personalPrice;
+    this.totalMember = deal.totalMember;
+    this.dealDate = deal.dealDate;
+    this.dealPlace = deal.dealPlace;
+    this.loc1 = deal.loc1;
+    this.loc2 = deal.loc2;
+    this.loc3 = deal.loc3;
   }
 }
 
-export { dealDto };
+export { DealDto };
