@@ -30,10 +30,7 @@ dealRouter.post(
   [param('dealId').isNumeric()],
   errorValidator,
   dealImageUpload.array('img'),
-  async (req, res, next) => {
-    dealService.createDealImage(req, res, next);
-    // #swagger.summary = 'S3 이미지(Array) 업로드'
-  },
+  dealService.createDealImage,
 );
 
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
@@ -464,10 +461,7 @@ dealRouter.get('/all/:region', verifyToken, async (req, res, next) => {
 });
 
 // 거래 생성하기
-dealRouter.post('/create', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '거래 생성'
-  const test = dealService.createDeal(req, res, next);
-});
+dealRouter.post('/create', verifyToken, dealService.createDeal);
 
 // 거래 세부정보
 dealRouter.get('/:dealId', verifyToken, async (req, res, next) => {
@@ -564,10 +558,7 @@ dealRouter.put(
   [param('dealId').isNumeric()],
   errorValidator,
   verifyToken,
-  async (req, res, next) => {
-    // #swagger.summary = '거래 수정'
-    await dealService.updateDeal(req, res, next);
-  },
+  dealService.updateDeal,
 );
 
 // 거래 삭제
@@ -576,10 +567,7 @@ dealRouter.delete(
   [param('dealId').isNumeric()],
   errorValidator,
   verifyToken,
-  async (req, res, next) => {
-    // #swagger.summary = '거래 삭제'
-    dealService.deleteDeal(req, res, next);
-  },
+  dealService.deleteDeal,
 );
 
 // 참여자 : 거래 참여하기
@@ -588,10 +576,7 @@ dealRouter.post(
   [param('dealId').isNumeric(), param('userId').isNumeric],
   errorValidator,
   verifyToken,
-  async (req, res, next) => {
-    // #swagger.summary = '거래 참여'
-    await dealService.joinDeal(req, res, next);
-  },
+  dealService.joinDeal,
 );
 
 // 거래에 대응되는 userId에 대해 제안자, 참여자 여부
@@ -599,10 +584,7 @@ dealRouter.get(
   '/:dealId/users/:userId',
   [param('dealId').isNumeric(), param('userId').isNumeric],
   errorValidator,
-  async (req, res, next) => {
-    // #swagger.summary = '거래 유저 상태(참여자, 제안자, 참여하지 않음)'
-    await dealService.userStatusInDeal(req, res, next);
-  },
+  dealService.userStatusInDeal,
 );
 
 dealRouter.post(
@@ -610,10 +592,7 @@ dealRouter.post(
   verifyToken,
   [param('dealId').isNumeric()],
   errorValidator,
-  async (req, res, next) => {
-    // #swagger.summary = '거래 신고'
-    await dealService.reportDeal(req, res, next);
-  },
+  dealService.reportDeal,
 );
 
 dealRouter.post('/:dealId/endRecruit', verifyToken, async (req, res, next) => {
