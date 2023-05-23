@@ -582,7 +582,6 @@ dealRouter.post(
 // 거래에 대응되는 userId에 대해 제안자, 참여자 여부
 dealRouter.get(
   '/:dealId/users/:userId',
-  [param('dealId').isNumeric(), param('userId').isNumeric],
   errorValidator,
   dealService.userStatusInDeal,
 );

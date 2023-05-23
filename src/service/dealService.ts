@@ -231,24 +231,14 @@ const userStatusInDeal = async (req, res, next) => {
       dealId,
     );
 
-    let status, description;
-    if (!group) {
-      description = '참여하지 않음';
-      status = 0;
-    } else {
-      const deal = await dealRepository.findDealById(dealId);
-      if (deal.userId == userId) {
-        //deal.userId는 number 형이고 req.params.userId는 string형 이므로 == 를 사용해야함.
-        description = '제안자';
-        status = 2;
-      } else {
-        description = '참여자';
-        status = 1;
-      }
-    }
+    const userStatus = await dealModule._checkUserStatusInDeal(
+      group,
+      userId,
+      dealId,
+    );
     const result = {
-      participation: status,
-      description: description,
+      participation: userStatus.status,
+      description: userStatus.description,
       userId: userId,
       dealId: dealId,
     };
