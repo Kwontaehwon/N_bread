@@ -73,6 +73,7 @@ const deleteDeal = async (req, res, next) => {
 };
 
 const updateDeal = async (req, res, next) => {
+  // #swagger.summary = '거래 수정'
   try {
     const dealId: number = +req.params.dealId;
     const dealUpdateParam: DealUpdateParam = req.body;
@@ -118,58 +119,72 @@ const updateDeal = async (req, res, next) => {
 };
 
 const joinDeal = async (req, res, next) => {
-  const userId = +req.params.userId;
-  const dealId = +req.params.dealId;
+  try {
+    const userId = +req.query.userId;
+    const dealId = +req.params.dealId;
 
-  const user = await userRepository.findUserById(userId);
-  const deal = await dealRepository.findDealById(dealId);
-  const isJoin = await groupRepository.findAlreadyJoin(userId, dealId);
+    const user = await userRepository.findUserById(userId);
+    const deal = await dealRepository.findDealById(dealId);
+    const isJoin = await groupRepository.findAlreadyJoin(userId, dealId);
+    const dealDate = new Date(deal.dealDate);
 
-  if (isJoin) {
-    return fail(res, statusCode.FORBIDDEN, responseMessage.DEAL_ALREADY_JOINED);
-  }
-  if (deal.dealDate.getDate() < Date.now()) {
-    return fail(res, statusCode.FORBIDDEN, responseMessage.DEAL_DATE_EXPIRED);
-  }
-  const stock = deal.totalMember - deal.currentMember;
-  if (stock <= 0) {
-    return fail(
-      res,
-      statusCode.BAD_REQUEST,
-      responseMessage.DEAL_REQUEST_OUT_OF_STOCK,
+    if (isJoin) {
+      return fail(
+        res,
+        statusCode.FORBIDDEN,
+        responseMessage.DEAL_ALREADY_JOINED,
+      );
+    }
+    if (dealDate.getTime() < Date.now()) {
+      return fail(res, statusCode.FORBIDDEN, responseMessage.DEAL_DATE_EXPIRED);
+    }
+    const stock = deal.totalMember - deal.currentMember;
+    if (stock <= 0) {
+      return fail(
+        res,
+        statusCode.BAD_REQUEST,
+        responseMessage.DEAL_REQUEST_OUT_OF_STOCK,
+      );
+    }
+
+    const group = await groupRepository.createGroup(userId, dealId);
+
+    const updatedDeal = await prisma.deals.update({
+      data: { currentMember: deal.currentMember + 1 },
+      where: { id: deal.id },
+    });
+
+    // 그룹에 있는 모든 유저들에게
+    const fcmNotification: FcmNotification = {
+      title: fcmMessage.NEW_PARTICIPANT,
+      body: `${user.nick}님이 N빵에 참여하여 인원이 ${updatedDeal.currentMember} / ${updatedDeal.totalMember} 가 되었습니다!`,
+    };
+
+    const fcmData: FcmData = {
+      type: 'deal',
+      dealId: dealId.toString(),
+    };
+
+    const fcmTopic = 'dealFcmTopic' + deal.id;
+
+    const topicMessage: TopicMessage = new TopicMessage(
+      fcmNotification,
+      fcmData,
+      fcmTopic,
     );
+
+    await fcmHandler.sendToSub(topicMessage);
+    await fcmHandler.dealSubscribe(userId, dealId);
+
+    const groupDto = new GroupDto(group);
+    const dealDto = new DealDto(deal);
+
+    const returnJson = { groupDto, dealDto };
+    return success(res, statusCode.OK, responseMessage.SUCCESS, returnJson);
+  } catch (error) {
+    logger.error(error);
+    next(error);
   }
-
-  const group = await groupRepository.createGroup(userId, dealId);
-
-  const updatedDeal = await prisma.deals.update({
-    data: { currentMember: deal.currentMember + 1 },
-    where: { id: deal.id },
-  });
-
-  // 그룹에 있는 모든 유저들에게
-  const fcmNotification: FcmNotification = {
-    title: fcmMessage.NEW_PARTICIPANT,
-    body: `${user.nick}님이 N빵에 참여하여 인원이 ${updatedDeal.currentMember} / ${updatedDeal.totalMember} 가 되었습니다!`,
-  };
-
-  const fcmData: FcmData = {
-    type: 'deal',
-    dealId: dealId.toString(),
-  };
-
-  const fcmTopic = 'dealFcmTopic' + deal.id;
-
-  const topicMessage = new TopicMessage(fcmNotification, fcmData, fcmTopic);
-
-  await fcmHandler.sendToSub(topicMessage);
-  await fcmHandler.dealSubscribe(userId, dealId);
-
-  const groupDto = new GroupDto(group);
-  const dealDto = new DealDto(deal);
-
-  const returnJson = { groupDto, dealDto };
-  return success(res, statusCode.OK, responseMessage.SUCCESS, returnJson);
 };
 
 const reportDeal = async (req, res, next) => {
@@ -206,7 +221,6 @@ const reportDeal = async (req, res, next) => {
     next(error);
   }
 };
-
 const userStatusInDeal = async (req, res, next) => {
   try {
     const userId = +req.params.userId;

@@ -572,8 +572,8 @@ dealRouter.delete(
 
 // 참여자 : 거래 참여하기
 dealRouter.post(
-  '/:dealId/join/:userId',
-  [param('dealId').isNumeric(), param('userId').isNumeric],
+  '/join/:dealId',
+  [param('dealId').isNumeric()],
   errorValidator,
   verifyToken,
   dealService.joinDeal,
