@@ -4,6 +4,21 @@
 <br/>
 </div>
 
+<p align='center'> N빵에서는 누구나 소분 거래, 공동구매를 제안하고 참여할 수 있습니다. </p>
+<p align='center'>
+  <a href="https://github.com/kyechan99/capsule-render/labels/Idea">
+     <img width="190" alt="downloaPlayStore" src="https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/f60a899e-a9a1-4fc7-b5f0-d8d350832595">
+  </a>
+  <a href="#demo">
+          <img width="170" alt="downloadAppStore" src="https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/91cf8fc5-38e0-47fb-84f3-354b57774a83">
+  </a>
+</p>
+
+## Navigation
+1. [How to Use](#how-to-use)
+2. [Types](#types)
+3. [Color](#color)
+
 ## 🔑 N빵은 이런 사람들을 위해 만들어졌어요
 + 필요한 물건을 **원하는 만큼만** 구매하고 싶은 사람
 + **저렴한 대용량 제품**을 구매하고 싶으나 **소비하기 망설여져** 구매를 주저하는 사람
