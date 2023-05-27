@@ -24,6 +24,7 @@ userRouter.post(
     param('latitude').notEmpty(),
     param('longitude').notEmpty(),
   ],
+  errorValidator,
   userService.saveLocationByCoordinate,
 );
 
