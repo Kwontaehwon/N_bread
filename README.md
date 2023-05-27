@@ -7,10 +7,10 @@
 <p align='center'> N빵에서는 누구나 소분 거래, 공동구매를 제안하고 참여할 수 있습니다. </p>
 <p align='center'>
   <a href="https://naver.com">
-     <img width="190" alt="downloaPlayStore" src="https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/f60a899e-a9a1-4fc7-b5f0-d8d350832595">
+     <img width="190" alt="downloaPlayStore" src=".github/Play Store Download.png">
   </a>
   <a href="#demo">
-          <img width="170" alt="downloadAppStore" src="https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/91cf8fc5-38e0-47fb-84f3-354b57774a83">
+          <img width="170" alt="downloadAppStore" src=".github/App Store Download.png">
   </a>
 </p>
 
