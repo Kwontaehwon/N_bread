@@ -61,7 +61,9 @@ N빵은 **주변 이웃들과 물건을 같이 살 수 있는 소분거래 플�
 - **기업(스윗밸런스, 퍼즐벤처스 등)과 제휴**를 통해 저렴한 가격에 물품 제공
 - 출시 이후 **MAU**(Monthly Active User)가 **지속적으로 성장**
 <br>
-![n빵airbridge](https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/172f789b-1e49-41fb-ac89-dcf7b226ee99)
+
+![n빵airbridge](https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/54c44a4e-190b-463f-a8e1-31a15b929b6f)
+
 
 
 ### 5️⃣ 기대 효과 및 활용 방안
