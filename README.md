@@ -4,6 +4,11 @@
 <br/>
 </div>
 
+<div align="center">
+   <img src='https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/2930f78b-101a-4943-bf3c-6c34f4573f88'/>
+<br/>
+</div>
+
 ## 🔑 N빵은 이런 사람들을 위해 만들어졌어요
 + 필요한 물건을 **원하는 만큼만** 구매하고 싶은 사람
 + **저렴한 대용량 제품**을 구매하고 싶으나 **소비하기 망설여져** 구매를 주저하는 사람
