@@ -68,25 +68,7 @@ userRouter.post(
   userService.postReportUser,
 );
 
-//회원가입 완료 여부
-userRouter.get('/check/:userId', userService.isSetNickname);
-
-//reverse geocoding을 통해 위치 가져오기
-userRouter.get(
-  '/location/:latitude/:longitude',
-  userService.getLocationByNaverMapsApi,
-);
-
-//reverse geocoding을 통해 가져온 위치 db에 저장
-userRouter.post(
-  '/location/:userId/:loc1/:loc2/:loc3',
-  userService.setLocationByNaverMapsApi,
-);
-
 //위치를 인자로 받아 동을 지워주는 api
 userRouter.delete('/location/:dong', verifyToken, userService.deletelocation);
-
-//위치를 body로 받아 curLocation ABC를 채워주는 api
-userRouter.post('/location', verifyToken, userService.addLocation);
 
 export { userRouter };
