@@ -5,7 +5,7 @@
 </div>
 
 <div align="center">
-   <img src='https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/2930f78b-101a-4943-bf3c-6c34f4573f88'/>
+   <img  style="padding:20px" src='https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/2930f78b-101a-4943-bf3c-6c34f4573f88'/>
 <br/>
 </div>
 
