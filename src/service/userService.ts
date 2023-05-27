@@ -98,9 +98,9 @@ const saveLocationByCoordinate = async (
 
     const loc1 = data['area1']['name'];
     const loc2 = data['area2']['name'];
-    const loc33 = data['area3']['name'];
+    const loc3 = data['area3']['name'];
 
-    await userRepository.saveUserLocation(+userId, loc1, loc2, loc33);
+    await userRepository.saveUserLocation(+userId, loc1, loc2, loc3);
 
     return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
