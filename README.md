@@ -68,7 +68,9 @@ N빵은 **주변 이웃들과 물건을 같이 살 수 있는 소분거래 플�
 - 출시 이후 **MAU**(Monthly Active User)가 **지속적으로 성장**
 <br>
 
-![n빵airbridge](https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/54c44a4e-190b-463f-a8e1-31a15b929b6f)
+<p align='center'>
+<img width="700" alt="downloaPlayStore" src="https://github.com/SWM-ChocoBread/N_bread_Server/assets/70741257/54c44a4e-190b-463f-a8e1-31a15b929b6f">
+</p>
 
 
 <br>
