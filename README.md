@@ -6,10 +6,10 @@
 
 <p align='center'> N빵에서는 누구나 소분 거래, 공동구매를 제안하고 참여할 수 있습니다. </p>
 <p align='center'>
-  <a href="https://naver.com">
+  <a href="https://play.google.com/store/apps/details?id=com.chocobread.nbread2&hl=ko" target="_blank" >
      <img width="190" alt="downloaPlayStore" src=".github/Play Store Download.png">
   </a>
-  <a href="#demo">
+  <a href="https://apps.apple.com/kr/app/n%EB%B9%B5/id1640045290" target="_blank">
           <img width="170" alt="downloadAppStore" src=".github/App Store Download.png">
   </a>
 </p>
