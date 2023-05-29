@@ -110,114 +110,6 @@ const saveLocationByCoordinate = async (
   }
 };
 
-// GET users/location/:latitude/:longitude
-const getLocationByNaverMapsApi = async (req, res) => {
-  // #swagger.summary = '네이버 Reverse Geocoding으로 현 위치 획득'
-  try {
-    const longitude = req.params.longitude;
-    const latitude = req.params.latitude;
-    const url = `https://naveropenapi.apigw.ntruss.com/map-reversegeocode/v2/gc?request=coordsToaddr&coords=${longitude},${latitude}&sourcecrs=epsg:4326&orders=legalcode&output=json`;
-
-    axios
-      .get(url, {
-        headers: {
-          'X-NCP-APIGW-API-KEY-ID': config.naverClientId!,
-          'X-NCP-APIGW-API-KEY': config.NaverClientSecret!,
-        },
-      })
-      .then(async (Response) => {
-        if (Response.data['status']['code'] === 200) {
-          util.jsonResponse(
-            res,
-            401,
-            'Naver ClientKey, Naver ClientSecretKey가 필요합니다.',
-            false,
-            null,
-          );
-        } else if (Response.data['status']['code'] === 100) {
-          util.jsonResponse(
-            res,
-            400,
-            '[getLocationByNaver] 좌표가 유효하지 않습니다. 올바른 좌표를 넣어주세요.',
-            false,
-            null,
-          );
-        } else {
-          const tmpdata = Response.data;
-          const data = tmpdata['results'][0]['region'];
-          util.jsonResponse(
-            res,
-            200,
-            `[getLocationByNaver]현재 위치는 ${data['area1']['name']} ${data['area2']['name']} ${data['area3']['name']}입니다. `,
-            true,
-            {
-              location1: data['area1']['name'],
-              location2: data['area2']['name'],
-              location3: data['area3']['name'],
-            },
-          );
-        }
-      })
-      .catch((err) => {
-        console.log('err : ' + err);
-        logger.error(err);
-        return util.jsonResponse(
-          res,
-          500,
-          '[getLocationByNaver] users/location/:latitude/:longitude 내부 서버 에러',
-          false,
-          err,
-        );
-      });
-    //makeSignature();
-  } catch (error) {
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[getLocationByNaver] users/location/:latitude/:longitude 서버 에러',
-      false,
-      {},
-    );
-  }
-};
-// POST users/location/:userId/:loc1/:loc2/:loc3
-const setLocationByNaverMapsApi = async (req, res) => {
-  // #swagger.summary = '네이버 Reverse Geocoding으로 현 위치 저장'
-  try {
-    const user = await User.findOne({ where: { id: req.params.userId } });
-    if (!user) {
-      return util.jsonResponse(
-        res,
-        404,
-        '[setLocationByNaver] userId에 해당되는 유저가 없습니다.',
-        false,
-        null,
-      );
-    }
-    user.update({
-      curLocation1: req.params.loc1,
-      curLocation2: req.params.loc2,
-      curLocation3: req.params.loc3,
-    });
-    return util.jsonResponse(
-      res,
-      200,
-      `[setLocationByNaver] 유저${user.id}의 위치가 ${req.params.loc1} ${req.params.loc2} ${req.params.loc3}으로 저장되었습니다.`,
-      true,
-      null,
-    );
-  } catch (error) {
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[setLocationByNaver] users/location/:userId/:loc1/:loc2/:loc3 서버 에러',
-      false,
-      {},
-    );
-  }
-};
 // GET users/location
 const getUserLocation = async (
   req: Request,
@@ -337,70 +229,6 @@ const postReportUser = async (
   }
 };
 
-const isSetNickname = async (req, res, next) => {
-  // #swagger.summary = '회원가입 여부 반환'
-  try {
-    const user = await User.findOne({
-      where: { Id: req.params.userId },
-      paranoid: false,
-    });
-    if (!user) {
-      return util.jsonResponse(
-        res,
-        404,
-        'userId에 해당되는 유저가 없습니다.',
-        false,
-        null,
-      ); // #swagger.responses[404]
-    } else if (user.deletedAt != null) {
-      logger.info(
-        `GET users/check/:userId | userId : ${req.params.userId} 는 탈퇴한 회원입니다.`,
-      );
-      return util.jsonResponse(res, 404, '탈퇴한 유저입니다.', false, null); // #swagger.responses[404]
-    } else {
-      const result = {
-        nick: user.nick,
-        provider: user.provider,
-        deletedAt: user.deletedAt,
-        setNickname: false,
-      };
-      if (user.nick != null) {
-        logger.info(
-          `GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료한 회원입니다.`,
-        );
-        result.setNickname = true;
-        return util.jsonResponse(
-          res,
-          200,
-          `[회원가입 완료 여부]${req.params.userId} 는 회원가입을 완료한 회원입니다. 홈 화면으로 리다이렉트합니다.`,
-          true,
-          result,
-        ); // #swagger.responses[200]
-      } else {
-        logger.info(
-          `GET users/check/:userId | userId : ${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다.`,
-        );
-        return util.jsonResponse(
-          res,
-          300,
-          `[회원가입 완료 여부]${req.params.userId} 는 회원가입을 완료하지 않은 회원입니다. 약관동의 화면으로 리다이렉트합니다.`,
-          true,
-          result,
-        ); // #swagger.responses[200]
-      }
-    }
-  } catch (error) {
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[회원가입 완료 여부] GET users/check/:userId 서버 에러',
-      false,
-      null,
-    ); // #swagger.responses[500]
-  }
-};
-
 const deletelocation = async (
   req: Request,
   res: Response,
@@ -496,51 +324,6 @@ const deletelocation = async (
   }
 };
 
-const addLocation = async (req, res, next) => {
-  // #swagger.summary = '동 추가하기'
-  try {
-    const { loc1, loc2, loc3 } = req.body;
-    var token = req.headers.authorization;
-    const user = await User.findOne({ where: { id: req.params.id } });
-    if (!user) {
-      logger.info(
-        `POST users/location | userId : ${req.params.id}는 회원이 아닙니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        '[동 추가 api] userId에 해당되는 유저가 없습니다.',
-        false,
-        null,
-      ); // #swagger.responses[404]
-    }
-    await user.update({
-      curLocationA: loc1,
-      curLocationB: loc2,
-      curLocationC: loc3,
-    });
-    logger.info(
-      `POST users/location | userId : ${req.params.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
-    );
-    return util.jsonResponse(
-      res,
-      200,
-      `[동 추가 api] ${req.params.id}의 동네에 ${loc1} ${loc2} ${loc3}를 추가했습니다.`,
-      true,
-      null,
-    );
-  } catch (error) {
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[동 추가] POST users/location 서버 에러',
-      false,
-      error,
-    ); // #swagger.responses[500]
-  }
-};
-
 export {
   getUser,
   getMypageDeals,
@@ -549,9 +332,5 @@ export {
   changeUserNick,
   checkUserNick,
   postReportUser,
-  isSetNickname,
-  getLocationByNaverMapsApi,
-  setLocationByNaverMapsApi,
   deletelocation,
-  addLocation,
 };
