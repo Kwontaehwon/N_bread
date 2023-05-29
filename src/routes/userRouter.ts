@@ -68,7 +68,4 @@ userRouter.post(
   userService.postReportUser,
 );
 
-/**유저 위치 삭제 DELETE*/
-userRouter.delete('/location/:dong', verifyToken, userService.deletelocation);
-
 export { userRouter };

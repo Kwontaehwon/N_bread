@@ -225,24 +225,6 @@ const postReportUser = async (
   }
 };
 
-const deletelocation = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  // #swagger.summary = '동 삭제하기'
-  try {
-    const { userId } = req.query;
-    const user = await userRepository.findUserById(+userId);
-    const { dong } = req.params;
-    await userRepository.deleteUserLocation(+userId, dong);
-    return success(res, statusCode.OK, responseMessage.SUCCESS);
-  } catch (error) {
-    logger.error(error);
-    next(error);
-  }
-};
-
 export {
   getUser,
   getMypageDeals,
@@ -251,5 +233,4 @@ export {
   changeUserNick,
   checkUserNick,
   postReportUser,
-  deletelocation,
 };
