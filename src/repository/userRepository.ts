@@ -171,6 +171,21 @@ const saveReportInfo = async (reportInfo: reportInfoDto) => {
     });
   }
 };
+
+const deleteUserLocation = async (userId: number, dong: string) => {
+  try {
+    const data = await prisma.users.update({
+      where: { id: userId },
+      data: { curLocation1: null, curLocation2: null, curLocation3: null },
+    });
+    return data;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.INVALID_USER_LOCATION,
+    });
+  }
+};
 export {
   findUserById,
   isNicknameExist,
@@ -184,4 +199,5 @@ export {
   findDealsByUserId,
   saveUserLocation,
   saveReportInfo,
+  deleteUserLocation,
 };
