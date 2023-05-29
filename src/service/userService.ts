@@ -1,7 +1,6 @@
 import { User } from '../database/models';
 import axios from 'axios';
 import { logger } from '../config/winston';
-import config from '../config';
 import { util } from '../modules';
 import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
@@ -17,6 +16,7 @@ import {
 } from '../modules/userModule';
 import { findUserById } from '../repository/userRepository';
 import { reportInfoDto } from '../dto/user/reportInfoDto';
+import { userService } from '.';
 // GET users/:userId
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '유저 정보 반환'
@@ -236,91 +236,14 @@ const deletelocation = async (
 ) => {
   // #swagger.summary = '동 삭제하기'
   try {
-    var token = req.headers.authorization;
-    const user = await User.findOne({ where: { id: req.params.id } });
-    if (!user) {
-      logger.info(
-        `DELETE users/location/:dong | userId : ${req.params.id}는 회원이 아닙니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        '[동 삭제 api] userId에 해당되는 유저가 없습니다.',
-        false,
-        null,
-      ); // #swagger.responses[404]
-    }
-    const dong = req.params.dong;
-    if (user.curLocationC === dong) {
-      await user.update({
-        curLocationA: null,
-        curLocationB: null,
-        curLocationC: null,
-      });
-      logger.info(
-        `DELETE users/location/:dong | userId : ${req.params.id}에서 ${dong} 삭제에 성공하였습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        200,
-        '[동 삭제 api] 동네 삭제에 성공하였습니다.',
-        true,
-        null,
-      );
-    } else if (user.curLocation3 === dong) {
-      if (user.curLocationC === null) {
-        logger.info(
-          `DELETE users/location/:dong | userId : ${req.params.id}에서 동네가 하나만 있습니다.`,
-        );
-        return util.jsonResponse(
-          res,
-          405,
-          '[동 삭제 api] 동네가 하나만 있을 경우 지울 수 없습니다.',
-          false,
-          null,
-        ); // #swagger.responses[405]
-      }
-      await user.update({
-        curLocation1: user.curLocationA,
-        curLocation2: user.curLocationB,
-        curLocation3: user.curLocationC,
-      });
-      await user.update({
-        curLocationA: null,
-        curLocationB: null,
-        curLocationC: null,
-      });
-      logger.info(
-        `DELETE users/location/:dong | userId : ${req.params.id}에서 ${dong} 삭제에 성공하였습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        200,
-        '[동 삭제 api] 동네 삭제에 성공하였습니다.',
-        true,
-        null,
-      );
-    } else {
-      logger.info(
-        `DELETE users/location/:dong | userId : ${req.params.id}에서 일치하는 동네가 없습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        '[동 삭제 api] 일치하는 동네가 없습니다.',
-        false,
-        null,
-      ); // #swagger.responses[404]
-    }
+    const { userId } = req.query;
+    const user = await userRepository.findUserById(+userId);
+    const { dong } = req.params;
+    await userRepository.deleteUserLocation(+userId, dong);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
     logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[동 삭제] DELETE users/location/:dong 서버 에러',
-      false,
-      error,
-    ); // #swagger.responses[500]
+    next(error);
   }
 };
 
