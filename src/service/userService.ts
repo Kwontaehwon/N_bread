@@ -1,11 +1,8 @@
-import { User } from '../database/models';
-import axios from 'axios';
 import { logger } from '../config/winston';
-import { util } from '../modules';
 import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 import { userRepository } from '../repository';
-import { NextFunction, Request, Response, response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { UserDto } from '../dto/user/userDto';
 import { mypageDto } from '../dto/deal/mypageDto';
 import { objectListToValueList } from '../modules/lib';
@@ -16,7 +13,6 @@ import {
 } from '../modules/userModule';
 import { findUserById } from '../repository/userRepository';
 import { reportInfoDto } from '../dto/user/reportInfoDto';
-import { userService } from '.';
 // GET users/:userId
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '유저 정보 반환'
