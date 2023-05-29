@@ -68,7 +68,4 @@ userRouter.post(
   userService.postReportUser,
 );
 
-//위치를 인자로 받아 동을 지워주는 api
-userRouter.delete('/location/:dong', verifyToken, userService.deletelocation);
-
 export { userRouter };
