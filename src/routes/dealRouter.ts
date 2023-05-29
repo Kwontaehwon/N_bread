@@ -1,7 +1,6 @@
 import { dealImageUpload } from '../middlewares/upload';
 
 const express = require('express');
-import admin from 'firebase-admin';
 import { dealService } from '../service';
 import { body, param } from 'express-validator';
 import { User, Group, Deal, DealImage, DealReport } from '../database/models';
@@ -10,9 +9,6 @@ import { Op, Sequelize } from 'sequelize';
 import { logger } from '../config/winston';
 import { util } from '../modules';
 import { errorValidator } from '../modules/error/errorValidator';
-import { dealImageRepository, dealRepository } from '../repository';
-import { success } from '../modules/util';
-import { responseMessage, statusCode } from '../modules/constants';
 const dealRouter = express.Router();
 
 dealRouter.post(
@@ -672,46 +668,6 @@ dealRouter.post('/admin/fillLocation', async (req, res, next) => {
       false,
       null,
     );
-  }
-});
-
-// router.post('/:dealId/endDeal', isLoggedIn, async(req, res, next) => {
-//   try{
-//     const deal = await Deal.findOne({ where : {id : req.params.dealId}});
-//     if(!deal){
-//       return util.jsonResponse(res, 404, "dealId에 매칭되는 거래를 찾을 수 없습니다.", false, null)
-//     }
-//     if(deal.userId != req.user.id){
-//       return util.jsonResponse(res, 403, '글의 작성자만 거래를 마감할 수 있습니다.', false, null)
-//     }
-//     // 거래 시간이 지난 후에만 거래를 마감 할 수 있게?
-//     deal.update({isDealDone : true, isRecruitDone : true}); // 일단 recruitDone 확인하지 않고 둘다 true로 만들어줌.
-//     const groups = await Group.findAll({where : {dealId : deal.id}});
-//     const result = {deal : deal, groups : groups};
-//     return util.jsonResponse(res, 200, "거래가 정상적으로 마감되었습니다.", true, result);
-//   }
-//   catch (error){
-//     logger.error(error);
-//     return util.jsonResponse(res, 500, "서버 에러", false, null)
-//   }
-// })
-
-dealRouter.post('/fcmPush/:fcmToken', async (req, res, next) => {
-  try {
-    await admin.messaging().sendMulticast({
-      tokens: [req.params.fcmToken],
-      notification: {
-        title: '딱 맞는 상품이 N빵에 올라왔어요!',
-        body: '젤라 인텐션 레깅스 1+1 같이사요! / 11/18(금) 오후 9시 서울대입구역',
-      },
-      data: {
-        type: 'deal',
-        dealId: '347',
-      },
-    });
-    return res.status(200).send();
-  } catch (error) {
-    console.log(error);
   }
 });
 
