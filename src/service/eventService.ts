@@ -18,4 +18,25 @@ const getEvent = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { getEvent };
+const getPopup = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { recentId } = req.params;
+    const event = await eventRepository.getInProgressEvent();
+    if (!event) {
+      logger.info(`Events를 찾을 수 없습니다.`);
+      return fail(res, statusCode.NOT_FOUND, responseMessage.NOT_FOUND);
+    }
+    if (+recentId == event.id) {
+      return success(
+        res,
+        statusCode.FORBIDDEN,
+        responseMessage.DONT_SHOW_POPUP,
+      );
+    }
+    return success(res, statusCode.OK, responseMessage.SUCCESS, event);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getEvent, getPopup };
