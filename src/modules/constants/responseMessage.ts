@@ -20,6 +20,7 @@ export default {
   CANNOT_REPORT_MYSELF: '자기 자신을 신고할 수 없습니다.',
   SAVE_USER_REPORT_INFO_FAILED: '유저 신고 정보 저장에 실패하였습니다.',
   DONT_SHOW_POPUP: 'PopUp 다시보지 않기를 선택한 회원입니다.',
+  IMAGE_NOT_EXIST: '이미지가 존재하지 않습니다.',
 
   // deal
   DEAL_NOT_FOUND: '해당되는 거래가 없습니다.',
