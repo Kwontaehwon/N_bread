@@ -1,35 +1,13 @@
 const express = require('express');
 import { logger } from '../config/winston';
 import { Event } from '../database/models/event';
-import { Op } from 'sequelize';
 import { util } from '../modules/';
 import { eventImageUpload } from '../middlewares/upload';
+import { eventService } from '../service';
 
 const eventRouter = express.Router();
-eventRouter.get('/', async (req, res, next) => {
-  try {
-    const events = await Event.findAll({
-      where: {
-        eventStatus: { [Op.gt]: 0 },
-      },
-      order: [['eventStatus', 'ASC']],
-    });
-    if (events == null) {
-      logger.info(`Events를 찾을 수 없습니다.`);
-      return util.jsonResponse(
-        res,
-        404,
-        `Events를 찾을 수 없습니다.`,
-        true,
-        events,
-      );
-    }
-    return util.jsonResponse(res, 200, 'Event를 반환합니다.', true, events);
-  } catch (error) {
-    logger.error(`${error}  [전체 Event] GET /events`);
-    util.jsonResponse(res, 500, '[전체 Event] GET /events', false, {});
-  }
-});
+/**모든 이벤트 GET */
+eventRouter.get('/', eventService.getEvent);
 
 eventRouter.get('/popup/:recentId', async (req, res, next) => {
   try {
