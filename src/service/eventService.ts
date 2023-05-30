@@ -15,6 +15,7 @@ const getEvent = async (req: Request, res: Response, next: NextFunction) => {
     }
     return success(res, statusCode.OK, responseMessage.SUCCESS, events);
   } catch (error) {
+    logger.error(`${error}  [GET EVENTS] GET /events/`);
     next(error);
   }
 };
@@ -36,6 +37,7 @@ const getPopup = async (req: Request, res: Response, next: NextFunction) => {
     }
     return success(res, statusCode.OK, responseMessage.SUCCESS, event);
   } catch (error) {
+    logger.error(`${error}  [GET POPUP] GET /events/popup/:recentId`);
     next(error);
   }
 };
