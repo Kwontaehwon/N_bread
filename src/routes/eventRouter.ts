@@ -19,34 +19,8 @@ eventRouter.get(
   eventService.getPopup,
 );
 
-eventRouter.post('/create', async (req, res, next) => {
-  try {
-    const { title, type, target, eventStatus } = req.body;
-    const event = await Event.create({
-      title: title,
-      type: type,
-      target: target,
-      eventStatus: eventStatus,
-    });
-    // const url = 'https://www.chocobread.shop/events/img/' + event.id;
-    return util.jsonResponse(
-      res,
-      200,
-      `Event id : ${event.id} 가 생성되었습니다.`,
-      true,
-      {},
-    );
-  } catch (error) {
-    logger.error(`${error}  [Event Create] POST /events/create`);
-    util.jsonResponse(
-      res,
-      500,
-      '[Event Create] POST /events/create',
-      false,
-      {},
-    );
-  }
-});
+/**이벤트 생성 POST */
+eventRouter.post('/create', eventService.makeEvent);
 
 eventRouter.post(
   '/img/:eventId',
