@@ -4,49 +4,20 @@ import { Event } from '../database/models/event';
 import { util } from '../modules/';
 import { eventImageUpload } from '../middlewares/upload';
 import { eventService } from '../service';
+import { param } from 'express-validator';
+import { errorValidator } from '../modules/error/errorValidator';
 
 const eventRouter = express.Router();
 /**모든 이벤트 GET */
 eventRouter.get('/', eventService.getEvent);
 
-eventRouter.get('/popup/:recentId', async (req, res, next) => {
-  try {
-    const event = await Event.findOne({
-      where: {
-        eventStatus: 0,
-      },
-    });
-    if (event == null) {
-      logger.info(`PopUp Event를 찾을 수 없습니다.`);
-      return util.jsonResponse(
-        res,
-        404,
-        `PopUp Event를 찾을 수 없습니다.`,
-        true,
-        event,
-      );
-    }
-    if (req.params.recentId == event.id) {
-      return util.jsonResponse(
-        res,
-        300,
-        `PopUp 다시보지 않기를 선택한 회원입니다.`,
-        true,
-        null,
-      );
-    }
-    return util.jsonResponse(
-      res,
-      200,
-      'PopUp Event를 반환합니다.',
-      true,
-      event,
-    );
-  } catch (error) {
-    logger.error(`${error}  [Event Popup] GET /events/popup`);
-    util.jsonResponse(res, 500, '[Event Popup] GET /events/popup', false, {});
-  }
-});
+/**진행중인 이벤트 GET */
+eventRouter.get(
+  '/popup/:recentId',
+  [param('recentId').isNumeric(), param('recentId').notEmpty()],
+  errorValidator,
+  eventService.getPopup,
+);
 
 eventRouter.post('/create', async (req, res, next) => {
   try {
