@@ -42,13 +42,7 @@ const getPopup = async (req: Request, res: Response, next: NextFunction) => {
 
 const makeEvent = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { title, type, target, eventStatus } = req.body;
-    const eventDto: EventDto = {
-      title,
-      type,
-      target,
-      eventStatus,
-    };
+    const eventDto: EventDto = req.body;
     await eventRepository.createEvent(eventDto);
     return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
