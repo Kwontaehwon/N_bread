@@ -45,4 +45,36 @@ const createEvent = async (eventDto: EventDto) => {
   }
 };
 
-export { getAllEvents, getInProgressEvent, createEvent };
+const findEventById = async (eventId: number) => {
+  try {
+    const data = await prisma.events.findFirst({ where: { id: eventId } });
+    return data;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+const updateEventImage = async (eventId: number, eventImage: string) => {
+  try {
+    await prisma.events.update({
+      where: { id: eventId },
+      data: { eventImage },
+    });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
+
+export {
+  getAllEvents,
+  getInProgressEvent,
+  createEvent,
+  findEventById,
+  updateEventImage,
+};
