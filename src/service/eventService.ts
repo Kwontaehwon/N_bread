@@ -57,4 +57,41 @@ const makeEvent = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { getEvent, getPopup, makeEvent };
+const uploadEventImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const file = req.file as Express.MulterS3.File;
+    const { location } = file;
+    const { eventId } = req.params;
+
+    /**이미지 존재여부 검증 */
+    if (file === null)
+      return fail(res, statusCode.BAD_REQUEST, responseMessage.IMAGE_NOT_EXIST);
+
+    /**이벤트 존재여부 검증 */
+    const event = await eventRepository.findEventById(+eventId);
+    if (!event) {
+      logger.info(
+        `POST events/img/:eventId 의 eventId : ${eventId} 에 해당하는 event를 찾을 수 없습니다.`,
+      );
+      return fail(res, statusCode.NOT_FOUND, responseMessage.NOT_FOUND);
+    }
+
+    /**이미지 업로드 */
+    const updatedEvent = await eventRepository.updateEventImage(
+      +eventId,
+      location,
+    );
+    logger.info(`Event id : ${eventId} 에 이미지가 Update 되었습니다.`);
+
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    logger.error(`${error}  [Event Img Create] POST /events/img/:eventId`);
+    next(error);
+  }
+};
+
+export { getEvent, getPopup, makeEvent, uploadEventImage };
