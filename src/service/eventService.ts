@@ -57,13 +57,9 @@ const makeEvent = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const uploadEventImage = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+const uploadEventImage = async (req, res: Response, next: NextFunction) => {
   try {
-    const file = req.file as Express.MulterS3.File;
+    const file = req.file;
     const { location } = file;
     const { eventId } = req.params;
 
