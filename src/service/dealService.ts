@@ -282,7 +282,7 @@ const createCoupangImage = async (req, res, next) => {
   }
 };
 
-const readDealDetail = async (req, res, next) => {
+const readDealDetail = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const dealId: number = +req.params.dealId;
     const userId: number = +req.query.userId;
