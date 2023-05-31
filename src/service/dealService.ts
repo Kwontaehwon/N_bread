@@ -19,6 +19,7 @@ import { dealImageModule, dealModule, fcmHandler } from '../modules';
 import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
 import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
+import { deals } from '@prisma/client';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
@@ -308,6 +309,44 @@ const readDealDetail = async (req, res, next) => {
   }
 };
 
+const homeAllDeal = async (req, res, next) => {
+  try {
+    const range: string = req.params.range;
+    const region: string = req.params.region;
+    const userId: number = +req.query.userId;
+    const allDealList: deals[] = await dealRepository.readHomeAllDeal(
+      range,
+      region,
+    );
+    let dealWithStatusDtoList: DealWithStatusDto[] = [];
+
+    for (const deal of allDealList) {
+      const dealWithStatusDto: DealWithStatusDto = new DealWithStatusDto(deal);
+      const inGroup = await groupRepository.findGroupByUserIdAndDealId(
+        userId,
+        deal.id,
+      );
+      const userStatus = await dealModule._checkUserStatusInDeal(
+        inGroup,
+        userId,
+        deal.id,
+      );
+      dealWithStatusDto['mystatus'] = userStatus.description;
+      dealModule._setDealStatus(dealWithStatusDto);
+      dealWithStatusDtoList.push(dealWithStatusDto as DealWithStatusDto);
+    }
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      dealWithStatusDtoList,
+    );
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
 export {
   createDeal,
   deleteDeal,
@@ -318,4 +357,5 @@ export {
   createDealImage,
   createCoupangImage,
   readDealDetail,
+  homeAllDeal,
 };
