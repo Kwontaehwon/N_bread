@@ -77,4 +77,22 @@ const updateDeal = async (dealId: number, param: DealUpdateParam) => {
   });
 };
 
-export { findDealById, createDealInTransaction, dealTransction, updateDeal };
+const getDealDetail = async (dealId: number) => {
+  const deal = await prisma.deals.findFirstOrThrow({
+    where: { id: dealId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      dealImages: true,
+      dealReports: true,
+    },
+  });
+  return deal;
+};
+
+export {
+  findDealById,
+  createDealInTransaction,
+  dealTransction,
+  updateDeal,
+  getDealDetail,
+};
