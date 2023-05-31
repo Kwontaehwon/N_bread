@@ -309,7 +309,7 @@ const readDealDetail = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-const homeAllDeal = async (req, res, next) => {
+const homeAllDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { range, region } = req.params
     const userId: number = +req.query.userId;
