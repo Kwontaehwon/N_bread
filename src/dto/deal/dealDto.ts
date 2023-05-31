@@ -13,6 +13,7 @@ class DealDto {
   loc1: String;
   loc2: String;
   loc3: String;
+  isCertificated: boolean;
 
   constructor(deal: deals) {
     this.id = deal.id;
@@ -27,6 +28,7 @@ class DealDto {
     this.loc1 = deal.loc1;
     this.loc2 = deal.loc2;
     this.loc3 = deal.loc3;
+    this.isCertificated = deal.isCertificated;
   }
 }
 
