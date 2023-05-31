@@ -18,6 +18,7 @@ import fcmMessage from '../modules/constants/fcmMessage';
 import { dealImageModule, dealModule, fcmHandler } from '../modules';
 import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
+import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
@@ -280,6 +281,33 @@ const createCoupangImage = async (req, res, next) => {
   }
 };
 
+const readDealDetail = async (req, res, next) => {
+  try {
+    const dealId: number = +req.params.dealId;
+    const userId: number = +req.query.userId;
+    const deal = await dealRepository.getDealDetail(dealId);
+    const group = await groupRepository.findGroupByUserIdAndDealId(
+      userId,
+      dealId,
+    );
+
+    const userStatus = await dealModule._checkUserStatusInDeal(
+      group,
+      userId,
+      dealId,
+    );
+
+    const dealWithStatusDto: DealWithStatusDto = new DealWithStatusDto(deal);
+    dealWithStatusDto['mystatus'] = userStatus.description;
+    dealModule._setDealStatus(dealWithStatusDto);
+
+    success(res, statusCode.OK, responseMessage.SUCCESS, dealWithStatusDto);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
 export {
   createDeal,
   deleteDeal,
@@ -289,4 +317,5 @@ export {
   userStatusInDeal,
   createDealImage,
   createCoupangImage,
+  readDealDetail,
 };

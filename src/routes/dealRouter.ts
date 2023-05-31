@@ -460,93 +460,16 @@ dealRouter.get('/all/:region', verifyToken, async (req, res, next) => {
 dealRouter.post('/create', verifyToken, dealService.createDeal);
 
 // 거래 세부정보
-dealRouter.get('/:dealId', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '거래 세부정보 GET'
-  try {
-    const deal = await Deal.findOne({
-      where: { id: req.params.dealId },
-      order: [['createdAt', 'DESC']],
-      include: [
-        {
-          model: DealImage,
-          attributes: ['dealImage', 'id'],
-        },
-        { model: User, attributes: ['nick', 'curLocation3'], paranoid: false },
-      ],
-    });
-    if (!deal) {
-      logger.info(
-        `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`,
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        `dealId : ${req.params.dealId} 에 매칭되는 거래를 찾을 수 없습니다.`,
-        false,
-        null,
-      );
-    } else {
-      deal.mystatus = 'user';
-      if (deal.userId === req.decoded.id) {
-        deal.mystatus = '제안자';
-      } else {
-        var groupMember = [];
-        var group = await Group.findAll({ where: { dealId: deal.id } });
-        for (let j = 0; j < group.length; j++) {
-          groupMember.push(group[j]['userId']);
-        }
-        if (groupMember.includes(req.decoded.id)) {
-          deal.mystatus = '참여자';
-        }
-      }
-    }
-    const returnDeal = deal;
-    returnDeal['mystatus'] = 'user';
-    var dDate = new Date(returnDeal['dealDate']);
-    dDate.setHours(dDate.getHours() + 9);
-    returnDeal['dealDate'] = dDate;
-    const nowDate = new Date(Date.now());
-    nowDate.setHours(nowDate.getHours() + 9);
-    if (returnDeal['dealDate'] < nowDate) {
-      if (returnDeal['currentMember'] === returnDeal['totalMember'])
-        returnDeal['status'] = '거래완료';
-      else returnDeal['status'] = '모집실패';
-    } else {
-      if (returnDeal['currentMember'] === returnDeal['totalMember'])
-        returnDeal['status'] = '모집완료';
-      else returnDeal['status'] = '모집중';
-    }
-    if (returnDeal['userId'] === req.decoded.id) {
-      returnDeal['mystatus'] = '제안자';
-    } else {
-      var groupMember = [];
-      var group = await Group.findAll({ where: { dealId: returnDeal['id'] } });
-      for (let j = 0; j < group.length; j++) {
-        groupMember.push(group[j]['userId']);
-      }
-      if (groupMember.includes(req.decoded.id)) {
-        returnDeal['mystatus'] = '참여자';
-      }
-    }
-    logger.info(`dealId : ${req.params.dealId} 에 대한 거래정보를 반환합니다.`);
-    return util.jsonResponse(
-      res,
-      200,
-      `dealId ${deal.id} 의 거래 정보`,
-      true,
-      returnDeal,
-    );
-  } catch (error) {
-    logger.error(error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[거래 세부정보] GET /deals/:dealId 서버 에러',
-      false,
-      null,
-    );
-  }
-});
+dealRouter.get(
+  '/:dealId',
+  [param('dealId').isNumeric()],
+  errorValidator,
+  verifyToken,
+  dealService.readDealDetail,
+  async (req, res, next) => {
+    // #swagger.summary = '거래 세부정보 GET'
+  },
+);
 
 // 거래 수정하기
 dealRouter.put(
