@@ -311,8 +311,7 @@ const readDealDetail = async (req, res, next) => {
 
 const homeAllDeal = async (req, res, next) => {
   try {
-    const range: string = req.params.range;
-    const region: string = req.params.region;
+    const { range, region } = req.params
     const userId: number = +req.query.userId;
     const allDealList: deals[] = await dealRepository.readHomeAllDeal(
       range,
