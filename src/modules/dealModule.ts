@@ -4,6 +4,8 @@ import { fail } from '../modules/util';
 import { errorGenerator } from './error/errorGenerator';
 import { groups } from '@prisma/client';
 import { dealRepository } from '../repository';
+import { DealDto } from '../dto/deal/dealDto';
+import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 
 const _verifyDealDate = async (res, param: dealParam) => {
   const dealDate = new Date(param.dealDate);
@@ -14,6 +16,22 @@ const _verifyDealDate = async (res, param: dealParam) => {
       message: responseMessage.DEAL_DATE_VALIDATION_ERROR,
       code: statusCode.BAD_REQUEST,
     });
+  }
+};
+
+const _setDealStatus = (dataObject: DealWithStatusDto) => {
+  let dDate = new Date(dataObject['dealDate']);
+  dDate.setHours(dDate.getHours() + 9);
+  dataObject['dealDate'] = dDate;
+
+  if (dataObject['dealDate'] < new Date(Date.now())) {
+    if (dataObject['currentMember'] === dataObject['totalMember'])
+      dataObject['status'] = '거래완료';
+    else dataObject['status'] = '모집실패';
+  } else {
+    if (dataObject['currentMember'] === dataObject['totalMember'])
+      dataObject['status'] = '모집완료';
+    else dataObject['status'] = '모집중';
   }
 };
 
@@ -40,4 +58,4 @@ const _checkUserStatusInDeal = async (
   return { status: status, description: description };
 };
 
-export { _verifyDealDate, _checkUserStatusInDeal };
+export { _verifyDealDate, _checkUserStatusInDeal, _setDealStatus };

@@ -1,7 +1,7 @@
 import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
 import { dealParam } from '../dto/deal/dealParam';
-import { PrismaClient, users } from '@prisma/client';
+import { Prisma, PrismaClient, users } from '@prisma/client';
 import prisma from '../prisma';
 import { userRepository, groupRepository, dealRepository } from '../repository';
 import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
@@ -77,4 +77,52 @@ const updateDeal = async (dealId: number, param: DealUpdateParam) => {
   });
 };
 
-export { findDealById, createDealInTransaction, dealTransction, updateDeal };
+const getDealDetail = async (dealId: number) => {
+  const deal = await prisma.deals.findFirstOrThrow({
+    where: { id: dealId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      dealImages: true,
+      dealReports: true,
+    },
+  });
+  return deal;
+};
+
+const readHomeAllDeal = async (range: string, region: string) => {
+  let whereCondtion: Prisma.dealsWhereInput;
+  if (range == 'loc1') {
+    whereCondtion = {
+      OR: [{ loc1: region }, { loc1: 'global' }],
+    };
+  }
+  if (range == 'loc2') {
+    whereCondtion = {
+      OR: [{ loc2: region }, { loc2: 'global' }],
+    };
+  }
+  if (range == 'loc3') {
+    whereCondtion = {
+      OR: [{ loc3: region }, { loc3: 'global' }],
+    };
+  }
+
+  const allDeal = await prisma.deals.findMany({
+    where: whereCondtion,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      dealImages: true,
+      users: true,
+    },
+  });
+  return allDeal;
+};
+
+export {
+  findDealById,
+  createDealInTransaction,
+  dealTransction,
+  updateDeal,
+  getDealDetail,
+  readHomeAllDeal,
+};

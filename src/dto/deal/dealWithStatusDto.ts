@@ -1,21 +1,11 @@
 import { deals } from '@prisma/client';
+import { DealDto } from './dealDto';
 
-class DealDto {
-  id: Number;
-  link: String;
-  title: String;
-  content: String;
-  totalPrice: Number;
-  personalPrice: Number;
-  totalMember: Number;
-  dealDate: Date;
-  dealPlace: String;
-  loc1: String;
-  loc2: String;
-  loc3: String;
-  isCertificated: boolean;
+class DealWithStatusDto extends DealDto {
+  status: String;
+  myStatus: String;
 
-  constructor(deal: deals) {
+  super(deal: deals) {
     this.id = deal.id;
     this.link = deal.link;
     this.title = deal.title;
@@ -29,7 +19,9 @@ class DealDto {
     this.loc2 = deal.loc2;
     this.loc3 = deal.loc3;
     this.isCertificated = deal.isCertificated;
+    this.status = deal.status;
+    this.myStatus = deal.mystatus;
   }
 }
 
-export { DealDto };
+export { DealWithStatusDto };
