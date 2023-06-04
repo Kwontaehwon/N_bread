@@ -1,16 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../config/winston';
-import { Price } from '../database/models';
 import { priceModule, productModule, util } from '../modules';
 import config from '../config';
-
 import {
   dealImageRepository,
   dealRepository,
   priceRepository,
 } from '../repository';
 import { _getUnitPriceOrGram } from '../modules/priceModules/priceModule';
-import { priceDto } from '../dto/price/priceDto';
+import { priceDetailDto, priceDto } from '../dto/price/priceDto';
 import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 
@@ -64,8 +62,8 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
         .toString()
         .replaceAll('<b>', '')
         .replaceAll('</b>', '');
-      await Price.create({
-        dealId: dealId,
+      const priceDetailDto: priceDetailDto = {
+        dealId: +dealId,
         title: processedTitle,
         link:
           'https://msearch.shopping.naver.com/product/' +
@@ -82,7 +80,8 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
         category2: item[i]['category2'],
         category3: item[i]['category3'],
         category4: item[i]['category4'],
-      });
+      };
+      await priceRepository.saveDetailPriceInfo(priceDetailDto);
     }
 
     for (let i = 0; i < item.length; i++) {
