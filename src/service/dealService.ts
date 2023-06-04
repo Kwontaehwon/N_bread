@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { Request, Response, NextFunction } from 'express';
 import { success, fail } from '../modules/util';
 import {
@@ -10,7 +9,6 @@ import {
 } from '../repository';
 import { dealParam } from '../dto/deal/dealParam';
 import { logger } from '../config/winston';
-import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
 import { DealDto } from '../dto/deal/dealDto';
 import prisma from '../prisma';
@@ -21,7 +19,6 @@ import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
 import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 import { deals } from '@prisma/client';
-const admin = require('firebase-admin');
 
 const createDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
