@@ -17,11 +17,13 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     const { dealId } = req.params;
     const deal = await dealRepository.findDealById(+dealId);
     const dealImage = await dealImageRepository.findDealImageById(+dealId);
-    var imageLink = !dealImage ? config.defaultDealImage : dealImage.dealImage;
+    const imageLink = !dealImage
+      ? config.defaultDealImage
+      : dealImage.dealImage;
 
     const totalPrice = deal.totalPrice;
     const particlePrice = deal.personalPrice;
-    var title = deal.title;
+    const title = deal.title;
 
     /**단위 가격 추출 */
     const extractedPrice = priceModule._getUnitPriceOrGram(
@@ -49,7 +51,7 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
 
     /** 상품명 추출 */
-    var jsonArray = new Array();
+    let jsonArray = new Array();
     logger.info(`[가격비교 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
     const productName = await productModule._getProductName(title, gramToAdd);
 
