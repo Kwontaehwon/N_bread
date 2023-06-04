@@ -5,6 +5,7 @@ import * as fcmHandler from './fcmHandler';
 import * as dealModule from './dealModule';
 import * as dealImageModule from './dealImageModule';
 import * as priceModule from './priceModules/priceModule';
+import * as productNameModule from './priceModules/productModule';
 export {
   util,
   jwtHandler,
@@ -13,4 +14,5 @@ export {
   dealModule,
   dealImageModule,
   priceModule,
+  productNameModule,
 };
