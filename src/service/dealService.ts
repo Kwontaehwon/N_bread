@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { success, fail } from '../modules/util';
 import {
   userRepository,
@@ -20,6 +19,7 @@ import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
 import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 import { deals } from '@prisma/client';
+import { NextFunction, Request, Response } from 'express';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
@@ -282,7 +282,11 @@ const createCoupangImage = async (req, res, next) => {
   }
 };
 
-const readDealDetail = async (req: Request, res: Response, next: NextFunction) => {
+const readDealDetail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const dealId: number = +req.params.dealId;
     const userId: number = +req.query.userId;
@@ -311,7 +315,7 @@ const readDealDetail = async (req: Request, res: Response, next: NextFunction) =
 
 const homeAllDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { range, region } = req.params
+    const { range, region } = req.params;
     const userId: number = +req.query.userId;
     const allDealList: deals[] = await dealRepository.readHomeAllDeal(
       range,
