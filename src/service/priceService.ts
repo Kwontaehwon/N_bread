@@ -7,8 +7,13 @@ import config from '../config';
 import request from 'typescript-require';
 import { Slack2 } from '../class/slack2';
 import { Op } from 'sequelize';
-import { dealImageRepository, dealRepository } from '../repository';
+import {
+  dealImageRepository,
+  dealRepository,
+  priceRepository,
+} from '../repository';
 import { _getUnitPriceOrGram } from '../modules/priceModule';
+import { priceDto } from '../dto/price/priceDto';
 
 const getPrice = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -31,24 +36,23 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     const gramToAdd = extractedPrice.gramToAdd;
 
     /**추출한 단위 가격 저장 */
-    const isDealExist = await Price.findOne({
-      where: { dealId: req.params.dealId },
-    });
+    const isDealExist = await priceRepository.isPriceExist(+dealId);
+
     if (!isDealExist) {
-      await Price.create({
-        dealId: req.params.dealId,
+      const priceDto: priceDto = {
+        dealId: +dealId,
         title: deal.title,
         image: imageLink,
         lPrice: priceToSave,
         mallName: 'N빵',
-      });
+      };
+      await priceRepository.savePriceInfo(priceDto);
     }
 
     logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
 
+    /** 상품명 추출 */
     var jsonArray = new Array();
-    //상품명 추출
-    //const text = deal.title;
     logger.info(`[가격비교 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
 
     var answer = '';
@@ -56,13 +60,9 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     const result_01 = await spawn('python3', ['../modules/getTopic.py', title]);
 
     await result_01.stdout.on('data', async (result) => {
-      console.log('spawn in');
-      console.log(result);
-      console.log(result.toString());
       answer = result.toString();
       if (answer === '오류발생') {
         logger.info(`Mecab에러 발생`);
-        answer = '';
       }
       logger.info(`추출된 상품명은 ${answer}입니다.`);
       const productName = answer + gramToAdd;
