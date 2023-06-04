@@ -8,7 +8,7 @@ import request from 'typescript-require';
 import { Slack2 } from '../class/slack2';
 import { Op } from 'sequelize';
 import { dealImageRepository, dealRepository } from '../repository';
-import { _getGramPrice } from '../modules/priceModule';
+import { _getUnitPriceOrGram } from '../modules/priceModule';
 
 const getPrice = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -21,20 +21,14 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     const particlePrice = deal.personalPrice;
     var title = deal.title;
 
-    let priceToSave;
-    let gramToAdd;
     /**단위 가격 추출 */
-    const unitPrice = priceModule._getUnitPrice(
+    const extractedPrice = priceModule._getUnitPriceOrGram(
       totalPrice,
       particlePrice,
       title,
     );
-
-    priceToSave = unitPrice;
-    /**단위 가격을 추출하지 못했을 경우 g 추출*/
-    if (unitPrice === particlePrice) {
-      gramToAdd = _getGramPrice(title) ?? '1개';
-    }
+    const priceToSave = extractedPrice.unitPrice;
+    const gramToAdd = extractedPrice.gramToAdd;
 
     /**추출한 단위 가격 저장 */
     const isDealExist = await Price.findOne({
@@ -50,7 +44,7 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
-    logger.info(`추출된 단위 가격은 ${unitPrice}원입니다.`);
+    logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
 
     var jsonArray = new Array();
     //상품명 추출
