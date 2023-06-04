@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Request, Response, NextFunction } from 'express';
 import { success, fail } from '../modules/util';
 import {
   userRepository,
@@ -282,7 +283,11 @@ const createCoupangImage = async (req, res, next) => {
   }
 };
 
-const readDealDetail = async (req: Request, res: Response, next: NextFunction) => {
+const readDealDetail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const dealId: number = +req.params.dealId;
     const userId: number = +req.query.userId;
@@ -311,7 +316,7 @@ const readDealDetail = async (req: Request, res: Response, next: NextFunction) =
 
 const homeAllDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { range, region } = req.params
+    const { range, region } = req.params;
     const userId: number = +req.query.userId;
     const allDealList: deals[] = await dealRepository.readHomeAllDeal(
       range,
