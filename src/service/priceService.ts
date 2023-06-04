@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../config/winston';
 import { Price } from '../database/models';
-import { priceModule, util } from '../modules';
-import { spawn } from 'child_process';
+import { priceModule, productModule, util } from '../modules';
 import config from '../config';
 import request from 'typescript-require';
 import { Slack2 } from '../class/slack2';
@@ -55,18 +54,11 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     var jsonArray = new Array();
     logger.info(`[가격비교 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
 
-    var answer = '';
+    const productName = await productModule._getProductName(
+      title,
+      gramToAdd,
+    );
 
-    const result_01 = await spawn('python3', ['../modules/getTopic.py', title]);
-    let productName = '';
-    await result_01.stdout.on('data', async (result) => {
-      answer = result.toString();
-      if (answer === '오류발생') {
-        logger.info(`Mecab에러 발생`);
-      }
-      logger.info(`추출된 상품명은 ${answer}입니다.`);
-      productName = answer + gramToAdd;
-    });
     logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
     var url =
       'https://openapi.naver.com/v1/search/shop.json?query=' +
