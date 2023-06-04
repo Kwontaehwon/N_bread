@@ -21,11 +21,11 @@ const _getProductName = async (title: string, gramToAdd: string) => {
 };
 
 const _searchProduct = async (productName: string) => {
-  var url =
+  const url =
     'https://openapi.naver.com/v1/search/shop.json?query=' +
     encodeURI(productName) +
     '&display=4'; // JSON 결과
-  var options = {
+  const options = {
     url: url,
     headers: {
       'X-Naver-Client-Id': config.naverClientId,
