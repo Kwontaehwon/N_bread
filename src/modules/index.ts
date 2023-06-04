@@ -4,7 +4,7 @@ import * as lib from './lib';
 import * as fcmHandler from './fcmHandler';
 import * as dealModule from './dealModule';
 import * as dealImageModule from './dealImageModule';
-import * as priceModule from './priceModule';
+import * as priceModule from './priceModules/priceModule';
 export {
   util,
   jwtHandler,
