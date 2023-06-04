@@ -34,7 +34,7 @@ const _getTwoPlusPrice = (totalPrice: number, title: string) => {
   return null;
 };
 
-const _getGramPrice = (title: string) => {
+const _getGram = (title: string) => {
   var unitG = title.match(/\d?\d?\d?\d\K?\k?\g/);
   if (unitG) {
     return ' ' + unitG[0];
@@ -56,4 +56,19 @@ const _getUnitPrice = (
   );
 };
 
-export { _getUnitPrice, _getGramPrice };
+const _getUnitPriceOrGram = (
+  totalPrice: number,
+  particlePrice: number,
+  title: string,
+) => {
+  let gramToAdd;
+  const unitPrice = _getUnitPrice(totalPrice, particlePrice, title);
+
+  /**단위 가격을 추출하지 못했을 경우 g 추출*/
+  if (unitPrice === particlePrice) {
+    gramToAdd = _getGram(title) ?? '1개';
+  }
+  return { unitPrice, gramToAdd };
+};
+
+export {  _getUnitPriceOrGram };
