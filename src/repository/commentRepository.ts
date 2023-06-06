@@ -48,4 +48,20 @@ const updateComment = async (commentId: number, content: string) => {
   });
 };
 
-export { createComment, findCommentById, deleteComment, updateComment };
+const createReply = async (
+  userId: number,
+  dealId: number,
+  content: string,
+  parentId: number,
+) => {
+  return prisma.replies.create({
+    data: {
+      userId: userId,
+      dealId: dealId,
+      content: content,
+      parentId: parentId,
+    },
+  });
+};
+
+export { createComment, findCommentById, deleteComment, updateComment, createReply };
