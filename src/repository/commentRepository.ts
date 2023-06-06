@@ -64,4 +64,31 @@ const createReply = async (
   });
 };
 
-export { createComment, findCommentById, deleteComment, updateComment, createReply };
+const findReplyById = async (replyId: number) => {
+  const reply = await prisma.replies.findFirst({
+    where: { id: replyId },
+  });
+  if (reply === null) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.REPLY_NOT_FOUND,
+    });
+  }
+  return reply;
+};
+
+const deleteReply = async (replyId: number) => {
+  await prisma.replies.delete({
+    where: { id: replyId },
+  });
+};
+
+export {
+  createComment,
+  findCommentById,
+  deleteComment,
+  updateComment,
+  createReply,
+  findReplyById,
+  deleteReply,
+};
