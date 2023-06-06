@@ -220,6 +220,17 @@ const createAppleUser = async (
     });
   }
 };
+
+const deleteUserById = async (userId: number) => {
+  try {
+    await prisma.users.delete({ where: { id: userId } });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
 export {
   findUserById,
   isNicknameExist,
@@ -236,4 +247,5 @@ export {
   findUserBySnsId,
   updateRefreshToken,
   createAppleUser,
+  deleteUserById,
 };
