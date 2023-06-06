@@ -1,16 +1,10 @@
 import express, { Router } from 'express';
 const passport = require('passport');
-import {
-  verifyToken,
-  isLoggedIn,
-  isNotLoggedIn,
-} from '../middlewares/middleware';
+import { isLoggedIn, isNotLoggedIn } from '../middlewares/middleware';
 import { User } from '../database/models';
 const jwt = require('jsonwebtoken');
-import fs from 'fs';
 import { logger } from '../config/winston';
 import axios from 'axios';
-import qs from 'qs';
 import config from '../config';
 import { Slack } from '../class/slack';
 import { util } from '../modules/';
@@ -22,22 +16,6 @@ authRouter.post('/signup', isNotLoggedIn, authService.localSignUp);
 authRouter.post('/login', isNotLoggedIn, authService.localLogin);
 
 authRouter.get('/logout', isLoggedIn, authService.logout);
-
-authRouter.get(
-  // #swagger.summary = '카카오 웹뷰 로그인'
-  '/kakao',
-  passport.authenticate('kakao', { session: false }),
-);
-
-authRouter.get(
-  '/kakao/callback',
-  passport.authenticate('kakao', {
-    // #swagger.summary = '카카오 웹뷰 로그인 CallBack'
-    failureRedirect: '/auth/error',
-    successRedirect: '/auth/success',
-  }),
-  (req, res) => {},
-);
 
 //카카오 SDK 로그인 api
 //로그인 시 회원번호, email을 받아 db에 저장
@@ -210,30 +188,6 @@ authRouter.post(
   passport.authenticate('apple'),
   authService.appleCallback,
 );
-
-// authRouter.get('/success', isLoggedIn, async (req, res, next) => {
-//   // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
-//   // #swagger.summary = '로그인 성공시 토큰 반환'
-//   console.log(req.exUser);
-//   const user = await User.findOne({ where: { id: req.user.id } });
-//   req.logout();
-//   req.session.destroy();
-//   const payload = {
-//     id: user.id,
-//     nick: user.nick,
-//     provider: user.provider,
-//   };
-//   const accessToken = jwt.sign(payload, config.jwtSecret, {
-//     algorithm: 'HS256',
-//     issuer: 'chocoBread',
-//   });
-//   res.cookie('accessToken', accessToken);
-//   logger.info(
-//     `User Id ${user.id} 님이 ${user.provider} 로그인에 성공하였습니다.`,
-//   );
-//   logger.info(`jwt Token을 발행합니다.`);
-//   return res.status(200).send();
-// });
 
 authRouter.get('/error', (req, res, next) => {
   // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
