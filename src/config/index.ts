@@ -54,4 +54,9 @@ export default {
    * CSRF
    */
   csrfToken: process.env.CSRF_TOKEN,
+
+  /**
+   * DEAL IMAGE
+   */
+  defaultDealImage: process.env.DEFAULT_DEAL_IMAGE,
 };

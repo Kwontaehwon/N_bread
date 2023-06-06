@@ -43,4 +43,8 @@ export default {
 
   TOKEN_EXPIRED: '만료된 토큰입니다.',
   TOKEN_INVALID: '잘못된 토큰입니다.',
+
+  MECAB_ERROR: 'MECAB을 통한 상품명 추출 중 에러가 발생하였습니다.',
+  SHOPPING_API_ERROR: '상품명 검색 중 에러가 발생하였습니다.',
+  SEARCH_RESULT_NOT_FOUND: '상품 검색 결과가 없습니다.',
 };

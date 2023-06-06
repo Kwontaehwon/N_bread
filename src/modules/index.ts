@@ -4,4 +4,15 @@ import * as lib from './lib';
 import * as fcmHandler from './fcmHandler';
 import * as dealModule from './dealModule';
 import * as dealImageModule from './dealImageModule';
-export { util, jwtHandler, lib, fcmHandler, dealModule, dealImageModule };
+import * as priceModule from './priceModules/priceModule';
+import * as productModule from './priceModules/productModule';
+export {
+  util,
+  jwtHandler,
+  lib,
+  fcmHandler,
+  dealModule,
+  dealImageModule,
+  priceModule,
+  productModule,
+};

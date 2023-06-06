@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from 'express';
 import { success, fail } from '../modules/util';
 import {
   userRepository,
@@ -8,7 +9,6 @@ import {
 } from '../repository';
 import { dealParam } from '../dto/deal/dealParam';
 import { logger } from '../config/winston';
-import { errorGenerator } from '../modules/error/errorGenerator';
 import { responseMessage, statusCode } from '../modules/constants';
 import { DealDto } from '../dto/deal/dealDto';
 import prisma from '../prisma';
@@ -19,10 +19,9 @@ import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
 import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 import { deals } from '@prisma/client';
-import { NextFunction, Request, Response } from 'express';
 const admin = require('firebase-admin');
 
-const createDeal = async (req, res, next) => {
+const createDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const dealParam: dealParam = req.body; // currentMember 수정 필요.
     const userId = +req.query.userId;
@@ -39,11 +38,11 @@ const createDeal = async (req, res, next) => {
   }
 };
 
-const deleteDeal = async (req, res, next) => {
+const deleteDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const dealId: number = +req.params.dealId;
     const deal = await dealRepository.findDealById(dealId);
-    if (deal.userId != req.query.userId) {
+    if (deal.userId != +req.query.userId) {
       return fail(
         res,
         statusCode.UNAUTHORIZED,
@@ -74,14 +73,14 @@ const deleteDeal = async (req, res, next) => {
   }
 };
 
-const updateDeal = async (req, res, next) => {
+const updateDeal = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '거래 수정'
   try {
     const dealId: number = +req.params.dealId;
     const dealUpdateParam: DealUpdateParam = req.body;
     const deal = await dealRepository.findDealById(dealId);
 
-    if (deal.userId != req.query.userId) {
+    if (deal.userId != +req.query.userId) {
       logger.info(
         `userId : ${req.query.userId}는 거래를 수정할 권한이 없습니다.`,
       );
@@ -120,7 +119,7 @@ const updateDeal = async (req, res, next) => {
   }
 };
 
-const joinDeal = async (req, res, next) => {
+const joinDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = +req.query.userId;
     const dealId = +req.params.dealId;
@@ -189,7 +188,7 @@ const joinDeal = async (req, res, next) => {
   }
 };
 
-const reportDeal = async (req, res, next) => {
+const reportDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { title, content } = req.body;
     const dealId = +req.params.dealId;
@@ -223,7 +222,11 @@ const reportDeal = async (req, res, next) => {
     next(error);
   }
 };
-const userStatusInDeal = async (req, res, next) => {
+const userStatusInDeal = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const userId = +req.params.userId;
     const dealId = +req.params.dealId;
@@ -251,7 +254,11 @@ const userStatusInDeal = async (req, res, next) => {
   }
 };
 
-const createDealImage = async (req, res, next) => {
+const createDealImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const dealId = +req.params.dealId;
     const targetDeal = await dealRepository.findDealById(dealId);
@@ -266,7 +273,11 @@ const createDealImage = async (req, res, next) => {
   }
 };
 
-const createCoupangImage = async (req, res, next) => {
+const createCoupangImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { url } = req.body;
     const dealId = +req.params.dealId;
