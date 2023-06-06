@@ -19,6 +19,7 @@ import { DealUpdateParam } from '../dto/deal/DealUpdateParam';
 import { DealReportDto } from '../dto/dealReport/dealReportDto';
 import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 import { deals } from '@prisma/client';
+const admin = require('firebase-admin');
 
 const createDeal = async (req: Request, res: Response, next: NextFunction) => {
   try {
