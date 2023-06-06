@@ -1,4 +1,4 @@
-import { replies } from '@prisma/client';
+import { replies, users } from '@prisma/client';
 
 class ReplyDto {
   id: number;
@@ -16,4 +16,21 @@ class ReplyDto {
   }
 }
 
-export { ReplyDto };
+class ReplyWithUserDto extends ReplyDto {
+  deletedAt: Date;
+  users: {
+    nick: string;
+    userStatus: string;
+  };
+
+  constructor(reply: replies, users: users) {
+    super(reply);
+    this.deletedAt = reply.deletedAt;
+    this.users = {
+      nick: users.nick,
+      userStatus: users.userStatus,
+    };
+  }
+}
+
+export { ReplyDto, ReplyWithUserDto };
