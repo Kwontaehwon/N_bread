@@ -173,10 +173,17 @@ const saveReportInfo = async (reportInfo: reportInfoDto) => {
   }
 };
 const findUserBySnsId = async (snsId: string, provider: string) => {
-  const user = await prisma.users.findFirstOrThrow({
-    where: { snsId, provider },
-  });
-  return user;
+  try {
+    const user = await prisma.users.findFirstOrThrow({
+      where: { snsId, provider },
+    });
+    return user;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
 };
 
 const updateRefreshToken = async (refreshToken: string, userId: number) => {
