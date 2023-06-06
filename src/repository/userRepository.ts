@@ -4,6 +4,7 @@ import { responseMessage, statusCode } from '../modules/constants';
 import prisma from '../prisma';
 import { logger } from '../config/winston';
 import { reportInfoDto } from '../dto/user/reportInfoDto';
+import { refreshToken } from 'firebase-admin/app';
 
 const findUserById = async (id: number) => {
   const user = await prisma.users.findFirstOrThrow({ where: { id: id } });
@@ -171,6 +172,70 @@ const saveReportInfo = async (reportInfo: reportInfoDto) => {
     });
   }
 };
+const findUserBySnsId = async (snsId: string, provider: string) => {
+  try {
+    const user = await prisma.users.findFirstOrThrow({
+      where: { snsId, provider },
+    });
+    return user;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.NOT_FOUND,
+    });
+  }
+};
+
+const updateRefreshToken = async (refreshToken: string, userId: number) => {
+  try {
+    await prisma.users.update({
+      where: { id: userId },
+      data: {
+        refreshToken,
+        isNewUser: false,
+      },
+    });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
+
+const createSocialUser = async (
+  email: string,
+  snsId: string,
+  refreshToken: string,
+  provider: string,
+) => {
+  try {
+    const newUser = await prisma.users.create({
+      data: { email, snsId, refreshToken, provider, isNewUser: true },
+    });
+    return newUser;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
+
+const deleteUserById = async (userId: number) => {
+  try {
+    await prisma.users.delete({ where: { id: userId } });
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
+
+const getUserByKakaoNumber = async (snsId: string) => {
+  return await prisma.users.findFirst({ where: { snsId } });
+};
 export {
   findUserById,
   isNicknameExist,
@@ -184,4 +249,9 @@ export {
   findDealsByUserId,
   saveUserLocation,
   saveReportInfo,
+  findUserBySnsId,
+  updateRefreshToken,
+  createSocialUser,
+  deleteUserById,
+  getUserByKakaoNumber,
 };

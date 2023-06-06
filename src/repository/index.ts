@@ -5,6 +5,7 @@ import * as dealReportRepository from './dealReportRepository';
 import * as dealImageRepository from './dealImageRepostiory';
 import * as eventRepository from './eventRepository';
 import * as commentRepository from './commentRepository';
+import * as priceRepository from './priceRepository';
 
 export {
   userRepository,
@@ -14,4 +15,5 @@ export {
   dealImageRepository,
   eventRepository,
   commentRepository,
+  priceRepository,
 };

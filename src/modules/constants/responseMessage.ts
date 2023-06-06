@@ -50,4 +50,12 @@ export default {
 
   REPLY_NOT_FOUND: '해당 reply가 존재하지 않습니다.',
   REPLY_NOT_AUTH: '대댓글의 작성자만 댓글을 수정, 삭제 할 수 있습니다.',
+  MECAB_ERROR: 'MECAB을 통한 상품명 추출 중 에러가 발생하였습니다.',
+  SHOPPING_API_ERROR: '상품명 검색 중 에러가 발생하였습니다.',
+  SEARCH_RESULT_NOT_FOUND: '상품 검색 결과가 없습니다.',
+
+  REDIRECT_TO_TERMS: '약관동의 화면으로 리다이렉트 합니다.',
+  REDIRECT_TO_HOME: '홈 화면으로 리다이렉트 합니다.',
+
+  APPLE_SIGN_OUT_ERROR: '애플 회원 탈퇴 중 에러가 발생하였습니다.',
 };
