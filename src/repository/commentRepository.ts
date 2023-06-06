@@ -83,6 +83,13 @@ const deleteReply = async (replyId: number) => {
   });
 };
 
+const updateReply = async (replyId: number, content: string) => {
+  await prisma.replies.update({
+    where: { id: replyId },
+    data: { content: content },
+  });
+};
+
 export {
   createComment,
   findCommentById,
@@ -91,4 +98,5 @@ export {
   createReply,
   findReplyById,
   deleteReply,
+  updateReply,
 };
