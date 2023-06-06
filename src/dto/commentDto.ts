@@ -15,10 +15,6 @@ class CommentDto {
 }
 
 class CommentWithUserDto extends CommentDto {
-  id: number;
-  userId: number;
-  dealId: number;
-  content: string;
   deletedAt: Date;
   users: {
     nick: string;
