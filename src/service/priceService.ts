@@ -7,7 +7,7 @@ import {
   dealRepository,
   priceRepository,
 } from '../repository';
-import { priceDetailDto, priceDto } from '../dto/price/priceDto';
+import { PriceDetailDto, PriceDto } from '../dto/price/priceDto';
 import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 
@@ -42,7 +42,7 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
 
     logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
     if (!isDealExist) {
-      const priceDto: priceDto = {
+      const priceDto: PriceDto = {
         dealId: +dealId,
         title: deal.title,
         image: imageLink,
@@ -67,7 +67,7 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
         .toString()
         .replaceAll('<b>', '')
         .replaceAll('</b>', '');
-      const priceDetailDto: priceDetailDto = {
+      const priceDetailDto: PriceDetailDto = {
         dealId: +dealId,
         title: processedTitle,
         link:

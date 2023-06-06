@@ -1,4 +1,4 @@
-import { priceDetailDto, priceDto } from '../dto/price/priceDto';
+import { PriceDetailDto, PriceDto } from '../dto/price/priceDto';
 import prisma from '../prisma';
 
 const isPriceExist = async (dealId: number) => {
@@ -8,11 +8,11 @@ const isPriceExist = async (dealId: number) => {
   return !!price;
 };
 
-const savePriceInfo = async (priceDto: priceDto) => {
+const savePriceInfo = async (priceDto: PriceDto) => {
   await prisma.prices.create({ data: priceDto });
 };
 
-const saveDetailPriceInfo = async (priceDetailDto: priceDetailDto) => {
+const saveDetailPriceInfo = async (priceDetailDto: PriceDetailDto) => {
   await prisma.prices.create({ data: priceDetailDto });
 };
 
