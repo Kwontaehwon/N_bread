@@ -203,14 +203,15 @@ const updateRefreshToken = async (refreshToken: string, userId: number) => {
   }
 };
 
-const createAppleUser = async (
+const createSocialUser = async (
   email: string,
   snsId: string,
   refreshToken: string,
+  provider: string,
 ) => {
   try {
     const newUser = await prisma.users.create({
-      data: { email, snsId, refreshToken, provider: 'apple', isNewUser: true },
+      data: { email, snsId, refreshToken, provider, isNewUser: true },
     });
     return newUser;
   } catch (error) {
@@ -231,6 +232,10 @@ const deleteUserById = async (userId: number) => {
     });
   }
 };
+
+const isSnsIdExist = async (snsId: string) => {
+  return !!(await prisma.users.findFirst({ where: { snsId } }));
+};
 export {
   findUserById,
   isNicknameExist,
@@ -246,6 +251,7 @@ export {
   saveReportInfo,
   findUserBySnsId,
   updateRefreshToken,
-  createAppleUser,
+  createSocialUser,
   deleteUserById,
+  isSnsIdExist,
 };
