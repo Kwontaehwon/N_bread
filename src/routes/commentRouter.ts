@@ -64,43 +64,14 @@ commentRouter.delete(
   commentService.deleteReply,
 );
 
-commentRouter.put('/reply/:replyId', verifyToken, async (req, res) => {
-  // #swagger.summary = '대댓글 수정'
-  try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
-    const reply = await Reply.findOne({
-      where: { id: parseInt(req.params.replyId) },
-    });
-    if (reply === null) {
-      util.jsonResponse(res, 404, '답글이 존재하지 않습니다.', false, {});
-      res.end();
-    } else {
-      if (reply.userId === user.id) {
-        await reply.update({
-          content: req.body.content,
-        });
-        util.jsonResponse(res, 200, '답글 수정이 완료되었습니다.', false, {});
-      } else {
-        util.jsonResponse(
-          res,
-          403,
-          '작성자만 답글을 수정할 수 있습니다.',
-          false,
-          {},
-        );
-      }
-    }
-  } catch (error) {
-    logger.error('[대댓글 생성] POST /comments/reply/:dealId 서버 에러');
-    util.jsonResponse(
-      res,
-      500,
-      '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
-      false,
-      {},
-    );
-  }
-});
+commentRouter.put(
+  '/reply/:replyId',
+  param('replyId').isNumeric(),
+  errorValidator,
+  verifyToken,
+  commentService.updateReply,
+);
+
 commentRouter.get('/:dealId', async (req, res) => {
   // #swagger.summary = '거래글 댓글 조회'
   try {

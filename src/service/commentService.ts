@@ -71,11 +71,7 @@ const deleteComment = async (
       commentId,
     );
     if (comment.userId !== user.id) {
-      fail(
-        res,
-        statusCode.UNAUTHORIZED,
-        responseMessage.COMMENT_DELETE_NOT_AUTH,
-      );
+      fail(res, statusCode.UNAUTHORIZED, responseMessage.COMMENT_NOT_AUTH);
     }
     await commentRepository.deleteComment(commentId);
     success(res, statusCode.OK, responseMessage.SUCCESS);
@@ -99,11 +95,7 @@ const updateComment = async (
     const comment = await commentRepository.findCommentById(commentId);
 
     if (comment.userId !== user.id) {
-      fail(
-        res,
-        statusCode.UNAUTHORIZED,
-        responseMessage.COMMENT_DELETE_NOT_AUTH,
-      );
+      fail(res, statusCode.UNAUTHORIZED, responseMessage.COMMENT_NOT_AUTH);
     }
 
     await commentRepository.updateComment(commentId, content);
@@ -180,7 +172,7 @@ const deleteReply = async (req: Request, res: Response, next: NextFunction) => {
     const reply = await commentRepository.findReplyById(replyId);
 
     if (reply.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_DELTE_NOT_AUTH);
+      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
     }
 
     await commentRepository.deleteReply(replyId);
@@ -193,6 +185,20 @@ const deleteReply = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateReply = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const userId = +req.query.userId;
+    const replyId = +req.params.replyId;
+    const content = req.body.content;
+
+    const user = await userRepository.findUserById(userId);
+    const reply = await commentRepository.findReplyById(replyId);
+    if (reply.userId !== user.id) {
+      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
+    }
+    await commentRepository.updateReply(replyId, content);
+
+    const updatedReply = await commentRepository.findReplyById(replyId);
+    const replyDto = new ReplyDto(updatedReply);
+    success(res, statusCode.OK, responseMessage.SUCCESS, replyDto);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -205,4 +211,5 @@ export {
   updateComment,
   createReply,
   deleteReply,
+  updateReply,
 };
