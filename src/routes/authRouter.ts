@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-const passport = require('passport');
+import passport from 'passport'
 import {
   isLoggedIn,
   isNotLoggedIn,
