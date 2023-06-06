@@ -43,4 +43,8 @@ export default {
 
   TOKEN_EXPIRED: '만료된 토큰입니다.',
   TOKEN_INVALID: '잘못된 토큰입니다.',
+
+  // Comment
+  COMMENT_NOT_FOUND: '해당 Comment가 존재하지 않습니다.',
+  COMMENT_DELETE_NOT_AUTH: '글의 작성자만 댓글을 삭제 할 수 있습니다.',
 };

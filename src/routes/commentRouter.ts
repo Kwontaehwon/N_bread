@@ -100,55 +100,14 @@ commentRouter.post('/reply/:dealId', verifyToken, async (req, res) => {
   }
 });
 
-commentRouter.delete('/:commentId', verifyToken, async (req, res) => {
-  // #swagger.summary = '댓글 삭제'
-  try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
-    const comment = await Comment.findOne({
-      where: {
-        id: parseInt(req.params.commentId),
-        deletedAt: { [Op.eq]: null },
-      },
-    });
-    if (comment === null) {
-      util.jsonResponse(res, 404, '해당 댓글을 찾을 수 없습니다.', false, {});
-      res.end();
-    } else {
-      if (comment.userId === user.id) {
-        try {
-          await comment.destroy();
-          util.jsonResponse(
-            res,
-            200,
-            '삭제가 완료되었습니다.',
-            false.valueOf,
-            {},
-          );
-        } catch (err) {
-          util.jsonResponse(res, 404, err, false, {});
-          console.log(err);
-        }
-      } else {
-        util.jsonResponse(
-          res,
-          403,
-          '댓글의 작성자만 댓글을 삭제할 수 있습니다.',
-          false,
-          {},
-        );
-      }
-    }
-  } catch (error) {
-    util.jsonResponse(
-      res,
-      500,
-      '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
-      false,
-      {},
-    );
-    logger.error(error);
-  }
-});
+// #swagger.summary = '댓글 삭제'
+commentRouter.delete(
+  '/:commentId',
+  param('commentId').isNumeric(),
+  errorValidator,
+  verifyToken,
+  commentService.deleteComment,
+);
 
 commentRouter.delete('/reply/:replyId', verifyToken, async (req, res) => {
   // #swagger.summary = '대댓글 삭제'

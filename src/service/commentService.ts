@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response, response } from 'express';
 import { logger } from '../config/winston';
 import {
   commentRepository,
@@ -10,9 +10,10 @@ import {
   Notification,
 } from 'firebase-admin/lib/messaging/messaging-api';
 import { fcmHandler } from '../modules';
-import { success } from '../modules/util';
+import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 import { CommentDto } from '../dto/commentDto';
+import { comments } from '@prisma/client';
 
 const createComment = async (
   req: Request,
@@ -44,11 +45,39 @@ const createComment = async (
     }
 
     const commentDto: CommentDto = new CommentDto(comment);
-    success(res, statusCode.OK, responseMessage.SUCCESS, commentDto);
+    success(res, statusCode.CREATED, responseMessage.SUCCESS, commentDto);
   } catch (error) {
     logger.error(error);
     next(error);
   }
 };
 
-export { createComment };
+const deleteComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId: number = +req.query.userId;
+    const commentId: number = +req.params.commentId;
+
+    const user = await userRepository.findUserById(userId);
+    const comment: comments = await commentRepository.findCommentById(
+      commentId,
+    );
+    if (comment.userId !== user.id) {
+      fail(
+        res,
+        statusCode.UNAUTHORIZED,
+        responseMessage.COMMENT_DELETE_NOT_AUTH,
+      );
+    }
+    await commentRepository.deleteComment(commentId);
+    success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+export { createComment, deleteComment };
