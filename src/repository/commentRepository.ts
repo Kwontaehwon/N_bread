@@ -1,3 +1,5 @@
+import { responseMessage, statusCode } from '../modules/constants';
+import { errorGenerator } from '../modules/error/errorGenerator';
 import prisma from '../prisma';
 
 const createComment = async (
@@ -14,4 +16,19 @@ const createComment = async (
   });
 };
 
-export { createComment };
+const findCommentById = async (commentId: number) => {
+  const comment = await prisma.comments.findFirst({
+    where: {
+      id: commentId,
+    },
+  });
+  if (comment === null) {
+    throw errorGenerator({
+      code: statusCode.NOT_FOUND,
+      message: responseMessage.COMMENT_NOT_FOUND,
+    });
+  }
+  return comment;
+};
+
+export { createComment, findCommentById };
