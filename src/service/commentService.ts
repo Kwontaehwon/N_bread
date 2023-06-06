@@ -14,6 +14,8 @@ import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 import { CommentDto } from '../dto/commentDto';
 import { comments } from '@prisma/client';
+import prisma from '../prisma';
+import { ReplyDto } from '../dto/replyDto';
 
 const createComment = async (
   req: Request,
@@ -41,7 +43,10 @@ const createComment = async (
         type: 'deal',
         dealId: `${dealId}`,
       };
-      await fcmHandler.sendMulticast(userId, fcmNotification, fcmData);
+      let fcmTokenList = [];
+      await fcmHandler.getAndStoreTokenInList(fcmTokenList, userId);
+
+      await fcmHandler.sendMulticast(fcmTokenList, fcmNotification, fcmData);
     }
 
     const commentDto: CommentDto = new CommentDto(comment);
@@ -111,4 +116,59 @@ const updateComment = async (
   }
 };
 
-export { createComment, deleteComment, updateComment };
+const createReply = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = +req.query.userId;
+    const dealId = +req.params.dealId;
+    const content = req.body.content;
+    const parentId = +req.body.parentId;
+
+    const user = await userRepository.findUserById(userId);
+
+    const parentComment = await commentRepository.findCommentById(parentId);
+
+    const reply = await commentRepository.createReply(
+      userId,
+      dealId,
+      content,
+      parentId,
+    );
+
+    const repliesUserIdList = await prisma.replies.findMany({
+      select: { userId: true },
+      where: { parentId: parentId },
+      distinct: ['userId'],
+    });
+
+    let fcmTokenList = [];
+    if (parentComment.userId != userId)
+      await fcmHandler.getAndStoreTokenInList(
+        fcmTokenList,
+        parentComment.userId,
+      );
+    for (let targetId of repliesUserIdList) {
+      if (targetId.userId == user.id) continue;
+      await fcmHandler.getAndStoreTokenInList(fcmTokenList, targetId.userId);
+    }
+
+    if (fcmTokenList.length > 0) {
+      const fcmNotification: Notification = {
+        title: 'N빵에 새로운 대댓글이 달렸어요',
+        body: content,
+      };
+      const fcmData: DataMessagePayload = {
+        type: 'deal',
+        dealId: `${dealId}`,
+      };
+      await fcmHandler.sendMulticast(fcmTokenList, fcmNotification, fcmData);
+    }
+
+    const replyDto = new ReplyDto(reply);
+    success(res, statusCode.OK, responseMessage.SUCCESS, replyDto);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+export { createComment, deleteComment, updateComment, createReply };

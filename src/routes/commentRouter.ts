@@ -37,78 +37,6 @@ commentRouter.put(
   commentService.updateComment,
 );
 
-commentRouter.post('/reply/:dealId', verifyToken, async (req, res) => {
-  // #swagger.summary = '대댓글 생성'
-  try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
-    //const comment = await Comment.findOne({ where: { dealId: req.params.dealId } });
-    if (user == null) {
-      return util.jsonResponse(
-        res,
-        404,
-        `userId ${req.decoded.id} 에 해당하는 유저를 찾을 수 없습니다. `,
-        false,
-        null,
-      );
-    }
-    const reply = await Reply.create({
-      userId: user.id,
-      content: req.body.content,
-      dealId: req.params.dealId,
-      parentId: req.body.parentId,
-    });
-    const parentComment = await Comment.findOne({
-      where: { id: req.body.parentId },
-    });
-    const [result, meta] = await sequelize.query(
-      `SELECT DISTINCT userId FROM replies WHERE parentId = ${req.body.parentId}`,
-    );
-    let fcmTokenList = [];
-    if (parentComment.userId != user.id)
-      await getAndStoreToken(fcmTokenList, parentComment.userId);
-    for (let targetId of result) {
-      console.log(`targetId ${targetId.userId}`);
-      if (targetId.userId == user.id) continue;
-      await getAndStoreToken(fcmTokenList, targetId.userId);
-    }
-    console.log(`fcmTokenList : ${fcmTokenList}`);
-    if (fcmTokenList.length > 0) {
-      const content = reply.content;
-      await admin.messaging().sendMulticast({
-        tokens: fcmTokenList,
-        notification: {
-          title: 'N빵에 새로운 대댓글이 달렸어요',
-          body: content,
-        },
-        data: {
-          type: 'deal',
-          dealId: `${reply.dealId}`,
-        },
-      });
-    }
-    util.jsonResponse(res, 200, '답글 작성에 성공하였습니다.', true, reply);
-  } catch (err) {
-    util.jsonResponse(
-      res,
-      500,
-      '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
-      false,
-      {},
-    );
-    logger.error(err);
-  }
-
-  async function getAndStoreToken(fcmTokenList, userId) {
-    const fcmTokenJson = await axios.get(
-      `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
-    ); // ${user.id}
-    if (Object.keys(fcmTokenJson.data).length !== 0) {
-      const fcmToken = fcmTokenJson.data.Item.fcmToken;
-      fcmTokenList.push(fcmToken);
-    }
-  }
-});
-
 // #swagger.summary = '댓글 삭제'
 commentRouter.delete(
   '/:commentId',
@@ -116,6 +44,15 @@ commentRouter.delete(
   errorValidator,
   verifyToken,
   commentService.deleteComment,
+);
+
+// #swagger.summary = '대댓글 생성'
+commentRouter.post(
+  '/reply/:dealId',
+  param('dealId').isNumeric(),
+  errorValidator,
+  verifyToken,
+  commentService.createReply,
 );
 
 commentRouter.delete('/reply/:replyId', verifyToken, async (req, res) => {
