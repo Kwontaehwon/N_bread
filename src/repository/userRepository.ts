@@ -233,8 +233,8 @@ const deleteUserById = async (userId: number) => {
   }
 };
 
-const isSnsIdExist = async (snsId: string) => {
-  return !!(await prisma.users.findFirst({ where: { snsId } }));
+const getUserByKakaoNumber = async (snsId: string) => {
+  return await prisma.users.findFirst({ where: { snsId } });
 };
 export {
   findUserById,
@@ -253,5 +253,5 @@ export {
   updateRefreshToken,
   createSocialUser,
   deleteUserById,
-  isSnsIdExist,
+  getUserByKakaoNumber,
 };
