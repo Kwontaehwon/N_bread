@@ -62,10 +62,19 @@ const findGroupByUserIdAndDealId = async (userId: number, dealId: number) => {
   });
 };
 
+const findAllGroupInDeal = async (dealId: number) => {
+  return await prisma.groups.findMany({
+    where: {
+      dealId: dealId,
+    },
+  });
+};
+
 export {
   createGroupInTransaction,
   createGroup,
   updateDealIdInTransaction,
   findAlreadyJoin,
   findGroupByUserIdAndDealId,
+  findAllGroupInDeal,
 };
