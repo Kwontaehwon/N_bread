@@ -3,19 +3,23 @@ import { logger } from '../config/winston';
 import {
   commentRepository,
   dealRepository,
+  groupRepository,
   userRepository,
 } from '../repository';
 import {
   DataMessagePayload,
   Notification,
 } from 'firebase-admin/lib/messaging/messaging-api';
-import { fcmHandler } from '../modules';
+import { commentModule, fcmHandler } from '../modules';
 import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
-import { CommentDto } from '../dto/commentDto';
-import { comments } from '@prisma/client';
+import { CommentDto, CommentWithUserDto } from '../dto/commentDto';
+import { comments, groups } from '@prisma/client';
 import prisma from '../prisma';
-import { ReplyDto } from '../dto/replyDto';
+import { ReplyDto, ReplyWithUserDto } from '../dto/replyDto';
+import { CommentWithReplyDto } from '../dto/commentWithReplyDto';
+import { DealDto } from '../dto/deal/dealDto';
+import { GroupDto } from '../dto/groupDto';
 
 const createComment = async (
   req: Request,
@@ -205,6 +209,40 @@ const updateReply = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const readComments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const dealId = +req.params.dealId;
+    const suggest = await dealRepository.findDealById(dealId);
+    const group = await groupRepository.findAllGroupInDeal(dealId);
+
+    const comments: comments[] =
+      await commentRepository.findCommentsWithReplies(dealId);
+    const suggester: number = suggest['userId'];
+    let groupMember: number[] = await commentModule.extractGroupMemberId(group);
+
+    const allCommentWithReplyDtoList: CommentWithReplyDto[] =
+      await commentModule.handleUserStatus(comments, suggester, groupMember);
+
+    const groupDtoList: GroupDto[] = await commentModule.makeGroupDtoList(
+      group,
+    );
+
+    const result = {
+      suggest: new DealDto(suggest),
+      group: groupDtoList,
+      comments: allCommentWithReplyDtoList,
+    };
+    success(res, statusCode.OK, responseMessage.SUCCESS, result);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
 export {
   createComment,
   deleteComment,
@@ -212,4 +250,5 @@ export {
   createReply,
   deleteReply,
   updateReply,
+  readComments,
 };
