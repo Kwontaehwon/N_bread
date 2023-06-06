@@ -23,18 +23,13 @@ const sendToSub = async (topicMessage: TopicMessage) => {
 };
 
 const sendMulticast = async (
-  userId: number,
+  fcmTokenList: string[],
   notification: Notification,
   data: DataMessagePayload,
 ) => {
-  logger.info(`거래 제안자 id : ${userId} 에게 새로운 댓글 알림을 보냅니다. `);
-  const fcmTokenJson = await axios.get(
-    `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
-  );
-  if (Object.keys(fcmTokenJson.data).length !== 0) {
-    const fcmToken = fcmTokenJson.data.Item.fcmToken;
+  if (fcmTokenList.length > 0) {
     const multicastMessage: MulticastMessage = {
-      tokens: [fcmToken],
+      tokens: fcmTokenList,
       notification: notification,
       data: data,
     };
@@ -49,6 +44,20 @@ const createNotifiation = async (title: string, body: string) => {
   };
 };
 
-// const createData = async (type : string, )
+const getAndStoreTokenInList = async (fcmTokenList, userId: number) => {
+  const fcmTokenJson = await axios.get(
+    `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
+  );
+  if (Object.keys(fcmTokenJson.data).length !== 0) {
+    const fcmToken = fcmTokenJson.data.Item.fcmToken;
+    fcmTokenList.push(fcmToken);
+  }
+};
 
-export { dealSubscribe, sendToSub, createNotifiation, sendMulticast };
+export {
+  dealSubscribe,
+  sendToSub,
+  createNotifiation,
+  sendMulticast,
+  getAndStoreTokenInList,
+};
