@@ -46,5 +46,8 @@ export default {
 
   // Comment
   COMMENT_NOT_FOUND: '해당 Comment가 존재하지 않습니다.',
-  COMMENT_DELETE_NOT_AUTH: '글의 작성자만 댓글을 삭제 할 수 있습니다.',
+  COMMENT_DELETE_NOT_AUTH: '댓글의 작성자만 댓글을 삭제 할 수 있습니다.',
+
+  REPLY_NOT_FOUND: '해당 reply가 존재하지 않습니다.',
+  REPLY_DELTE_NOT_AUTH: '대댓글의 작성자만 댓글을 삭제 할 수 있습니다.',
 };

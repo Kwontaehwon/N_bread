@@ -55,47 +55,14 @@ commentRouter.post(
   commentService.createReply,
 );
 
-commentRouter.delete('/reply/:replyId', verifyToken, async (req, res) => {
-  // #swagger.summary = '대댓글 삭제'
-  try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
-    const reply = await Reply.findOne({
-      where: { id: parseInt(req.params.replyId), deletedAt: { [Op.eq]: null } },
-    });
-    if (reply === null) {
-      util.jsonResponse(res, 404, '이미 삭제된 답글입니다.', false, {});
-      0;
-      res.end();
-    } else {
-      if (reply.userId === user.id) {
-        try {
-          await reply.destroy();
-          util.jsonResponse(res, 200, '삭제에 성공하였습니다.', true, {});
-        } catch (err) {
-          util.jsonResponse(res, 404, err, false, {});
-          console.log(err);
-        }
-      } else {
-        util.jsonResponse(
-          res,
-          403,
-          '답글의 생성자만 답글을 삭제할 수 있습니다.',
-          false,
-          {},
-        );
-      }
-    }
-  } catch (error) {
-    logger.error('[대댓글 삭제] POST /comments/reply/:replyId 서버 에러');
-    util.jsonResponse(
-      res,
-      500,
-      '[대댓글 삭제] POST /comments/reply/:replyId 서버 에러',
-      false,
-      {},
-    );
-  }
-});
+// #swagger.summary = '대댓글 삭제'
+commentRouter.delete(
+  '/reply/:replyId',
+  param('replyId').isNumeric(),
+  errorValidator,
+  verifyToken,
+  commentService.deleteReply,
+);
 
 commentRouter.put('/reply/:replyId', verifyToken, async (req, res) => {
   // #swagger.summary = '대댓글 수정'

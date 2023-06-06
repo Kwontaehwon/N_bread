@@ -171,4 +171,38 @@ const createReply = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createComment, deleteComment, updateComment, createReply };
+const deleteReply = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = +req.query.userId;
+    const replyId = +req.params.replyId;
+
+    const user = await userRepository.findUserById(userId);
+    const reply = await commentRepository.findReplyById(replyId);
+
+    if (reply.userId !== user.id) {
+      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_DELTE_NOT_AUTH);
+    }
+
+    await commentRepository.deleteReply(replyId);
+    success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+const updateReply = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+export {
+  createComment,
+  deleteComment,
+  updateComment,
+  createReply,
+  deleteReply,
+};
