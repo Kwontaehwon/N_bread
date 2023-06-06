@@ -82,7 +82,7 @@ const appleCallback = async (
   next: NextFunction,
 ) => {
   try {
-    const user = req.user;
+    const user: users = req.user;
     const accessToken = jwtHandler.sign(user.id, user.provider);
     res.cookie('accessToken', accessToken);
     if (user.nick == null) {
