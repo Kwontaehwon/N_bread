@@ -189,19 +189,6 @@ authRouter.post(
   authService.appleCallback,
 );
 
-authRouter.get('/error', (req, res, next) => {
-  // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
-  // #swagger.summary = '로그인 Error'
-  logger.error('auth/error 로그인 문제');
-  return util.jsonResponse(
-    res,
-    500,
-    '정보가 잘못되었습니다. 다시 시도해 주세요. (다른 소셜간 이메일 중복)',
-    false,
-    req.user,
-  );
-});
-
 // authRouter.delete('/apple/signout', verifyToken, async (req, res, next) => {
 //   // #swagger.summary = '애플 회원탈퇴'
 //   const nowSec = await Math.round(new Date().getTime() / 1000);
