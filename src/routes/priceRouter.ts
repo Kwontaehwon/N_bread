@@ -1,10 +1,4 @@
 import express from 'express';
-import axios from 'axios';
-import dotenv from 'dotenv';
-dotenv.config();
-import { Price } from '../database/models';
-import { logger } from '../config/winston';
-import { util } from '../modules/';
 import { param } from 'express-validator';
 import { errorValidator } from '../modules/error/errorValidator';
 import { priceService } from '../service';
