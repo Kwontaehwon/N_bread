@@ -50,4 +50,6 @@ export default {
 
   REDIRECT_TO_TERMS: '약관동의 화면으로 리다이렉트 합니다.',
   REDIRECT_TO_HOME: '홈 화면으로 리다이렉트 합니다.',
+
+  APPLE_SIGN_OUT_ERROR: '애플 회원 탈퇴 중 에러가 발생하였습니다.',
 };
