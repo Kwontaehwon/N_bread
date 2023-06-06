@@ -1,4 +1,4 @@
-import { comments, groups, replies } from '@prisma/client';
+import { groups } from '@prisma/client';
 import { CommentWithUserDto } from '../dto/commentDto';
 import { ReplyWithUserDto } from '../dto/replyDto';
 import { CommentWithReplyDto } from '../dto/commentWithReplyDto';

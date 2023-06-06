@@ -13,10 +13,10 @@ import {
 import { commentModule, fcmHandler } from '../modules';
 import { fail, success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
-import { CommentDto, CommentWithUserDto } from '../dto/commentDto';
-import { comments, groups } from '@prisma/client';
+import { CommentDto } from '../dto/commentDto';
+import { comments } from '@prisma/client';
 import prisma from '../prisma';
-import { ReplyDto, ReplyWithUserDto } from '../dto/replyDto';
+import { ReplyDto } from '../dto/replyDto';
 import { CommentWithReplyDto } from '../dto/commentWithReplyDto';
 import { DealDto } from '../dto/deal/dealDto';
 import { GroupDto } from '../dto/groupDto';

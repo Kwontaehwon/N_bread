@@ -1,18 +1,11 @@
 import express from 'express';
 
-import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
-const sequelize = require('sequelize');
 
 import { verifyToken } from '../middlewares/middleware';
-import { User, Group, Deal, Comment, Reply } from '../database/models';
 
-import { Op } from 'sequelize';
-import { logger } from '../config/winston';
-import admin from 'firebase-admin';
-import { util } from '../modules/';
-import { body, param } from 'express-validator';
+import { param } from 'express-validator';
 import { errorValidator } from '../modules/error/errorValidator';
 import { commentService } from '../service';
 const commentRouter = express.Router();
