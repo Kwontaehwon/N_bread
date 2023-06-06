@@ -31,4 +31,12 @@ const findCommentById = async (commentId: number) => {
   return comment;
 };
 
-export { createComment, findCommentById };
+const deleteComment = async (commentId: number) => {
+  return await prisma.comments.delete({
+    where: {
+      id: commentId,
+    },
+  });
+};
+
+export { createComment, findCommentById, deleteComment };
