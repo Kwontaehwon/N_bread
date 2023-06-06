@@ -180,6 +180,22 @@ const kakaoSignUp = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const kakaoSignOut = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // #swagger.summary = '카카오 SDK 회원탈퇴'
+  try {
+    const { userId } = req.query;
+    await userRepository.findUserById(+userId);
+    await userRepository.deleteUserById(+userId);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   logout,
   localSignUp,
@@ -187,4 +203,5 @@ export {
   appleCallback,
   appleSignOut,
   kakaoSignUp,
+  kakaoSignOut,
 };
