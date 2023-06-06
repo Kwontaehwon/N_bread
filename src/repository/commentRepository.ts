@@ -90,6 +90,18 @@ const updateReply = async (replyId: number, content: string) => {
   });
 };
 
+const findCommentsWithReplies = async (dealId: number) => {
+  return await prisma.comments.findMany({
+    where: { dealId: dealId },
+    include: {
+      users: { select: { nick: true, userStatus: true } },
+      replies: {
+        include: { users: { select: { nick: true, userStatus: true } } },
+      },
+    },
+  });
+};
+
 export {
   createComment,
   findCommentById,
@@ -99,4 +111,5 @@ export {
   findReplyById,
   deleteReply,
   updateReply,
+  findCommentsWithReplies,
 };
