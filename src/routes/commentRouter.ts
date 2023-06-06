@@ -28,6 +28,15 @@ commentRouter.post(
   commentService.createComment,
 );
 
+// #swagger.summary = '댓글 수정'
+commentRouter.put(
+  '/:commentId',
+  param('commentId').isNumeric(),
+  errorValidator,
+  verifyToken,
+  commentService.updateComment,
+);
+
 commentRouter.post('/reply/:dealId', verifyToken, async (req, res) => {
   // #swagger.summary = '대댓글 생성'
   try {
@@ -145,47 +154,6 @@ commentRouter.delete('/reply/:replyId', verifyToken, async (req, res) => {
       res,
       500,
       '[대댓글 삭제] POST /comments/reply/:replyId 서버 에러',
-      false,
-      {},
-    );
-  }
-});
-
-commentRouter.put('/:commentId', verifyToken, async (req, res) => {
-  // #swagger.summary = '댓글 수정'
-  try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
-    const comment = await Comment.findOne({
-      where: {
-        id: parseInt(req.params.commentId),
-        deletedAt: { [Op.eq]: null },
-      },
-    });
-    if (comment === null) {
-      util.jsonResponse(res, 403, '댓글이 존재하지 않습니다.', false, {});
-      res.end();
-    } else {
-      if (comment.userId === user.id) {
-        await comment.update({
-          content: req.body.content,
-        });
-        util.jsonResponse(res, 200, '댓글 수정에 성공하였습니다.', fail, {});
-      } else {
-        util.jsonResponse(
-          res,
-          403,
-          '댓글 작성자만 댓글을 수정할 수 있습니다.',
-          false,
-          {},
-        );
-      }
-    }
-  } catch (error) {
-    logger.error('[대댓글 생성] POST /comments/reply/:dealId 서버 에러');
-    util.jsonResponse(
-      res,
-      500,
-      '[대댓글 생성] POST /comments/reply/:dealId 서버 에러',
       false,
       {},
     );

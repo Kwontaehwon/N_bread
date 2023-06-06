@@ -80,4 +80,35 @@ const deleteComment = async (
   }
 };
 
-export { createComment, deleteComment };
+const updateComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = +req.query.userId;
+    const commentId = +req.params.commentId;
+    const content = req.body.content;
+
+    const user = await userRepository.findUserById(userId);
+    const comment = await commentRepository.findCommentById(commentId);
+
+    if (comment.userId !== user.id) {
+      fail(
+        res,
+        statusCode.UNAUTHORIZED,
+        responseMessage.COMMENT_DELETE_NOT_AUTH,
+      );
+    }
+
+    await commentRepository.updateComment(commentId, content);
+    const updatedComment = await commentRepository.findCommentById(commentId);
+    const commentDto: CommentDto = await new CommentDto(updatedComment);
+    success(res, statusCode.OK, responseMessage.SUCCESS, commentDto);
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+export { createComment, deleteComment, updateComment };
