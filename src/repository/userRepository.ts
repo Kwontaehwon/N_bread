@@ -196,6 +196,23 @@ const updateRefreshToken = async (refreshToken: string, userId: number) => {
   }
 };
 
+const createAppleUser = async (
+  email: string,
+  snsId: string,
+  refreshToken: string,
+) => {
+  try {
+    const newUser = await prisma.users.create({
+      data: { email, snsId, refreshToken, provider: 'apple', isNewUser: true },
+    });
+    return newUser;
+  } catch (error) {
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
 export {
   findUserById,
   isNicknameExist,
@@ -211,4 +228,5 @@ export {
   saveReportInfo,
   findUserBySnsId,
   updateRefreshToken,
+  createAppleUser,
 };
