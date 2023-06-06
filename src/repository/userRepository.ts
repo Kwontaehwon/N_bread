@@ -171,6 +171,13 @@ const saveReportInfo = async (reportInfo: reportInfoDto) => {
     });
   }
 };
+const findUserBySnsId = async (snsId: string, provider: string) => {
+  const user = await prisma.users.findFirstOrThrow({
+    where: { snsId, provider },
+  });
+  return user;
+};
+
 export {
   findUserById,
   isNicknameExist,
@@ -184,4 +191,5 @@ export {
   findDealsByUserId,
   saveUserLocation,
   saveReportInfo,
+  findUserBySnsId,
 };
