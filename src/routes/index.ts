@@ -1,5 +1,4 @@
 const express = require('express');
-import { User } from '../database/models';
 import { verifyToken } from '../middlewares/middleware';
 import { authRouter } from './authRouter';
 import { dealRouter } from './dealRouter';
@@ -7,7 +6,8 @@ import { userRouter } from './userRouter';
 import { commentRouter } from './commentRouter';
 import { eventRouter } from './eventRouter';
 import { priceRouter } from './priceRouter';
-import { util } from '../modules/';
+import { responseMessage, statusCode } from '../modules/constants';
+import { success } from '../modules/util';
 const router = express.Router();
 
 router.use(
@@ -40,19 +40,9 @@ router.use(
   // #swagger.tags = ['Slack']
   priceRouter,
 );
-router.get('/', verifyToken, async (req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
-    const user = await User.findOne({
-      where: { id: req.decoded.id || null },
-    });
-    req.session.loginData = user;
-    return util.jsonResponse(
-      res,
-      200,
-      `USER : ${req.session.loginData}`,
-      true,
-      req.session.loginData,
-    );
+    success(res, statusCode.OK, responseMessage.SUCCESS, 'Server Connected');
   } catch (err) {
     console.error(err);
     next(err);
