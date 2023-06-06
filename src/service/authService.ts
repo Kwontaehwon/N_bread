@@ -144,7 +144,9 @@ const kakaoSignUp = async (req: Request, res: Response, next: NextFunction) => {
   const { kakaoNumber, email } = req.body;
   try {
     /** db에 회원정보 저장 */
-    const userWithKakaoNumber = await userRepository.isSnsIdExist(kakaoNumber);
+    const userWithKakaoNumber = await userRepository.getUserByKakaoNumber(
+      kakaoNumber,
+    );
     if (!userWithKakaoNumber) {
       await userRepository.createSocialUser(email, kakaoNumber, '', 'kakao');
       /** 토큰 생성 */
