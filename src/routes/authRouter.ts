@@ -1,16 +1,10 @@
 import express, { Router } from 'express';
 const passport = require('passport');
-import {
-  verifyToken,
-  isLoggedIn,
-  isNotLoggedIn,
-} from '../middlewares/middleware';
+import { isLoggedIn, isNotLoggedIn } from '../middlewares/middleware';
 import { User } from '../database/models';
 const jwt = require('jsonwebtoken');
-import fs from 'fs';
 import { logger } from '../config/winston';
 import axios from 'axios';
-import qs from 'qs';
 import config from '../config';
 import { Slack } from '../class/slack';
 import { util } from '../modules/';
@@ -22,22 +16,6 @@ authRouter.post('/signup', isNotLoggedIn, authService.localSignUp);
 authRouter.post('/login', isNotLoggedIn, authService.localLogin);
 
 authRouter.get('/logout', isLoggedIn, authService.logout);
-
-authRouter.get(
-  // #swagger.summary = '카카오 웹뷰 로그인'
-  '/kakao',
-  passport.authenticate('kakao', { session: false }),
-);
-
-authRouter.get(
-  '/kakao/callback',
-  passport.authenticate('kakao', {
-    // #swagger.summary = '카카오 웹뷰 로그인 CallBack'
-    failureRedirect: '/auth/error',
-    successRedirect: '/auth/success',
-  }),
-  (req, res) => {},
-);
 
 //카카오 SDK 로그인 api
 //로그인 시 회원번호, email을 받아 db에 저장
@@ -197,84 +175,19 @@ authRouter.get('/kakaosdk/createToken/:kakaoNumber', async (req, res, next) => {
   }
 });
 
-// authRouter.get(
-//   // #swagger.summary = '애플 로그인'
-//   '/apple',
-//   passport.authenticate('apple'),
-// );
+authRouter.get(
+  // #swagger.summary = '애플 로그인'
+  '/apple',
+  passport.authenticate('apple'),
+);
 
-// authRouter.post(
-//   // #swagger.summary = '애플 로그인 CallBack'
-//   '/apple/callback',
-//   express.urlencoded({ extended: false }),
-//   passport.authenticate('apple'),
-//   (req, res) => {
-//     console.log('apple Signout : ' + req.appleSignout);
-//     console.log('req.refresh : ' + req.refresh);
-//     const payload = {
-//       id: req.user.id,
-//       provider: req.user.provider,
-//     };
-//     const accessToken = jwt.sign(payload, config.jwtSecret, {
-//       algorithm: 'HS256',
-//       issuer: 'chocoBread',
-//     });
-//     res.cookie('accessToken', accessToken);
-//     logger.info(`[애플로그인] ${req.user.id} 의 nick : ${req.user.nick} `);
-//     if (req.user.nick == null) {
-//       logger.info(
-//         `[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.`,
-//       );
-//       Slack.sendMessage({
-//         color: Slack.Colors.success,
-//         title: '[회원가입]',
-//         text: `[apple] ${req.user.id}번 유저가 회원가입하였습니다.`,
-//       });
-//       return util.jsonResponse(
-//         res,
-//         300,
-//         '[애플 로그인] jwt토큰 발급에 성공하였습니다. 약관 동의 화면으로 리다이렉트합니다.',
-//         true,
-//         null,
-//       );
-//     } else {
-//       logger.info(
-//         `[애플 로그인] User Id ${req.user.id} 님이 ${req.user.provider} jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.`,
-//       );
-//       return util.jsonResponse(
-//         res,
-//         200,
-//         '[애플 로그인] jwt토큰 발급에 성공하였습니다. 홈 화면으로 리다이렉트합니다.',
-//         true,
-//         null,
-//       );
-//     }
-//   },
-// );
-
-// authRouter.get('/success', isLoggedIn, async (req, res, next) => {
-//   // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
-//   // #swagger.summary = '로그인 성공시 토큰 반환'
-//   console.log(req.exUser);
-//   const user = await User.findOne({ where: { id: req.user.id } });
-//   req.logout();
-//   req.session.destroy();
-//   const payload = {
-//     id: user.id,
-//     nick: user.nick,
-//     provider: user.provider,
-//   };
-//   const accessToken = jwt.sign(payload, config.jwtSecret, {
-//     algorithm: 'HS256',
-//     issuer: 'chocoBread',
-//   });
-//   res.cookie('accessToken', accessToken);
-//   logger.info(
-//     `User Id ${user.id} 님이 ${user.provider} 로그인에 성공하였습니다.`,
-//   );
-//   logger.info(`jwt Token을 발행합니다.`);
-//   return res.status(200).send();
-// });
+authRouter.post(
+  // #swagger.summary = '애플 로그인 CallBack'
+  '/apple/callback',
+  express.urlencoded({ extended: false }),
+  passport.authenticate('apple'),
+  authService.appleCallback,
+);
 
 authRouter.get('/error', (req, res, next) => {
   // 다른 소셜간 이메일 중복문제 -> 일반 로그인 추가되면 구분 위해 변경해야됨
@@ -289,98 +202,98 @@ authRouter.get('/error', (req, res, next) => {
   );
 });
 
-authRouter.delete('/apple/signout', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '애플 회원탈퇴'
-  const nowSec = await Math.round(new Date().getTime() / 1000);
-  const expirySec = 120000;
-  const expSec = (await nowSec) + expirySec;
-  const payload = {
-    aud: 'https://appleid.apple.com',
-    iss: '5659G44R65',
-    iat: nowSec,
-    exp: expSec,
-    sub: 'shop.chocobread.service',
-  };
-  const signOptions = (jwt.SignOptions = {
-    algorithm: 'ES256',
-    header: {
-      alg: 'ES256',
-      kid: '689F483NJ3',
-      typ: 'JWT',
-    },
-  });
-  const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8';
-  const privKey = fs.readFileSync(path);
-  const appleClientSecret = jwt.sign(payload, privKey, signOptions);
+// authRouter.delete('/apple/signout', verifyToken, async (req, res, next) => {
+//   // #swagger.summary = '애플 회원탈퇴'
+//   const nowSec = await Math.round(new Date().getTime() / 1000);
+//   const expirySec = 120000;
+//   const expSec = (await nowSec) + expirySec;
+//   const payload = {
+//     aud: 'https://appleid.apple.com',
+//     iss: '5659G44R65',
+//     iat: nowSec,
+//     exp: expSec,
+//     sub: 'shop.chocobread.service',
+//   };
+//   const signOptions = (jwt.SignOptions = {
+//     algorithm: 'ES256',
+//     header: {
+//       alg: 'ES256',
+//       kid: '689F483NJ3',
+//       typ: 'JWT',
+//     },
+//   });
+//   const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8';
+//   const privKey = fs.readFileSync(path);
+//   const appleClientSecret = jwt.sign(payload, privKey, signOptions);
 
-  const user = await User.findOne({ where: { Id: req.decoded.id } });
-  const data = {
-    client_id: 'shop.chocobread.service',
-    client_secret: appleClientSecret,
-    token: user.refreshToken,
-    token_type_hint: 'refresh_token',
-  };
+//   const user = await User.findOne({ where: { Id: req.decoded.id } });
+//   const data = {
+//     client_id: 'shop.chocobread.service',
+//     client_secret: appleClientSecret,
+//     token: user.refreshToken,
+//     token_type_hint: 'refresh_token',
+//   };
 
-  const headers = {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  };
+//   const headers = {
+//     'Content-Type': 'application/x-www-form-urlencoded',
+//   };
 
-  const qsData = qs.stringify(data);
-  console.log(qsData);
-  axios
-    .post('https://appleid.apple.com/auth/revoke', qsData, {
-      headers: headers,
-    })
-    .then((response) => {
-      user.destroy().then(() => {
-        return util.jsonResponse(res, 200, '애플 탈퇴완료', true, null);
-      });
-    })
-    .catch((error) => {
-      logger.error(error);
-      console.log(error);
-      return util.jsonResponse(
-        res,
-        400,
-        `apple signout error :   ${error}`,
-        false,
-        null,
-      );
-    });
-});
+//   const qsData = qs.stringify(data);
+//   console.log(qsData);
+//   axios
+//     .post('https://appleid.apple.com/auth/revoke', qsData, {
+//       headers: headers,
+//     })
+//     .then((response) => {
+//       user.destroy().then(() => {
+//         return util.jsonResponse(res, 200, '애플 탈퇴완료', true, null);
+//       });
+//     })
+//     .catch((error) => {
+//       logger.error(error);
+//       console.log(error);
+//       return util.jsonResponse(
+//         res,
+//         400,
+//         `apple signout error :   ${error}`,
+//         false,
+//         null,
+//       );
+//     });
+// });
 
-authRouter.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
-  // #swagger.summary = '카카오 SDK 회원탈퇴'
-  try {
-    const user = await User.findOne({ where: { id: req.decoded.id } });
-    const userId = req.decoded.id;
-    console.log(user);
-    if (!user) {
-      logger.info(
-        '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
-      );
-      return util.jsonResponse(
-        res,
-        404,
-        '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
-        false,
-        null,
-      );
-    }
-    await user.destroy();
-    logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`);
-    return util.jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
-  } catch (error) {
-    logger.error('[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러' + error);
-    return util.jsonResponse(
-      res,
-      500,
-      '[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러',
-      false,
-      null,
-    );
-  }
-});
+// authRouter.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
+//   // #swagger.summary = '카카오 SDK 회원탈퇴'
+//   try {
+//     const user = await User.findOne({ where: { id: req.decoded.id } });
+//     const userId = req.decoded.id;
+//     console.log(user);
+//     if (!user) {
+//       logger.info(
+//         '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
+//       );
+//       return util.jsonResponse(
+//         res,
+//         404,
+//         '[카카오 SDK 회원탈퇴] id에 해당되는 유저를 찾을 수 없습니다.',
+//         false,
+//         null,
+//       );
+//     }
+//     await user.destroy();
+//     logger.info(`[카카오 회원 탈퇴] ${userId} 카카오 회원 탈퇴 완료`);
+//     return util.jsonResponse(res, 200, '카카오 탈퇴완료', true, null);
+//   } catch (error) {
+//     logger.error('[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러' + error);
+//     return util.jsonResponse(
+//       res,
+//       500,
+//       '[카카오 회원 탈퇴] /auth/kakaosdk/signout 서버 에러',
+//       false,
+//       null,
+//     );
+//   }
+// });
 
 //https://appleid.apple.com/auth/authorize?response_type=code&client_id=shop.chocobread.service&scope=email%20name&response_mode=form_post&redirect_uri=https://chocobread.shop/auth/apple/callback
 

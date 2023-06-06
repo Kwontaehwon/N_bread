@@ -2,8 +2,9 @@ import passport from 'passport';
 const AppleStrategy = require('@nicokaiser/passport-apple').Strategy;
 import fs from 'fs';
 import path from 'path';
-import { User } from '../../database/models/user';
 import config from '../';
+import { userRepository } from '../../repository';
+import { users } from '@prisma/client';
 const passportApple = () => {
   passport.use(
     'apple',
@@ -24,27 +25,20 @@ const passportApple = () => {
           const { id, email } = profile;
           // Create or update the local user here.
           // Note: name and email are only submitted on the first login!
-          const exUser = await User.findOne({
-            where: { snsId: id, provider: 'apple' },
-          });
-          const exEmail = await User.findOne({
-            where: { email: email },
-          });
-
-          if (exUser) {
-            exUser.update({
-              refreshToken: refreshToken,
-              isNewUser: false,
-            });
+          const exUser: users = await userRepository.findUserBySnsId(
+            id,
+            'apple',
+          );
+          const exEmail = await userRepository.isEmailExist(email);
+          if (exUser && !exEmail) {
+            await userRepository.updateRefreshToken(refreshToken, exUser.id);
             done(null, exUser);
           } else {
-            const newUser = await User.create({
-              email: email,
-              snsId: id,
-              provider: 'apple',
-              refreshToken: refreshToken,
-              isNewUser: true,
-            });
+            const newUser: users = await userRepository.createAppleUser(
+              email,
+              id,
+              refreshToken,
+            );
             done(null, newUser);
           }
         } catch (error) {

@@ -47,4 +47,7 @@ export default {
   MECAB_ERROR: 'MECAB을 통한 상품명 추출 중 에러가 발생하였습니다.',
   SHOPPING_API_ERROR: '상품명 검색 중 에러가 발생하였습니다.',
   SEARCH_RESULT_NOT_FOUND: '상품 검색 결과가 없습니다.',
+
+  REDIRECT_TO_TERMS: '약관동의 화면으로 리다이렉트 합니다.',
+  REDIRECT_TO_HOME: '홈 화면으로 리다이렉트 합니다.',
 };

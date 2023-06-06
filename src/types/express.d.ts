@@ -1,13 +1,6 @@
-interface jwtPayLoad {
-  id: Number;
-  nick: String;
-  provider: String;
-  iat: Number;
-  iss: String;
-}
-
-declare namespace Express {
-  interface Request {
-    decoded?: jwtPayLoad;
+import { users } from '@prisma/client';
+declare global {
+  namespace Express {
+    export interface User extends users {}
   }
 }

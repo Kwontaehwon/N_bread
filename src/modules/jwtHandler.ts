@@ -2,11 +2,16 @@ import jwt from 'jsonwebtoken';
 import config from '../config';
 import { responseMessage } from './constants';
 
-const sign = (userId: number) => {
+const sign = (userId: number, provider: string) => {
   const payload = {
     id: userId,
+    provider,
   };
-  const accessToken = jwt.sign(payload, config.jwtSecret, { expiresIn: '1h' });
+  const accessToken = jwt.sign(payload, config.jwtSecret, {
+    algorithm: 'HS256',
+    issuer: 'chocoBread',
+    expiresIn: '1h',
+  });
   return accessToken;
 };
 

@@ -6,6 +6,8 @@ import bcrypt from 'bcrypt';
 import passport from 'passport';
 import { jwtHandler } from '../modules';
 import { logger } from '../config/winston';
+import { users } from '@prisma/client';
+import { Slack } from '../class/slack';
 const logout = async (req: Request, res: Response) => {
   req.logout(() => {
     req.session.destroy(() => {
@@ -62,7 +64,7 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
             responseMessage.LOGIN_FAILED,
           );
         }
-        const accessToken = jwtHandler.sign(user.id);
+        const accessToken = jwtHandler.sign(user.id, 'local');
         const refreshToken = jwtHandler.createRefresh();
 
         await userRepository.saveRefresh(user.id, refreshToken);
@@ -74,4 +76,32 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
   )(req, res, next);
 };
 
-export { logout, localSignUp, localLogin };
+const appleCallback = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const user: users = req.user;
+    const accessToken = jwtHandler.sign(user.id, user.provider);
+    res.cookie('accessToken', accessToken);
+    if (user.nick == null) {
+      Slack.sendMessage({
+        color: Slack.Colors.success,
+        title: '[회원가입]',
+        text: `[apple] ${user.id}번 유저가 회원가입하였습니다.`,
+      });
+      return success(
+        res,
+        statusCode.REDIRECT,
+        responseMessage.REDIRECT_TO_TERMS,
+      );
+    } else {
+      return success(res, statusCode.OK, responseMessage.REDIRECT_TO_HOME);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { logout, localSignUp, localLogin, appleCallback };
