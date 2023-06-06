@@ -14,7 +14,6 @@ import admin from 'firebase-admin';
 const serviceAccount = require('./config/firebase-admin.json');
 import config from './config';
 import { router } from './routes/index';
-// import { db } from './database/';
 import { passportIndex } from './config/passport';
 import { errorHandler } from './modules/error/errorHandler';
 import { logger } from './config/winston';
@@ -29,16 +28,8 @@ nunjucks.configure('views', {
   express: app,
   watch: true,
 });
-// db.sequelize
-//   .sync({ force: false })
-//   .then(() => {
-//     console.log('데이터베이스 연결 성공');
-//   })
-//   .catch((err) => {
-//     console.error(err);
-//   });
+
 app.set('port', config.port || 5005);
-app.set('view engine', 'html');
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -94,7 +85,11 @@ if (config.env == 'production') {
     logger.info(`HTTPS:${app.get('port')} 서버 시작`);
   });
 } else {
-  app.listen(app.get('port'), '0.0.0.0', () => {
-    logger.info(`development HTTP:${app.get('port')} 서버 시작`);
+  app.listen(config.port, () => {
+    console.log(`
+      ################################################
+        ✨ N_BREAD SERVER LISTENING ON PORT: ${config.port} ✨
+      ################################################
+    `);
   });
 }
