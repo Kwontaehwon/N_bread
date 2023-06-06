@@ -17,7 +17,7 @@ import { reportInfoDto } from '../dto/user/reportInfoDto';
 const getUser = async (req: Request, res: Response, next: NextFunction) => {
   // #swagger.summary = '유저 정보 반환'
   try {
-    const { userId } = req.query;
+    const { userId } = req.params;
     const user = await userRepository.findUserById(+userId);
     const result = {
       createdAt: user.createdAt,
@@ -114,15 +114,16 @@ const getUserLocation = async (
 ) => {
   // #swagger.deprecated = true
   try {
-    const user = await userRepository.findUserById(+req.params.id);
+    const userId = +req.query.userId;
+    const user = await userRepository.findUserById(userId);
     const data: UserDto = {
-      id: +req.params.id,
+      id: +userId,
       curLocation1: user!.curLocation1!,
       curLocation2: user!.curLocation2!,
       curLocation3: user!.curLocation3!,
     };
     logger.info(
-      `users/location | userId : ${req.params.id}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
+      `users/location | userId : ${userId}의 현재 지역 : ${data.curLocation3} 을 반환합니다.`,
     );
     return success(res, statusCode.OK, responseMessage.SUCCESS, data);
   } catch (error) {
