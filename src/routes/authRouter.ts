@@ -1,6 +1,10 @@
 import express, { Router } from 'express';
 const passport = require('passport');
-import { isLoggedIn, isNotLoggedIn } from '../middlewares/middleware';
+import {
+  isLoggedIn,
+  isNotLoggedIn,
+  verifyToken,
+} from '../middlewares/middleware';
 import { User } from '../database/models';
 const jwt = require('jsonwebtoken');
 import { logger } from '../config/winston';
@@ -189,65 +193,7 @@ authRouter.post(
   authService.appleCallback,
 );
 
-// authRouter.delete('/apple/signout', verifyToken, async (req, res, next) => {
-//   // #swagger.summary = '애플 회원탈퇴'
-//   const nowSec = await Math.round(new Date().getTime() / 1000);
-//   const expirySec = 120000;
-//   const expSec = (await nowSec) + expirySec;
-//   const payload = {
-//     aud: 'https://appleid.apple.com',
-//     iss: '5659G44R65',
-//     iat: nowSec,
-//     exp: expSec,
-//     sub: 'shop.chocobread.service',
-//   };
-//   const signOptions = (jwt.SignOptions = {
-//     algorithm: 'ES256',
-//     header: {
-//       alg: 'ES256',
-//       kid: '689F483NJ3',
-//       typ: 'JWT',
-//     },
-//   });
-//   const path = __dirname + '/../passport/AuthKey_689F483NJ3.p8';
-//   const privKey = fs.readFileSync(path);
-//   const appleClientSecret = jwt.sign(payload, privKey, signOptions);
-
-//   const user = await User.findOne({ where: { Id: req.decoded.id } });
-//   const data = {
-//     client_id: 'shop.chocobread.service',
-//     client_secret: appleClientSecret,
-//     token: user.refreshToken,
-//     token_type_hint: 'refresh_token',
-//   };
-
-//   const headers = {
-//     'Content-Type': 'application/x-www-form-urlencoded',
-//   };
-
-//   const qsData = qs.stringify(data);
-//   console.log(qsData);
-//   axios
-//     .post('https://appleid.apple.com/auth/revoke', qsData, {
-//       headers: headers,
-//     })
-//     .then((response) => {
-//       user.destroy().then(() => {
-//         return util.jsonResponse(res, 200, '애플 탈퇴완료', true, null);
-//       });
-//     })
-//     .catch((error) => {
-//       logger.error(error);
-//       console.log(error);
-//       return util.jsonResponse(
-//         res,
-//         400,
-//         `apple signout error :   ${error}`,
-//         false,
-//         null,
-//       );
-//     });
-// });
+authRouter.delete('/apple/signout', verifyToken, authService.appleSignOut);
 
 // authRouter.delete('/kakaosdk/signout', verifyToken, async (req, res, next) => {
 //   // #swagger.summary = '카카오 SDK 회원탈퇴'
