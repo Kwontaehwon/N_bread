@@ -71,4 +71,4 @@ const _getUnitPriceOrGram = (
   return { unitPrice, gramToAdd };
 };
 
-export { _getUnitPriceOrGram };
+export { _getGram, _getUnitPrice };
