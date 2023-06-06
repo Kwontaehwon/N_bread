@@ -56,11 +56,11 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     const productName = await productModule._getProductName(title, gramToAdd);
 
     logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
-    const item = await productModule._searchProduct(productName);
+    const items = await productModule._searchProduct(productName);
 
-    for (let i = 0; i < item.length; i++) {
-      let mobileLink = item[i]['link'].toString();
-      let processedTitle = item[i]['title']
+    for (let i = 0; i < items.length; i++) {
+      let mobileLink = items[i]['link'].toString();
+      let processedTitle = items[i]['title']
         .toString()
         .replaceAll('<b>', '')
         .replaceAll('</b>', '');
@@ -70,25 +70,25 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
         link:
           'https://msearch.shopping.naver.com/product/' +
           mobileLink.split('id=')[1],
-        image: item[i]['image'],
-        lPrice: item[i]['lprice'] * 1 + 3000,
-        hPrice: item[i]['hprice'],
-        mallName: item[i]['mallName'],
-        productId: item[i]['productId'],
-        productType: item[i]['productType'],
-        brand: item[i]['brand'],
-        maker: item[i]['maker'],
-        category1: item[i]['category1'],
-        category2: item[i]['category2'],
-        category3: item[i]['category3'],
-        category4: item[i]['category4'],
+        image: items[i]['image'],
+        lPrice: items[i]['lprice'] * 1 + 3000,
+        hPrice: items[i]['hprice'],
+        mallName: items[i]['mallName'],
+        productId: items[i]['productId'],
+        productType: items[i]['productType'],
+        brand: items[i]['brand'],
+        maker: items[i]['maker'],
+        category1: items[i]['category1'],
+        category2: items[i]['category2'],
+        category3: items[i]['category3'],
+        category4: items[i]['category4'],
       };
       await priceRepository.saveDetailPriceInfo(priceDetailDto);
     }
 
-    for (let i = 0; i < item.length; i++) {
-      item[i].lprice = item[i].lprice * 1 + 3000;
-      jsonArray.push(item[i]);
+    for (let i = 0; i < items.length; i++) {
+      items[i].lprice = items[i].lprice * 1 + 3000;
+      jsonArray.push(items[i]);
     }
     logger.info(
       `${deal.id}번 거래 : ${deal.title}에서 추출한 검색어 \"${productName}\"으로 가격 비교 조회에 성공하였습니다.`,
