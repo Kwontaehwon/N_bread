@@ -54,49 +54,32 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
     }
     const gramToAdd = priceModule._getGram(title);
     /** 상품명 추출 */
-    let jsonArray = new Array();
     logger.info(`[가격비교 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
     const productName = await productModule._getProductName(title, gramToAdd);
 
     logger.info(`${productName}로 네이버 쇼핑에 검색을 시도합니다.`);
-    const items = await productModule._searchProduct(productName);
+    const item = await productModule._searchProduct(productName);
 
-    for (let i = 0; i < items.length; i++) {
-      let mobileLink = items[i]['link'].toString();
-      let processedTitle = items[i]['title']
+    for (let i = 0; i < item.length; i++) {
+      let mobileLink = item[i]['link'].toString();
+      let processedTitle = item[i]['title']
         .toString()
         .replaceAll('<b>', '')
         .replaceAll('</b>', '');
-      const priceDetailDto: PriceDetailDto = {
-        dealId: +dealId,
-        title: processedTitle,
-        link:
-          'https://msearch.shopping.naver.com/product/' +
-          mobileLink.split('id=')[1],
-        image: items[i]['image'],
-        lPrice: items[i]['lprice'] * 1 + 3000,
-        hPrice: items[i]['hprice'],
-        mallName: items[i]['mallName'],
-        productId: items[i]['productId'],
-        productType: items[i]['productType'],
-        brand: items[i]['brand'],
-        maker: items[i]['maker'],
-        category1: items[i]['category1'],
-        category2: items[i]['category2'],
-        category3: items[i]['category3'],
-        category4: items[i]['category4'],
-      };
-      await priceRepository.saveDetailPriceInfo(priceDetailDto);
+      const priceDetailDtos = new PriceDetailDto(
+        +dealId,
+        processedTitle,
+        mobileLink,
+        item[i],
+      );
+      await priceRepository.saveDetailPriceInfo(priceDetailDtos);
     }
 
-    for (let i = 0; i < items.length; i++) {
-      items[i].lprice = items[i].lprice * 1 + 3000;
-      jsonArray.push(items[i]);
-    }
+    const lpriceData = await priceRepository.findPriceById(+dealId);
     logger.info(
       `${deal.id}번 거래 : ${deal.title}에서 추출한 검색어 \"${productName}\"으로 가격 비교 조회에 성공하였습니다.`,
     );
-    return success(res, statusCode.OK, responseMessage.SUCCESS, jsonArray);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, lpriceData);
   } catch (error) {
     next(error);
   }
