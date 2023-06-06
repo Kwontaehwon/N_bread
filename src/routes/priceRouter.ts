@@ -18,7 +18,7 @@ const priceRouter = express.Router();
 
 priceRouter.use(express.json());
 
-// POST price/:productName
+/** 제목 추출 및 최저가 조회 POST */
 priceRouter.post(
   '/:dealId',
   [param('dealId').notEmpty(), param('dealId').isNumeric()],
