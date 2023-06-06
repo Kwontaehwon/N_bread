@@ -1,6 +1,8 @@
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import { SignOptions } from 'jsonwebtoken';
+import { userRepository } from '../repository';
+import qs from 'qs';
 
 const _getAppleClientSecret = async () => {
   const nowSec = await Math.round(new Date().getTime() / 1000);
@@ -27,4 +29,17 @@ const _getAppleClientSecret = async () => {
   const appleClientSecret = jwt.sign(payload, privateKey, signOptions);
   return appleClientSecret;
 };
-export { _getAppleClientSecret };
+
+const _getQsData = async (userId: number) => {
+  const appleClientSecret = await _getAppleClientSecret();
+  const user = await userRepository.findUserById(userId);
+  const data = {
+    client_id: 'shop.chocobread.service',
+    client_secret: appleClientSecret,
+    token: user.refreshToken,
+    token_type_hint: 'refresh_token',
+  };
+  const qsData = qs.stringify(data);
+  return qsData;
+};
+export { _getQsData };
