@@ -12,7 +12,7 @@ import { priceDetailDto, priceDto } from '../dto/price/priceDto';
 import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 
-const getPrice = async (req: Request, res: Response, next: NextFunction) => {
+const postPrice = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { dealId } = req.params;
     const deal = await dealRepository.findDealById(+dealId);
@@ -99,4 +99,4 @@ const getPrice = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { getPrice };
+export { postPrice };
