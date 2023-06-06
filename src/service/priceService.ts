@@ -1,18 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../config/winston';
-import { priceModule, productModule, util } from '../modules';
+import { priceModule, productModule } from '../modules';
 import config from '../config';
 import {
   dealImageRepository,
   dealRepository,
   priceRepository,
 } from '../repository';
-import { _getUnitPriceOrGram } from '../modules/priceModules/priceModule';
 import { priceDetailDto, priceDto } from '../dto/price/priceDto';
 import { success } from '../modules/util';
 import { responseMessage, statusCode } from '../modules/constants';
 
-const postPrice = async (req: Request, res: Response, next: NextFunction) => {
+const getPrice = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { dealId } = req.params;
     const deal = await dealRepository.findDealById(+dealId);
@@ -25,18 +24,23 @@ const postPrice = async (req: Request, res: Response, next: NextFunction) => {
     const particlePrice = deal.personalPrice;
     const title = deal.title;
 
+    const priceData = await priceRepository.findPriceById(+dealId);
+    if (priceData.length > 1) {
+      return success(res, statusCode.OK, responseMessage.SUCCESS, priceData);
+    }
+
+    /**단위 가격 존재 여부 검사 */
+    const isDealExist = await priceRepository.isPriceExist(+dealId);
+
     /**단위 가격 추출 */
-    const extractedPrice = priceModule._getUnitPriceOrGram(
+    const extractedPrice = priceModule._getUnitPrice(
       totalPrice,
       particlePrice,
       title,
     );
-    const priceToSave = extractedPrice.unitPrice;
-    const gramToAdd = extractedPrice.gramToAdd;
+    const priceToSave = extractedPrice;
 
-    /**추출한 단위 가격 저장 */
-    const isDealExist = await priceRepository.isPriceExist(+dealId);
-
+    logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
     if (!isDealExist) {
       const priceDto: priceDto = {
         dealId: +dealId,
@@ -45,11 +49,10 @@ const postPrice = async (req: Request, res: Response, next: NextFunction) => {
         lPrice: priceToSave,
         mallName: 'N빵',
       };
+      /**추출한 단위 가격 저장 */
       await priceRepository.savePriceInfo(priceDto);
     }
-
-    logger.info(`추출된 단위 가격은 ${priceToSave}원입니다.`);
-
+    const gramToAdd = priceModule._getGram(title);
     /** 상품명 추출 */
     let jsonArray = new Array();
     logger.info(`[가격비교 저장] \"${title}\"에서 상품명 추출을 시도합니다.`);
@@ -99,4 +102,4 @@ const postPrice = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { postPrice };
+export { getPrice };
