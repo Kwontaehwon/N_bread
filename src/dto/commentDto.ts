@@ -1,4 +1,4 @@
-import { comments } from '@prisma/client';
+import { comments, users } from '@prisma/client';
 
 class CommentDto {
   id: number;
@@ -14,4 +14,25 @@ class CommentDto {
   }
 }
 
-export { CommentDto };
+class CommentWithUserDto extends CommentDto {
+  id: number;
+  userId: number;
+  dealId: number;
+  content: string;
+  deletedAt: Date;
+  users: {
+    nick: string;
+    userStatus: string;
+  };
+
+  constructor(comment: comments, users: users) {
+    super(comment);
+    this.deletedAt = comment.deletedAt;
+    this.users = {
+      nick: users.nick,
+      userStatus: users.userStatus,
+    };
+  }
+}
+
+export { CommentDto, CommentWithUserDto };
