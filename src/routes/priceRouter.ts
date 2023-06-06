@@ -2,17 +2,11 @@ import express from 'express';
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
-const spawn = require('child_process').spawn;
-import { Slack2 } from '../class/slack2';
-import { Deal, Price, DealImage } from '../database/models';
-import { Op } from 'sequelize';
+import { Price } from '../database/models';
 import { logger } from '../config/winston';
-import { env } from 'process';
-var request = require('request');
 import { util } from '../modules/';
 import { param } from 'express-validator';
 import { errorValidator } from '../modules/error/errorValidator';
-import { getPrice } from '../service/priceService';
 import { priceService } from '../service';
 const priceRouter = express.Router();
 
