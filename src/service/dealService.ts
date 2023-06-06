@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from 'express';
 import { success, fail } from '../modules/util';
 import {
   userRepository,
@@ -23,7 +22,6 @@ import { NextFunction, Request, Response } from 'express';
 import {
   DataMessagePayload,
   Notification,
-  TopicMessage,
 } from 'firebase-admin/lib/messaging/messaging-api';
 
 const admin = require('firebase-admin');
