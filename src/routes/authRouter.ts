@@ -21,45 +21,8 @@ authRouter.post('/login', isNotLoggedIn, authService.localLogin);
 
 authRouter.get('/logout', isLoggedIn, authService.logout);
 
-//카카오 SDK 로그인 api
+/** 카카오 SDK 로그인 api */
 authRouter.post('/kakaosdk/signup/', authService.kakaoSignUp);
-
-authRouter.get('/kakaosdk/createToken/:kakaoNumber', async (req, res, next) => {
-  // #swagger.summary = '카카오 SDK로그인 시 토큰 생성 api'
-  try {
-    const user = await User.findOne({
-      where: { kakaoNumber: req.params.kakaoNumber },
-    });
-    const payload = {
-      id: user.id,
-      provider: user.provider,
-    };
-    const accessToken = jwt.sign(payload, config.jwtSecret, {
-      algorithm: 'HS256',
-      issuer: 'chocoBread',
-    });
-    res.cookie('accessToken', accessToken);
-    var token = {
-      accessToken: accessToken,
-    };
-    console.log(accessToken);
-    return util.jsonResponse(
-      res,
-      200,
-      '[카카오 토큰 발급] 토큰 발급 성공',
-      true,
-      token,
-    );
-  } catch (err) {
-    return util.jsonResponse(
-      err,
-      500,
-      '[카카오 토큰 발급] GET /kakaosdk/createToken/:kakaoNumber 서버 에러',
-      false,
-      null,
-    );
-  }
-});
 
 authRouter.get(
   // #swagger.summary = '애플 로그인'
