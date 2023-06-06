@@ -34,10 +34,11 @@ const passportApple = () => {
             await userRepository.updateRefreshToken(refreshToken, exUser.id);
             done(null, exUser);
           } else {
-            const newUser: users = await userRepository.createAppleUser(
+            const newUser: users = await userRepository.createSocialUser(
               email,
               id,
               refreshToken,
+              'apple',
             );
             done(null, newUser);
           }

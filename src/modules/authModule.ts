@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { SignOptions } from 'jsonwebtoken';
 import { userRepository } from '../repository';
 import qs from 'qs';
+import { jwtHandler } from '.';
 
 const _getAppleClientSecret = async () => {
   const nowSec = await Math.round(new Date().getTime() / 1000);
@@ -42,4 +43,14 @@ const _getQsData = async (userId: number) => {
   const qsData = qs.stringify(data);
   return qsData;
 };
-export { _getQsData };
+
+const _getKakaoToken = async (kakaoNumber: string) => {
+  try {
+    const user = await userRepository.findUserBySnsId(kakaoNumber, 'kakao');
+    const accessToken = jwtHandler.sign(user.id, user.provider);
+    return accessToken;
+  } catch (error) {
+    throw error;
+  }
+};
+export { _getQsData, _getKakaoToken };

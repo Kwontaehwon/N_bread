@@ -139,4 +139,69 @@ const appleSignOut = async (
   }
 };
 
-export { logout, localSignUp, localLogin, appleCallback, appleSignOut };
+const kakaoSignUp = async (req: Request, res: Response, next: NextFunction) => {
+  // #swagger.summary = '카카오 SDK 로그인 api'
+  const { kakaoNumber, email } = req.body;
+  try {
+    /** db에 회원정보 저장 */
+    const userWithKakaoNumber = await userRepository.getUserByKakaoNumber(
+      kakaoNumber,
+    );
+    if (!userWithKakaoNumber) {
+      await userRepository.createSocialUser(email, kakaoNumber, '', 'kakao');
+      /** 토큰 생성 */
+      const accessToken = authModule._getKakaoToken(kakaoNumber);
+      res.cookie('accessToken', accessToken);
+      return success(
+        res,
+        statusCode.REDIRECT,
+        responseMessage.REDIRECT_TO_TERMS,
+      );
+    }
+    /**회원 가입을 완료한 유저 */
+    if (userWithKakaoNumber.nick != null) {
+      return success(
+        res,
+        statusCode.REDIRECT,
+        responseMessage.REDIRECT_TO_HOME,
+      );
+    }
+    /**회원 가입이 진행중인 유저 */
+    const accessToken = authModule._getKakaoToken(kakaoNumber);
+    return success(
+      res,
+      statusCode.REDIRECT,
+      responseMessage.REDIRECT_TO_TERMS,
+      accessToken,
+    );
+  } catch (error) {
+    logger.error(error);
+    next(error);
+  }
+};
+
+const kakaoSignOut = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // #swagger.summary = '카카오 SDK 회원탈퇴'
+  try {
+    const { userId } = req.query;
+    await userRepository.findUserById(+userId);
+    await userRepository.deleteUserById(+userId);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export {
+  logout,
+  localSignUp,
+  localLogin,
+  appleCallback,
+  appleSignOut,
+  kakaoSignUp,
+  kakaoSignOut,
+};
