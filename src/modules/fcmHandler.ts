@@ -3,6 +3,7 @@ import admin from 'firebase-admin';
 import {
   Notification,
   DataMessagePayload,
+  TopicMessage,
 } from 'firebase-admin/lib/messaging/messaging-api';
 import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
 import { logger } from '../config/winston';
@@ -18,7 +19,16 @@ const dealSubscribe = async (userId: number, dealId: number) => {
   }
 };
 
-const sendToSub = async (topicMessage: TopicMessage) => {
+const sendToSub = async (
+  topic: string,
+  notification: Notification,
+  data: DataMessagePayload,
+) => {
+  const topicMessage: TopicMessage = {
+    topic: topic,
+    notification: notification,
+    data: data,
+  };
   await admin.messaging().send(topicMessage);
 };
 

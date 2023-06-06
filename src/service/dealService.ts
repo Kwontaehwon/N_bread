@@ -20,6 +20,11 @@ import { DealReportDto } from '../dto/dealReport/dealReportDto';
 import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 import { deals } from '@prisma/client';
 import { NextFunction, Request, Response } from 'express';
+import {
+  DataMessagePayload,
+  Notification,
+  TopicMessage,
+} from 'firebase-admin/lib/messaging/messaging-api';
 const admin = require('firebase-admin');
 
 const createDeal = async (req, res, next) => {
@@ -157,25 +162,19 @@ const joinDeal = async (req, res, next) => {
     });
 
     // 그룹에 있는 모든 유저들에게
-    const fcmNotification: FcmNotification = {
+    const fcmNotification: Notification = {
       title: fcmMessage.NEW_PARTICIPANT,
       body: `${user.nick}님이 N빵에 참여하여 인원이 ${updatedDeal.currentMember} / ${updatedDeal.totalMember} 가 되었습니다!`,
     };
 
-    const fcmData: FcmData = {
+    const fcmData: DataMessagePayload = {
       type: 'deal',
       dealId: dealId.toString(),
     };
 
     const fcmTopic = 'dealFcmTopic' + deal.id;
 
-    const topicMessage: TopicMessage = new TopicMessage(
-      fcmNotification,
-      fcmData,
-      fcmTopic,
-    );
-
-    await fcmHandler.sendToSub(topicMessage);
+    await fcmHandler.sendToSub(fcmTopic, fcmNotification, fcmData);
     await fcmHandler.dealSubscribe(userId, dealId);
 
     const groupDto = new GroupDto(group);
