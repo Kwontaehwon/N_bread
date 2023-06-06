@@ -20,4 +20,48 @@ const makeGroupDtoList = async (groupList: groups[]) => {
   return groupDtoList;
 };
 
-export { extractGroupMemberId, makeGroupDtoList };
+const markStatus = async (
+  text: CommentWithUserDto | ReplyWithUserDto,
+  suggester: number,
+  groupMember: number[],
+) => {
+  if (text.deletedAt != null) {
+    text.content = '삭제된 댓글입니다.';
+  }
+  if (text.userId === suggester) {
+    text.users.userStatus = '제안자';
+  } else if (groupMember.includes(text.userId)) {
+    text.users.userStatus = '참여자';
+  } else {
+    text.users.userStatus = '';
+  }
+};
+
+const handleUserStatus = async (comments, suggester, groupMember) => {
+  let allCommentWithReplyDtoList: CommentWithReplyDto[] = [];
+  for (let i = 0; i < comments.length; i++) {
+    const curComment = comments[i];
+    const commentWithUserDto = new CommentWithUserDto(
+      curComment,
+      curComment['users'],
+    );
+    markStatus(commentWithUserDto, suggester, groupMember);
+
+    const commentWithReplyDto = new CommentWithReplyDto(commentWithUserDto);
+
+    for (let j = 0; j < curComment['replies'].length; j++) {
+      const replyWithUserDto = new ReplyWithUserDto(
+        curComment['replies'][j],
+        curComment['replies'][j]['users'],
+      );
+
+      markStatus(replyWithUserDto, suggester, groupMember);
+
+      commentWithReplyDto.replies.push(replyWithUserDto);
+    }
+    allCommentWithReplyDtoList.push(commentWithReplyDto);
+  }
+  return allCommentWithReplyDtoList;
+};
+
+export { extractGroupMemberId, makeGroupDtoList, markStatus, handleUserStatus };
