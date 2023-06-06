@@ -14,7 +14,7 @@ import admin from 'firebase-admin';
 const serviceAccount = require('./config/firebase-admin.json');
 import config from './config';
 import { router } from './routes/index';
-import { db } from './database/';
+// import { db } from './database/';
 import { passportIndex } from './config/passport';
 import { errorHandler } from './modules/error/errorHandler';
 import { logger } from './config/winston';
@@ -29,14 +29,14 @@ nunjucks.configure('views', {
   express: app,
   watch: true,
 });
-db.sequelize
-  .sync({ force: false })
-  .then(() => {
-    console.log('데이터베이스 연결 성공');
-  })
-  .catch((err) => {
-    console.error(err);
-  });
+// db.sequelize
+//   .sync({ force: false })
+//   .then(() => {
+//     console.log('데이터베이스 연결 성공');
+//   })
+//   .catch((err) => {
+//     console.error(err);
+//   });
 app.set('port', config.port || 5005);
 app.set('view engine', 'html');
 app.use(morgan('dev'));
