@@ -6,7 +6,6 @@ import {
   TopicMessage,
 } from 'firebase-admin/lib/messaging/messaging-api';
 import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
-import { logger } from '../config/winston';
 
 const dealSubscribe = async (userId: number, dealId: number) => {
   const fcmTokenJson = await axios.get(
