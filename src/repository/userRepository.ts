@@ -4,7 +4,6 @@ import { responseMessage, statusCode } from '../modules/constants';
 import prisma from '../prisma';
 import { logger } from '../config/winston';
 import { reportInfoDto } from '../dto/user/reportInfoDto';
-import { refreshToken } from 'firebase-admin/app';
 
 const findUserById = async (id: number) => {
   const user = await prisma.users.findFirstOrThrow({ where: { id: id } });
