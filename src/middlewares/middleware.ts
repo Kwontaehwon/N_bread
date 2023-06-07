@@ -10,7 +10,7 @@ const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
     next();
   } else {
-    fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
+    return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
   }
 };
 
@@ -18,7 +18,7 @@ const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (!req.isAuthenticated()) {
     next();
   } else {
-    fail(res, statusCode.FORBIDDEN, responseMessage.FORBIDDEN);
+    return fail(res, statusCode.FORBIDDEN, responseMessage.FORBIDDEN);
   }
 };
 

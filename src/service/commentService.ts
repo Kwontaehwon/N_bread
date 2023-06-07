@@ -80,7 +80,11 @@ const deleteComment = async (
       commentId,
     );
     if (comment.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.COMMENT_NOT_AUTH);
+      return fail(
+        res,
+        statusCode.UNAUTHORIZED,
+        responseMessage.COMMENT_NOT_AUTH,
+      );
     }
     await commentRepository.deleteComment(commentId);
     return success(res, statusCode.OK, responseMessage.SUCCESS);
@@ -104,7 +108,11 @@ const updateComment = async (
     const comment = await commentRepository.findCommentById(commentId);
 
     if (comment.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.COMMENT_NOT_AUTH);
+      return fail(
+        res,
+        statusCode.UNAUTHORIZED,
+        responseMessage.COMMENT_NOT_AUTH,
+      );
     }
 
     await commentRepository.updateComment(commentId, content);
@@ -181,7 +189,7 @@ const deleteReply = async (req: Request, res: Response, next: NextFunction) => {
     const reply = await commentRepository.findReplyById(replyId);
 
     if (reply.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
+      return fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
     }
 
     await commentRepository.deleteReply(replyId);
@@ -201,7 +209,7 @@ const updateReply = async (req: Request, res: Response, next: NextFunction) => {
     const user = await userRepository.findUserById(userId);
     const reply = await commentRepository.findReplyById(replyId);
     if (reply.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
+      return fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
     }
     await commentRepository.updateReply(replyId, content);
 
