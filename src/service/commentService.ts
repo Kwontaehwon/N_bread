@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response, response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { logger } from '../config/winston';
 import {
   commentRepository,
