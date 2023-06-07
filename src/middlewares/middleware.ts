@@ -4,6 +4,7 @@ import responseMessage from '../modules/constants/responseMessage';
 import { fail } from '../modules/util';
 import { jwtHandler } from '../modules';
 import { JwtPayload } from 'jsonwebtoken';
+import { logger } from '../config/winston';
 
 const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
@@ -42,7 +43,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     req.query.userId = userId;
     next();
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return fail(
       res,
       statusCode.UNAUTHORIZED,

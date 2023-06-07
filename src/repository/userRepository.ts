@@ -65,7 +65,6 @@ const createUser = async (email: string, nick: string, password: string) => {
 const findUserByEmail = async (email: string) => {
   try {
     const user = await prisma.users.findFirst({ where: { email } });
-    console.log(user);
     return user;
   } catch (error) {
     throw errorGenerator({

@@ -11,7 +11,6 @@ const passportNaver = () => {
         callbackURL: '/auth/naver/callback',
       },
       async (accessToken, refreshToken, profile, done) => {
-        console.log('naver profile : ', profile);
         try {
           const exUser = await userRepository.findUserBySnsId(
             profile.id,
@@ -20,7 +19,6 @@ const passportNaver = () => {
 
           // 이미 가입된 네이버 프로필이면 성공
           if (exUser) {
-            console.log('이미 가입된 유저입니다.');
             await userRepository.saveRefresh(exUser.id, refreshToken);
             done(null, exUser);
           } else {

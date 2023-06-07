@@ -9,7 +9,6 @@ import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 
 const _verifyDealDate = async (res, param: dealParam) => {
   const dealDate = new Date(param.dealDate);
-  console.log('DEAL DATE : ' + dealDate.getTime());
   const expireDate = dealDate.getTime();
   if (expireDate < Date.now()) {
     throw errorGenerator({
