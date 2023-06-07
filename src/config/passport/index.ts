@@ -4,17 +4,16 @@ import { passportKakao } from './kakaoStrategy';
 import { passportNaver } from './naverStrategy';
 import { passportApple } from './appleStrategy';
 
-import { User } from '../../database/models/user';
+import { userRepository } from '../../repository';
 
 const passportIndex = () => {
   passport.serializeUser((user: any, done) => {
     done(null, user.id);
   });
 
-  passport.deserializeUser((id, done) => {
-    User.findOne({
-      where: { id },
-    })
+  passport.deserializeUser(async (id, done) => {
+    await userRepository
+      .findUserById(+id)
       .then((user) => done(null, user))
       .catch((err) => done(err));
   });

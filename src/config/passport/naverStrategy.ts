@@ -1,8 +1,7 @@
 import passport from 'passport';
-import { Strategy as NaverStrategy, Profile as NaverProfile } from 'passport-naver-v2';
-
-import {User} from '../../database/models/user';
+import { Strategy as NaverStrategy } from 'passport-naver-v2';
 import config from '../';
+import { userRepository } from '../../repository';
 const passportNaver = () => {
   passport.use(
     new NaverStrategy(
@@ -14,31 +13,24 @@ const passportNaver = () => {
       async (accessToken, refreshToken, profile, done) => {
         console.log('naver profile : ', profile);
         try {
-          const exUser = await User.findOne({
-            // 네이버 플랫폼에서 로그인 했고 & snsId필드에 네이버 아이디가 일치할경우
-            where: { snsId: profile.id, provider: 'naver' },
-          });
+          const exUser = await userRepository.findUserBySnsId(
+            profile.id,
+            'naver',
+          );
 
           // 이미 가입된 네이버 프로필이면 성공
           if (exUser) {
             console.log('이미 가입된 유저입니다.');
-            await exUser.update({
-              accessToken: accessToken,
-              refreshToken: refreshToken,
-              isNewUser: false,
-            });
+            await userRepository.saveRefresh(exUser.id, refreshToken);
             done(null, exUser);
           } else {
             // 가입되지 않는 유저면 회원가입 시키고 로그인을 시킨다
-            const newUser = await User.create({
-              email: profile.email,
-              nick: profile.name,
-              snsId: profile.id,
-              provider: 'naver',
-              accessToken: accessToken,
-              refreshToken: refreshToken,
-              isNewUser: true,
-            });
+            const newUser = await userRepository.createSocialUser(
+              profile.email,
+              profile.id,
+              refreshToken,
+              'naver',
+            );
             done(null, newUser);
           }
         } catch (error) {
