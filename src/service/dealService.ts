@@ -50,15 +50,15 @@ const deleteDeal = async (req: Request, res: Response, next: NextFunction) => {
     if (deal.userId != +req.query.userId) {
       return fail(
         res,
-        statusCode.UNAUTHORIZED,
-        responseMessage.DEAL_DELETE_NOT_AUTHORIZED,
+        statusCode.FORBIDDEN,
+        responseMessage.DEAL_DELETE_FORBIDDEN,
       );
     }
     const groups = await prisma.groups.findMany({ where: { dealId: deal.id } });
     if (groups.length > 1) {
       return fail(
         res,
-        statusCode.UNAUTHORIZED,
+        statusCode.BAD_REQUEST,
         responseMessage.DEAL_ALREADY_PARTICIPATED,
       );
     }
@@ -92,7 +92,7 @@ const updateDeal = async (req: Request, res: Response, next: NextFunction) => {
       return fail(
         res,
         statusCode.FORBIDDEN,
-        responseMessage.DEAL_DELETE_NOT_AUTHORIZED,
+        responseMessage.DEAL_UPDATE_FORBIDDEN,
       );
     }
 
@@ -316,7 +316,12 @@ const readDealDetail = async (
     dealWithStatusDto['mystatus'] = userStatus.description;
     dealModule._setDealStatus(dealWithStatusDto);
 
-    return success(res, statusCode.OK, responseMessage.SUCCESS, dealWithStatusDto);
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      dealWithStatusDto,
+    );
   } catch (error) {
     logger.error(error);
     next(error);
