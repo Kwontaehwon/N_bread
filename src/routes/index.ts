@@ -41,7 +41,12 @@ router.use(
 );
 router.get('/', async (req, res, next) => {
   try {
-    success(res, statusCode.OK, responseMessage.SUCCESS, 'Server Connected');
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      'Server Connected',
+    );
   } catch (err) {
     console.error(err);
     next(err);

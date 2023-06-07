@@ -117,7 +117,7 @@ const updateDeal = async (req: Request, res: Response, next: NextFunction) => {
     logger.info(`${dealId} 의 거래를 수정하였습니다.`);
 
     const dealDto: DealDto = new DealDto(updatedDeal);
-    success(res, statusCode.OK, responseMessage.SUCCESS, dealDto);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, dealDto);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -316,7 +316,7 @@ const readDealDetail = async (
     dealWithStatusDto['mystatus'] = userStatus.description;
     dealModule._setDealStatus(dealWithStatusDto);
 
-    success(res, statusCode.OK, responseMessage.SUCCESS, dealWithStatusDto);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, dealWithStatusDto);
   } catch (error) {
     logger.error(error);
     next(error);
