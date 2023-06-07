@@ -8,7 +8,7 @@ const dealImageUpload = multer({
     bucket: 'nbreadimg',
     key: async (req, file, cb) => {
       const dealImages = await dealImageRepository.findManyDealImageById(
-        req.params.dealId,
+        +req.params.dealId,
       );
 
       if (dealImages.length > 0) {
