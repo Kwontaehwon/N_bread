@@ -4,13 +4,6 @@ import responseMessage from '../modules/constants/responseMessage';
 import { fail } from '../modules/util';
 import { jwtHandler } from '../modules';
 import { JwtPayload } from 'jsonwebtoken';
-function jsonResponse(res, code, message, isSuccess) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-  });
-}
 
 const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
