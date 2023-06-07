@@ -59,4 +59,9 @@ export default {
    * DEAL IMAGE
    */
   defaultDealImage: process.env.DEFAULT_DEAL_IMAGE,
+
+  /**
+   * FCM TOKEN
+   */
+  fcmApiUrl: process.env.FCM_AWS_API_URL,
 };
