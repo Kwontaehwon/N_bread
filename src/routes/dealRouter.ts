@@ -6,6 +6,7 @@ import { verifyToken } from '../middlewares/middleware';
 import { errorValidator } from '../modules/error/errorValidator';
 const dealRouter: Router = express.Router();
 
+/** 쿠팡 썸네일 이미지 업로드 */
 dealRouter.post(
   '/:dealId/img/coupang',
   param('dealId').isNumeric(),
@@ -16,6 +17,7 @@ dealRouter.post(
   },
 );
 
+/** 거래 이미지 업로드 */
 dealRouter.post(
   '/:dealId/img',
   [param('dealId').isNumeric()],
@@ -24,7 +26,7 @@ dealRouter.post(
   dealService.createDealImage,
 );
 
-// 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
+/** 전체거래(홈화면) */
 dealRouter.get(
   '/all/:range/:region',
   [param('range').isString(), param('region').isString()],
@@ -34,10 +36,10 @@ dealRouter.get(
   // #swagger.summary = '지역 전체 거래 GET'
 );
 
-// 거래 생성하기
+/** 거래 생성하기 */
 dealRouter.post('/create', verifyToken, dealService.createDeal);
 
-// 거래 세부정보
+/** 거래 세부정보 */
 dealRouter.get(
   '/:dealId',
   [param('dealId').isNumeric()],
@@ -49,7 +51,7 @@ dealRouter.get(
   },
 );
 
-// 거래 수정하기
+/** 거래 수정하기 */
 dealRouter.put(
   '/:dealId',
   [param('dealId').isNumeric()],
@@ -58,7 +60,7 @@ dealRouter.put(
   dealService.updateDeal,
 );
 
-// 거래 삭제
+/** 거래 삭제 */
 dealRouter.delete(
   '/:dealId',
   [param('dealId').isNumeric()],
@@ -67,7 +69,7 @@ dealRouter.delete(
   dealService.deleteDeal,
 );
 
-// 참여자 : 거래 참여하기
+/** 참여자 : 거래 참여하기 */
 dealRouter.post(
   '/join/:dealId',
   [param('dealId').isNumeric()],
@@ -76,13 +78,13 @@ dealRouter.post(
   dealService.joinDeal,
 );
 
-// 거래에 대응되는 userId에 대해 제안자, 참여자 여부
+/** 거래에 대응되는 userId에 대해 제안자, 참여자 여부 */
 dealRouter.get(
   '/:dealId/users/:userId',
   errorValidator,
   dealService.userStatusInDeal,
 );
-
+/** 거래 신고하기 */
 dealRouter.post(
   '/:dealId/report',
   verifyToken,
