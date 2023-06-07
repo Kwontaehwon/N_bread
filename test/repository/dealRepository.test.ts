@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, deals } from '@prisma/client';
 import {
   dealRepository,
   groupRepository,
   userRepository,
 } from '../../src/repository/index';
-import { Deal } from '../../src/database/models/deal';
 import { dealParam } from '../../src/dto/deal/dealParam';
 import prisma from '../../src/prisma';
 const prismaForHardDelete = new PrismaClient();
@@ -79,7 +78,7 @@ describe('createDeal : 거래 생성', () => {
     };
 
     // Deal.create.mockReturnValue(Promise.resolve(mockDeal));
-    const createdDeal: Deal = await dealRepository.createDealInTransaction(
+    const createdDeal: deals = await dealRepository.createDealInTransaction(
       testDealParam,
       mockedUser,
       prisma,

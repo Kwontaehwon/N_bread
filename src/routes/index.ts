@@ -1,5 +1,4 @@
-const express = require('express');
-import { verifyToken } from '../middlewares/middleware';
+import express, { Router } from 'express';
 import { authRouter } from './authRouter';
 import { dealRouter } from './dealRouter';
 import { userRouter } from './userRouter';
@@ -8,7 +7,8 @@ import { eventRouter } from './eventRouter';
 import { priceRouter } from './priceRouter';
 import { responseMessage, statusCode } from '../modules/constants';
 import { success } from '../modules/util';
-const router = express.Router();
+import { logger } from '../config/winston';
+const router: Router = express.Router();
 
 router.use(
   '/auth',
@@ -42,9 +42,14 @@ router.use(
 );
 router.get('/', async (req, res, next) => {
   try {
-    success(res, statusCode.OK, responseMessage.SUCCESS, 'Server Connected');
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      'Server Connected',
+    );
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     next(err);
   }
 });

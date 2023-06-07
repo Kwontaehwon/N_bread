@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response, response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { logger } from '../config/winston';
 import {
   commentRepository,
@@ -54,7 +54,12 @@ const createComment = async (
     }
 
     const commentDto: CommentDto = new CommentDto(comment);
-    success(res, statusCode.CREATED, responseMessage.SUCCESS, commentDto);
+    return success(
+      res,
+      statusCode.CREATED,
+      responseMessage.SUCCESS,
+      commentDto,
+    );
   } catch (error) {
     logger.error(error);
     next(error);
@@ -75,10 +80,14 @@ const deleteComment = async (
       commentId,
     );
     if (comment.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.COMMENT_NOT_AUTH);
+      return fail(
+        res,
+        statusCode.UNAUTHORIZED,
+        responseMessage.COMMENT_NOT_AUTH,
+      );
     }
     await commentRepository.deleteComment(commentId);
-    success(res, statusCode.OK, responseMessage.SUCCESS);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -99,13 +108,17 @@ const updateComment = async (
     const comment = await commentRepository.findCommentById(commentId);
 
     if (comment.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.COMMENT_NOT_AUTH);
+      return fail(
+        res,
+        statusCode.UNAUTHORIZED,
+        responseMessage.COMMENT_NOT_AUTH,
+      );
     }
 
     await commentRepository.updateComment(commentId, content);
     const updatedComment = await commentRepository.findCommentById(commentId);
     const commentDto: CommentDto = await new CommentDto(updatedComment);
-    success(res, statusCode.OK, responseMessage.SUCCESS, commentDto);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, commentDto);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -160,7 +173,7 @@ const createReply = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const replyDto = new ReplyDto(reply);
-    success(res, statusCode.OK, responseMessage.SUCCESS, replyDto);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, replyDto);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -176,11 +189,11 @@ const deleteReply = async (req: Request, res: Response, next: NextFunction) => {
     const reply = await commentRepository.findReplyById(replyId);
 
     if (reply.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
+      return fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
     }
 
     await commentRepository.deleteReply(replyId);
-    success(res, statusCode.OK, responseMessage.SUCCESS);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -196,13 +209,13 @@ const updateReply = async (req: Request, res: Response, next: NextFunction) => {
     const user = await userRepository.findUserById(userId);
     const reply = await commentRepository.findReplyById(replyId);
     if (reply.userId !== user.id) {
-      fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
+      return fail(res, statusCode.UNAUTHORIZED, responseMessage.REPLY_NOT_AUTH);
     }
     await commentRepository.updateReply(replyId, content);
 
     const updatedReply = await commentRepository.findReplyById(replyId);
     const replyDto = new ReplyDto(updatedReply);
-    success(res, statusCode.OK, responseMessage.SUCCESS, replyDto);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, replyDto);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -236,7 +249,7 @@ const readComments = async (
       group: groupDtoList,
       comments: allCommentWithReplyDtoList,
     };
-    success(res, statusCode.OK, responseMessage.SUCCESS, result);
+    return success(res, statusCode.OK, responseMessage.SUCCESS, result);
   } catch (error) {
     logger.error(error);
     next(error);

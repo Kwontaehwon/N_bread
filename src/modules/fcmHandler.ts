@@ -6,12 +6,10 @@ import {
   TopicMessage,
 } from 'firebase-admin/lib/messaging/messaging-api';
 import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
-import { logger } from '../config/winston';
+import config from '../config';
 
 const dealSubscribe = async (userId: number, dealId: number) => {
-  const fcmTokenJson = await axios.get(
-    `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
-  );
+  const fcmTokenJson = await axios.get(`${config.fcmApiUrl}/tokens/${userId}`);
   if (Object.keys(fcmTokenJson.data).length !== 0) {
     const fcmToken = fcmTokenJson.data.Item.fcmToken;
     const fcmTopicName = `dealFcmTopic` + dealId;
@@ -55,9 +53,7 @@ const createNotifiation = async (title: string, body: string) => {
 };
 
 const getAndStoreTokenInList = async (fcmTokenList, userId: number) => {
-  const fcmTokenJson = await axios.get(
-    `https://d3wcvzzxce.execute-api.ap-northeast-2.amazonaws.com/tokens/${userId}`,
-  );
+  const fcmTokenJson = await axios.get(`${config.fcmApiUrl}/tokens/${userId}`);
   if (Object.keys(fcmTokenJson.data).length !== 0) {
     const fcmToken = fcmTokenJson.data.Item.fcmToken;
     fcmTokenList.push(fcmToken);

@@ -1,7 +1,5 @@
-import { errorGenerator } from '../modules/error/errorGenerator';
-import { responseMessage, statusCode } from '../modules/constants';
 import prisma from '../prisma';
-import { PrismaClient, PrismaPromise } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const createGroupInTransaction = async (
   amount: number,

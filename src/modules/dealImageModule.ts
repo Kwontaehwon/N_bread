@@ -1,4 +1,3 @@
-import { logger } from '../config/winston';
 import { dealImageRepository } from '../repository';
 
 const _createDealImage = async (req, dealId: number) => {

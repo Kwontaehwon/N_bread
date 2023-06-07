@@ -13,7 +13,7 @@ import { errorGenerator } from '../modules/error/errorGenerator';
 const logout = async (req: Request, res: Response) => {
   req.logout(() => {
     req.session.destroy(() => {
-      success(res, statusCode.OK, responseMessage.SUCCESS, {
+      return success(res, statusCode.OK, responseMessage.SUCCESS, {
         session: req.session,
       });
     });
@@ -44,7 +44,7 @@ const localSignUp = async (req: Request, res: Response) => {
 
     return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 };
 
@@ -70,7 +70,6 @@ const localLogin = async (req: Request, res: Response, next: NextFunction) => {
         const refreshToken = jwtHandler.createRefresh();
 
         await userRepository.saveRefresh(user.id, refreshToken);
-        console.log(accessToken);
         res.cookie('accessToken', accessToken);
         return success(res, statusCode.OK, responseMessage.SUCCESS);
       });

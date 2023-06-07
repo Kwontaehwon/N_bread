@@ -11,7 +11,7 @@ import bodyParser from 'body-parser';
 import swaggerUi from 'swagger-ui-express';
 import swaggerFile from './config/swagger/swagger.json';
 import admin from 'firebase-admin';
-const serviceAccount = require('./config/firebase-admin.json');
+import * as serviceAccount from './config/firebase-admin.json';
 import config from './config';
 import { router } from './routes/index';
 import { passportIndex } from './config/passport';
@@ -20,7 +20,7 @@ import { logger } from './config/winston';
 const app = express();
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
 });
 
 passportIndex();

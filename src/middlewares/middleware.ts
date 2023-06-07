@@ -4,19 +4,13 @@ import responseMessage from '../modules/constants/responseMessage';
 import { fail } from '../modules/util';
 import { jwtHandler } from '../modules';
 import { JwtPayload } from 'jsonwebtoken';
-function jsonResponse(res, code, message, isSuccess) {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-  });
-}
+import { logger } from '../config/winston';
 
 const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
     next();
   } else {
-    fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
+    return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
   }
 };
 
@@ -24,7 +18,7 @@ const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
   if (!req.isAuthenticated()) {
     next();
   } else {
-    fail(res, statusCode.FORBIDDEN, responseMessage.FORBIDDEN);
+    return fail(res, statusCode.FORBIDDEN, responseMessage.FORBIDDEN);
   }
 };
 
@@ -49,7 +43,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     req.query.userId = userId;
     next();
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return fail(
       res,
       statusCode.UNAUTHORIZED,

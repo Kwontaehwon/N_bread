@@ -2,6 +2,7 @@ import passport from 'passport';
 import passport_local from 'passport-local';
 import bcrypt from 'bcrypt';
 import { userRepository } from '../../repository';
+import { logger } from '../winston';
 const LocalStrategy = passport_local.Strategy;
 
 const passportLocal = () => {
@@ -23,7 +24,7 @@ const passportLocal = () => {
             });
           return next(null, isUserExist);
         } catch (error) {
-          console.error(error);
+          logger.error(error);
           next(error);
         }
       },

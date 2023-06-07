@@ -1,14 +1,5 @@
 import { Response } from 'express';
 
-const jsonResponse = (res, code, message, isSuccess, result) => {
-  res.status(code).json({
-    code: code,
-    message: message,
-    isSuccess: isSuccess,
-    result: result,
-  });
-};
-
 const success = (
   res: Response,
   code: number,
@@ -24,4 +15,4 @@ const fail = (res: Response, code: number, message: string) => {
   return res.status(code).send(fail_result);
 };
 
-export { jsonResponse, success, fail };
+export { success, fail };

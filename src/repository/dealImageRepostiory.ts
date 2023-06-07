@@ -16,4 +16,17 @@ const findDealImageById = async (dealId: number) => {
   });
 };
 
-export { createDealImage, findDealImageById };
+const findManyDealImageById = async (dealId: number) => {
+  return await prisma.dealImages.findMany({ where: { dealId } });
+};
+
+const deleteDealImageById = async (dealId: number) => {
+  await prisma.dealImages.deleteMany({ where: { dealId } });
+};
+
+export {
+  createDealImage,
+  findDealImageById,
+  findManyDealImageById,
+  deleteDealImageById,
+};

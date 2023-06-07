@@ -1,15 +1,12 @@
 import { dealParam } from '../dto/deal/dealParam';
 import { responseMessage, statusCode } from './constants';
-import { fail } from '../modules/util';
 import { errorGenerator } from './error/errorGenerator';
 import { groups } from '@prisma/client';
 import { dealRepository } from '../repository';
-import { DealDto } from '../dto/deal/dealDto';
 import { DealWithStatusDto } from '../dto/deal/dealWithStatusDto';
 
 const _verifyDealDate = async (res, param: dealParam) => {
   const dealDate = new Date(param.dealDate);
-  console.log('DEAL DATE : ' + dealDate.getTime());
   const expireDate = dealDate.getTime();
   if (expireDate < Date.now()) {
     throw errorGenerator({

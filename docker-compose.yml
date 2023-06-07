@@ -14,8 +14,8 @@ services:
       - --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_USER: 'user'
-      MYSQL_PASSWORD: '990809kth'
-      MYSQL_ROOT_PASSWORD: '990809kth'
+      MYSQL_PASSWORD: 'user'
+      MYSQL_ROOT_PASSWORD: 'user'
       MYSQL_DATABASE: 'nBread_Docker'
     expose:
       - '3306'

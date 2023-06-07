@@ -5,13 +5,6 @@ import {
   isNotLoggedIn,
   verifyToken,
 } from '../middlewares/middleware';
-import { User } from '../database/models';
-const jwt = require('jsonwebtoken');
-import { logger } from '../config/winston';
-import axios from 'axios';
-import config from '../config';
-import { Slack } from '../class/slack';
-import { util } from '../modules/';
 import { authService } from '../service';
 const authRouter: Router = express.Router();
 

@@ -1,7 +1,6 @@
 import prisma from '../../src/prisma';
 import { dealRepository } from '../../src/repository/index';
 import { dealService } from '../../src/service/index';
-import { prismaMock } from '../../src/singleton';
 
 describe('거래 삭제 : deleteDeal', () => {
   const mockDeal = {
@@ -28,10 +27,11 @@ describe('거래 삭제 : deleteDeal', () => {
   };
 
   test('작성자가 아닌 사람이 삭제를 요청 했을 경우', async () => {
-    const req = {
-      query: { userId: 2 },
-      params: { dealId: 1 },
+    const req: any = {
+      query: { userId: '2' },
+      params: { dealId: '1' },
     };
+
     const res = {
       status: jest.fn(() => res),
       send: jest.fn(),
@@ -44,7 +44,7 @@ describe('거래 삭제 : deleteDeal', () => {
   });
 
   test('거래에 참여자가 이미 있는 경우', async () => {
-    const req = {
+    const req: any = {
       query: { userId: 1 },
       params: { dealId: 1 },
     };

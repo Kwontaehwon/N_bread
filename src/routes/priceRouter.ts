@@ -1,8 +1,8 @@
-import express from 'express';
+import express, { Router } from 'express';
 import { param } from 'express-validator';
 import { errorValidator } from '../modules/error/errorValidator';
 import { priceService } from '../service';
-const priceRouter = express.Router();
+const priceRouter: Router = express.Router();
 
 priceRouter.use(express.json());
 
