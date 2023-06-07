@@ -1,14 +1,9 @@
-import express from 'express';
-
-import dotenv from 'dotenv';
-dotenv.config();
-
+import express, { Router } from 'express';
 import { verifyToken } from '../middlewares/middleware';
-
 import { param } from 'express-validator';
 import { errorValidator } from '../modules/error/errorValidator';
 import { commentService } from '../service';
-const commentRouter = express.Router();
+const commentRouter: Router = express.Router();
 
 commentRouter.use(express.json());
 

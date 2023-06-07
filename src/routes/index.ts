@@ -1,5 +1,4 @@
-const express = require('express');
-import { verifyToken } from '../middlewares/middleware';
+import express, { Router } from 'express';
 import { authRouter } from './authRouter';
 import { dealRouter } from './dealRouter';
 import { userRouter } from './userRouter';
@@ -8,7 +7,7 @@ import { eventRouter } from './eventRouter';
 import { priceRouter } from './priceRouter';
 import { responseMessage, statusCode } from '../modules/constants';
 import { success } from '../modules/util';
-const router = express.Router();
+const router: Router = express.Router();
 
 router.use(
   '/auth',

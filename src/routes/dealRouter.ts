@@ -1,15 +1,10 @@
 import { dealImageUpload } from '../middlewares/upload';
-
-const express = require('express');
+import express, { Router } from 'express';
 import { dealService } from '../service';
-import { body, param } from 'express-validator';
-import { User, Group, Deal, DealImage, DealReport } from '../database/models';
+import { param } from 'express-validator';
 import { verifyToken } from '../middlewares/middleware';
-import { Op, Sequelize } from 'sequelize';
-import { logger } from '../config/winston';
-import { util } from '../modules';
 import { errorValidator } from '../modules/error/errorValidator';
-const dealRouter = express.Router();
+const dealRouter: Router = express.Router();
 
 dealRouter.post(
   '/:dealId/img/coupang',
@@ -30,7 +25,6 @@ dealRouter.post(
 );
 
 // 전체거래(홈화면) deals/all/?isDealDone={}&offset={}&limit={}
-// offset, limit 적용 방안 생각해야됨.
 dealRouter.get(
   '/all/:range/:region',
   [param('range').isString(), param('region').isString()],
