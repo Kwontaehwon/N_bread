@@ -7,7 +7,7 @@ export default {
   SERVICE_NOT_AVAILABLE: '서버를 사용할 수 없습니다.',
   ERROR_VALIDATOR_ERROR: '에서 Validation 오류가 발생하였습니다.',
 
-  SUCCESS: '성공적으로 반환 하였습니다.',
+  SUCCESS: '성공적으로 요청을 수행하였습니다.',
   VALID_NICKNAME: '사용할 수 있는 닉네임입니다.',
 
   USER_NOT_FOUND: '해당되는 유저가 없습니다.',
