@@ -12,7 +12,7 @@ const dealImageUpload = multer({
       );
 
       if (dealImages.length > 0) {
-        await dealImageRepository.deleteDealImageById(req.params.dealId);
+        await dealImageRepository.deleteDealImageById(+req.params.dealId);
       }
       cb(null, `original/${Date.now()}_${file.originalname}`);
     },
