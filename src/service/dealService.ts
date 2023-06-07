@@ -137,12 +137,16 @@ const joinDeal = async (req: Request, res: Response, next: NextFunction) => {
     if (isJoin) {
       return fail(
         res,
-        statusCode.FORBIDDEN,
+        statusCode.BAD_REQUEST,
         responseMessage.DEAL_ALREADY_JOINED,
       );
     }
     if (dealDate.getTime() < Date.now()) {
-      return fail(res, statusCode.FORBIDDEN, responseMessage.DEAL_DATE_EXPIRED);
+      return fail(
+        res,
+        statusCode.BAD_REQUEST,
+        responseMessage.DEAL_DATE_EXPIRED,
+      );
     }
     const stock = deal.totalMember - deal.currentMember;
     if (stock <= 0) {
@@ -200,7 +204,7 @@ const reportDeal = async (req: Request, res: Response, next: NextFunction) => {
       logger.info(`userId : ${userId} 자신이 작성한 글을 신고 할 수 없습니다.`);
       return fail(
         res,
-        statusCode.FORBIDDEN,
+        statusCode.BAD_REQUEST,
         responseMessage.DEAL_REPORT_NOT_AUTHORIZED,
       );
     }
