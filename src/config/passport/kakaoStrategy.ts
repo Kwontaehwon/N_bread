@@ -2,6 +2,7 @@ import passport from 'passport';
 const KakaoStrategy = require('passport-kakao').Strategy;
 import config from '../';
 import { userRepository } from '../../repository';
+import { logger } from '../winston';
 
 const passportKakao = () => {
   passport.use(
@@ -34,7 +35,7 @@ const passportKakao = () => {
             done(null, newUser);
           }
         } catch (error) {
-          console.error(error);
+          logger.error(error);
           done(error);
         }
       },

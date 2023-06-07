@@ -5,6 +5,7 @@ import path from 'path';
 import config from '../';
 import { userRepository } from '../../repository';
 import { users } from '@prisma/client';
+import { logger } from '../winston';
 const passportApple = () => {
   passport.use(
     'apple',
@@ -43,7 +44,7 @@ const passportApple = () => {
             done(null, newUser);
           }
         } catch (error) {
-          console.error(error);
+          logger.error(error);
           done(error);
         }
       },

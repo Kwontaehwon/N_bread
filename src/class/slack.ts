@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import axios from 'axios';
 import config from '../config';
+import { logger } from '../config/winston';
 // import axios from 'axios';
 // import * as _ from 'lodash';
 class Slack {
@@ -24,7 +25,7 @@ class Slack {
   }
   static async sendMessage(message) {
     if (!message) {
-      console.error('메시지 포멧이 없습니다.');
+      logger.error('메시지 포멧이 없습니다.');
       return;
     }
 
@@ -38,7 +39,7 @@ class Slack {
       data.text = message;
     } else {
       if (!message.title && !message.text) {
-        console.error('메시지 내용이 없습니다.');
+        logger.error('메시지 내용이 없습니다.');
         return;
       }
 
