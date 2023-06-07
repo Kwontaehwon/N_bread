@@ -71,7 +71,7 @@ const deleteDeal = async (req: Request, res: Response, next: NextFunction) => {
     const reply = await prisma.replies.deleteMany({
       where: { dealId: dealId },
     });
-    return success(res, statusCode.OK, responseMessage.SUCCESS, null);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
     logger.error(error);
     next(error);
