@@ -8,11 +8,11 @@ import {
 import { authService } from '../service';
 const authRouter: Router = express.Router();
 
-authRouter.post('/signup', isNotLoggedIn, authService.localSignUp);
+authRouter.post('/signup', authService.localSignUp);
 
-authRouter.post('/login', isNotLoggedIn, authService.localLogin);
+authRouter.post('/login', authService.localLogin);
 
-authRouter.get('/logout', isLoggedIn, authService.logout);
+authRouter.get('/logout', authService.logout);
 
 /** 카카오 SDK 로그인 api */
 authRouter.post('/kakaosdk/signup/', authService.kakaoSignUp);
