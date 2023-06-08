@@ -30,6 +30,21 @@ const getPopupEventInProgress = async () => {
   }
 };
 
+const getBannerEventInProgress = async () => {
+  try {
+    const bannerEvent = await prisma.events.findMany({
+      where: { eventStatus: { gt: 0 } },
+    });
+    return bannerEvent;
+  } catch (error) {
+    logger.error(error);
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
+
 const createEvent = async (eventDto: EventDto) => {
   try {
     await prisma.events.create({
@@ -83,4 +98,5 @@ export {
   createEvent,
   findEventById,
   updateEventImage,
+  getBannerEventInProgress,
 };

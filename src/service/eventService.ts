@@ -25,7 +25,7 @@ const getPopup = async (req: Request, res: Response, next: NextFunction) => {
     const { recentId } = req.params;
     const event = await eventRepository.getPopupEventInProgress();
     if (!event) {
-      logger.info(`Events를 찾을 수 없습니다.`);
+      logger.info(`Popup Events를 찾을 수 없습니다.`);
       return fail(res, statusCode.NOT_FOUND, responseMessage.NOT_FOUND);
     }
     if (+recentId == event.id) {
@@ -38,6 +38,21 @@ const getPopup = async (req: Request, res: Response, next: NextFunction) => {
     return success(res, statusCode.OK, responseMessage.SUCCESS, event);
   } catch (error) {
     logger.error(`${error}  [GET POPUP] GET /events/popup/:recentId`);
+    next(error);
+  }
+};
+
+const getBanner = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const bannerEventList = await eventRepository.getBannerEventInProgress();
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      bannerEventList,
+    );
+  } catch (error) {
+    logger.error(error);
     next(error);
   }
 };
@@ -85,4 +100,4 @@ const uploadEventImage = async (req, res: Response, next: NextFunction) => {
   }
 };
 
-export { getEvent, getPopup, makeEvent, uploadEventImage };
+export { getEvent, getPopup, makeEvent, uploadEventImage, getBanner };

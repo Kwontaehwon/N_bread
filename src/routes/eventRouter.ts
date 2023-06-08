@@ -16,6 +16,9 @@ eventRouter.get(
   eventService.getPopup,
 );
 
+/**진행중인 배너 이벤트 GET */
+eventRouter.get('/banner', eventService.getBanner);
+
 /**이벤트 생성 POST */
 eventRouter.post('/create', eventService.makeEvent);
 
