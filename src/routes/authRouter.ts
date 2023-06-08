@@ -1,10 +1,6 @@
 import express, { Router } from 'express';
 import passport from 'passport';
-import {
-  isLoggedIn,
-  isNotLoggedIn,
-  verifyToken,
-} from '../middlewares/middleware';
+import { verifyToken } from '../middlewares/middleware';
 import { authService } from '../service';
 const authRouter: Router = express.Router();
 
