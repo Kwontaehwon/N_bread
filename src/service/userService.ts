@@ -49,19 +49,17 @@ const getMypageDeals = async (
 ) => {
   // #swagger.summary = '마이페이지 거래내역 조회'
   try {
-    const { userId } = req.query;
+    const userId = +req.params.userId;
 
     /** 참가한 거래 내역 추출 */
-    const participationObject = await userRepository.findGroupsByUserId(
-      +userId,
-    );
+    const participationObject = await userRepository.findGroupsByUserId(userId);
     const participatedIds = objectListToValueList(participationObject!);
     const participatedDealData = await userRepository.findDealsByDealIds(
       participatedIds,
     );
 
     /** 제안한 거래 내역 추출 */
-    const suggesterDeal = await userRepository.findDealsByUserId(+userId);
+    const suggesterDeal = await userRepository.findDealsByUserId(userId);
     const suggesterId = objectListToValueList(suggesterDeal);
 
     let data: mypageDto[] = [];

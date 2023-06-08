@@ -6,22 +6,6 @@ import { jwtHandler } from '../modules';
 import { JwtPayload } from 'jsonwebtoken';
 import { logger } from '../config/winston';
 
-const isLoggedIn = (req: Request, res: Response, next: NextFunction) => {
-  if (req.isAuthenticated()) {
-    next();
-  } else {
-    return fail(res, statusCode.UNAUTHORIZED, responseMessage.UNAUTHORIZED);
-  }
-};
-
-const isNotLoggedIn = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.isAuthenticated()) {
-    next();
-  } else {
-    return fail(res, statusCode.FORBIDDEN, responseMessage.FORBIDDEN);
-  }
-};
-
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization;
   if (!token) {
@@ -52,4 +36,4 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { isLoggedIn, isNotLoggedIn, verifyToken };
+export { verifyToken };

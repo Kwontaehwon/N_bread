@@ -8,13 +8,16 @@ const eventRouter: Router = express.Router();
 /**모든 이벤트 GET */
 eventRouter.get('/', eventService.getEvent);
 
-/**진행중인 이벤트 GET */
+/**진행중인 팝업 이벤트 GET */
 eventRouter.get(
   '/popup/:recentId',
   [param('recentId').isNumeric(), param('recentId').notEmpty()],
   errorValidator,
   eventService.getPopup,
 );
+
+/**진행중인 배너 이벤트 GET */
+eventRouter.get('/banner', eventService.getBanner);
 
 /**이벤트 생성 POST */
 eventRouter.post('/create', eventService.makeEvent);
