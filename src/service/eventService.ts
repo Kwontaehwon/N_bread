@@ -56,9 +56,8 @@ const makeEvent = async (req: Request, res: Response, next: NextFunction) => {
 const uploadEventImage = async (req, res: Response, next: NextFunction) => {
   try {
     const file = req.file;
-    const { location } = file;
+    const location = file.location;
     const { eventId } = req.params;
-
     /**이미지 존재여부 검증 */
     if (file === null)
       return fail(res, statusCode.BAD_REQUEST, responseMessage.IMAGE_NOT_EXIST);
