@@ -50,15 +50,15 @@ const deleteDeal = async (req: Request, res: Response, next: NextFunction) => {
     if (deal.userId != +req.query.userId) {
       return fail(
         res,
-        statusCode.UNAUTHORIZED,
-        responseMessage.DEAL_DELETE_NOT_AUTHORIZED,
+        statusCode.FORBIDDEN,
+        responseMessage.DEAL_DELETE_FORBIDDEN,
       );
     }
     const groups = await prisma.groups.findMany({ where: { dealId: deal.id } });
     if (groups.length > 1) {
       return fail(
         res,
-        statusCode.UNAUTHORIZED,
+        statusCode.BAD_REQUEST,
         responseMessage.DEAL_ALREADY_PARTICIPATED,
       );
     }
@@ -71,7 +71,7 @@ const deleteDeal = async (req: Request, res: Response, next: NextFunction) => {
     const reply = await prisma.replies.deleteMany({
       where: { dealId: dealId },
     });
-    return success(res, statusCode.OK, responseMessage.SUCCESS, null);
+    return success(res, statusCode.OK, responseMessage.SUCCESS);
   } catch (error) {
     logger.error(error);
     next(error);
@@ -92,7 +92,7 @@ const updateDeal = async (req: Request, res: Response, next: NextFunction) => {
       return fail(
         res,
         statusCode.FORBIDDEN,
-        responseMessage.DEAL_DELETE_NOT_AUTHORIZED,
+        responseMessage.DEAL_UPDATE_FORBIDDEN,
       );
     }
 
@@ -137,12 +137,16 @@ const joinDeal = async (req: Request, res: Response, next: NextFunction) => {
     if (isJoin) {
       return fail(
         res,
-        statusCode.FORBIDDEN,
+        statusCode.BAD_REQUEST,
         responseMessage.DEAL_ALREADY_JOINED,
       );
     }
     if (dealDate.getTime() < Date.now()) {
-      return fail(res, statusCode.FORBIDDEN, responseMessage.DEAL_DATE_EXPIRED);
+      return fail(
+        res,
+        statusCode.BAD_REQUEST,
+        responseMessage.DEAL_DATE_EXPIRED,
+      );
     }
     const stock = deal.totalMember - deal.currentMember;
     if (stock <= 0) {
@@ -200,7 +204,7 @@ const reportDeal = async (req: Request, res: Response, next: NextFunction) => {
       logger.info(`userId : ${userId} 자신이 작성한 글을 신고 할 수 없습니다.`);
       return fail(
         res,
-        statusCode.FORBIDDEN,
+        statusCode.BAD_REQUEST,
         responseMessage.DEAL_REPORT_NOT_AUTHORIZED,
       );
     }
@@ -316,7 +320,12 @@ const readDealDetail = async (
     dealWithStatusDto['mystatus'] = userStatus.description;
     dealModule._setDealStatus(dealWithStatusDto);
 
-    return success(res, statusCode.OK, responseMessage.SUCCESS, dealWithStatusDto);
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      dealWithStatusDto,
+    );
   } catch (error) {
     logger.error(error);
     next(error);

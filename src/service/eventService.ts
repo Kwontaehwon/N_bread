@@ -23,9 +23,9 @@ const getEvent = async (req: Request, res: Response, next: NextFunction) => {
 const getPopup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { recentId } = req.params;
-    const event = await eventRepository.getInProgressEvent();
+    const event = await eventRepository.getPopupEventInProgress();
     if (!event) {
-      logger.info(`Events를 찾을 수 없습니다.`);
+      logger.info(`Popup Events를 찾을 수 없습니다.`);
       return fail(res, statusCode.NOT_FOUND, responseMessage.NOT_FOUND);
     }
     if (+recentId == event.id) {
@@ -38,6 +38,21 @@ const getPopup = async (req: Request, res: Response, next: NextFunction) => {
     return success(res, statusCode.OK, responseMessage.SUCCESS, event);
   } catch (error) {
     logger.error(`${error}  [GET POPUP] GET /events/popup/:recentId`);
+    next(error);
+  }
+};
+
+const getBanner = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const bannerEventList = await eventRepository.getBannerEventInProgress();
+    return success(
+      res,
+      statusCode.OK,
+      responseMessage.SUCCESS,
+      bannerEventList,
+    );
+  } catch (error) {
+    logger.error(error);
     next(error);
   }
 };
@@ -56,9 +71,8 @@ const makeEvent = async (req: Request, res: Response, next: NextFunction) => {
 const uploadEventImage = async (req, res: Response, next: NextFunction) => {
   try {
     const file = req.file;
-    const { location } = file;
+    const location = file.location;
     const { eventId } = req.params;
-
     /**이미지 존재여부 검증 */
     if (file === null)
       return fail(res, statusCode.BAD_REQUEST, responseMessage.IMAGE_NOT_EXIST);
@@ -86,4 +100,4 @@ const uploadEventImage = async (req, res: Response, next: NextFunction) => {
   }
 };
 
-export { getEvent, getPopup, makeEvent, uploadEventImage };
+export { getEvent, getPopup, makeEvent, uploadEventImage, getBanner };

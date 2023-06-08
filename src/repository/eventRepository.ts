@@ -17,10 +17,25 @@ const getAllEvents = async () => {
   }
 };
 
-const getInProgressEvent = async () => {
+const getPopupEventInProgress = async () => {
   try {
     const data = await prisma.events.findFirst({ where: { eventStatus: 0 } });
     return data;
+  } catch (error) {
+    logger.error(error);
+    throw errorGenerator({
+      code: statusCode.BAD_REQUEST,
+      message: responseMessage.BAD_REQUEST,
+    });
+  }
+};
+
+const getBannerEventInProgress = async () => {
+  try {
+    const bannerEvent = await prisma.events.findMany({
+      where: { eventStatus: { gt: 0 } },
+    });
+    return bannerEvent;
   } catch (error) {
     logger.error(error);
     throw errorGenerator({
@@ -79,8 +94,9 @@ const updateEventImage = async (eventId: number, eventImage: string) => {
 
 export {
   getAllEvents,
-  getInProgressEvent,
+  getPopupEventInProgress,
   createEvent,
   findEventById,
   updateEventImage,
+  getBannerEventInProgress,
 };
