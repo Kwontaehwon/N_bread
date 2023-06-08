@@ -17,7 +17,7 @@ const getAllEvents = async () => {
   }
 };
 
-const getInProgressEvent = async () => {
+const getPopupEventInProgress = async () => {
   try {
     const data = await prisma.events.findFirst({ where: { eventStatus: 0 } });
     return data;
@@ -79,7 +79,7 @@ const updateEventImage = async (eventId: number, eventImage: string) => {
 
 export {
   getAllEvents,
-  getInProgressEvent,
+  getPopupEventInProgress,
   createEvent,
   findEventById,
   updateEventImage,

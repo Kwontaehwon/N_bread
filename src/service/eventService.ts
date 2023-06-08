@@ -23,7 +23,7 @@ const getEvent = async (req: Request, res: Response, next: NextFunction) => {
 const getPopup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { recentId } = req.params;
-    const event = await eventRepository.getInProgressEvent();
+    const event = await eventRepository.getPopupEventInProgress();
     if (!event) {
       logger.info(`Events를 찾을 수 없습니다.`);
       return fail(res, statusCode.NOT_FOUND, responseMessage.NOT_FOUND);

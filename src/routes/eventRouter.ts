@@ -8,7 +8,7 @@ const eventRouter: Router = express.Router();
 /**모든 이벤트 GET */
 eventRouter.get('/', eventService.getEvent);
 
-/**진행중인 이벤트 GET */
+/**진행중인 팝업 이벤트 GET */
 eventRouter.get(
   '/popup/:recentId',
   [param('recentId').isNumeric(), param('recentId').notEmpty()],
